@@ -27,6 +27,7 @@ Definir
 - ✅ Maior flexibilidade e customização
 - ✅ Sem restrições de templates
 - ✅ Custo mais controlável
+- ✅ Já utilizado pela empresa
 
 ### Por que LangChain?
 

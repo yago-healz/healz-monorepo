@@ -2,114 +2,192 @@
 
 ## O que é
 
-Healz é uma plataforma de inteligência de jornada e risco em saúde que organiza, prioriza e protege o relacionamento com pacientes e beneficiários, usando IA, automação e dados comportamentais.
+Healz é uma plataforma SaaS de inteligência de jornada do paciente que automatiza comunicação via WhatsApp, detecta riscos de abandono, e orquestra ações no momento certo - com escalação humana quando necessário.
 
-A plataforma é proativa: antecipa sinais de abandono, atraso e insatisfação e orienta ações no momento certo, com escalação humana quando necessário.
+**Core value**: Transformar o caos do WhatsApp em gestão inteligente e proativa da jornada do paciente.
 
 ## O problema que resolvemos
 
-Organizações de saúde não conseguem coordenar a jornada do paciente de forma contínua e previsível. Eventos críticos (faltas, abandonos, atrasos, não adesão) são percebidos tarde demais.
+Clínicas pequenas e médias não conseguem acompanhar a jornada do paciente de forma contínua. WhatsApp virou caos, eventos críticos (faltas, abandonos, atrasos) são percebidos tarde demais.
 
-A clínica não acorda pensando “preciso de um CRM”. Ela acorda pensando:
+A clínica não acorda pensando "preciso de um CRM". Ela acorda pensando:
 
-- perdi paciente
-- não sei quem voltou
-- não sei quem sumiu
-- secretária não responde direito
-- WhatsApp virou caos
-- ninguém sabe o status de nada
+- 😰 Perdi paciente e não sei por quê
+- 🤷 Não sei quem voltou, quem sumiu
+- 📱 WhatsApp virou bagunça sem controle
+- 😤 Secretária sobrecarregada, respostas inconsistentes
+- ❓ Ninguém sabe o status real de nada
 
-👉 O “CRM” é só o rótulo que dão para essa dor.
+👉 **O "CRM" é só o rótulo que dão para essa dor.**
 
 ## Insight de produto
 
-Clínicas não gerenciam leads. Elas gerenciam pacientes ao longo do tempo.  
+**Clínicas não gerenciam leads. Elas gerenciam pacientes ao longo do tempo.**
+
 Tudo que exige input manual recorrente do cliente mata a escala em clínica pequena.
 
-Se exigir:
+❌ Se exigir:
 
-- arrastar card
-- preencher campo
-- atualizar status
+- Arrastar card
+- Preencher campo
+- Atualizar status manualmente
 
-👉 está errado.
+👉 **Está errado para o nosso caso de uso.**
+
+✅ **Abordagem Healz**:
+
+- Eventos capturam automaticamente a jornada
+- IA processa e responde
+- Sistema alerta apenas quando necessário
+- Humano age em exceções
 
 ## Proposta de valor
 
-- **Para pacientes**: Agendamento e comunicação via WhatsApp (canal já familiar)
-- **Para clínicas**: Automação de interações rotineiras + gestão inteligente e proativa da jornada do paciente
-- **Métricas de sucesso**: Retenção de pacientes ↑, overhead administrativo ↓, gestão de agendamentos sem fricção
+| Para          | Valor                                                              |
+| ------------- | ------------------------------------------------------------------ |
+| **Pacientes** | Agendamento e comunicação via WhatsApp (canal já familiar)         |
+| **Clínicas**  | Automação de interações rotineiras + gestão inteligente da jornada |
+| **Métricas**  | Retenção ↑ · Overhead administrativo ↓ · Agendamentos sem fricção  |
 
-## As 5 funções de “CRM” que precisamos ter
+## As 5 funções essenciais (nosso "CRM invisível")
 
-1. **Identidade única do paciente**
-   - nome, telefone, histórico mínimo e origem (quando relevante)
-2. **Linha do tempo automática**
-   - primeiro contato, agendamento, atendimento, follow-ups, sumi-los, retornos
-   - sem input manual; tudo por eventos
-3. **Status inteligente (não manual)**
-   - ativo, em risco, sumido, retornado, insatisfeito
-4. **Alertas acionáveis**
-   - “esse paciente vai sumir”
-   - “esse paciente precisa de contato humano”
-   - “esse paciente está pronto para retorno”
-5. **Histórico para decisão (compliance light)**
-   - quem falou, quando, por qual canal, e o que foi decidido
+### 1. Identidade única do paciente
+
+- Nome, telefone, histórico mínimo
+- **Sem input manual** - tudo via eventos
+
+### 2. Linha do tempo automática
+
+- Primeiro contato → Agendamento → Atendimento → Follow-ups → Retornos
+- **100% automática** via Event Sourcing
+
+### 3. Status inteligente (calculado, não manual)
+
+- Estados: Ativo, Em risco, Sumido, Retomado, Insatisfeito
+- **Calculado pela State Machine** baseado em eventos
+
+### 4. Alertas acionáveis
+
+- "Esse paciente vai sumir"
+- "Esse paciente precisa de contato humano"
+- "Esse paciente está pronto para retorno"
+- **Poucos e precisos** - só o que realmente importa
+
+### 5. Histórico para decisão (compliance light)
+
+- Quem falou, quando, por qual canal, decisão tomada
+- **Auditoria automática** via Event Store
 
 ## Arquitetura em uma frase
 
-Sistema event-driven com Event Store (PostgreSQL), State Machine para jornada do paciente, Decision Engine com LLM, e Action Orchestrator para execução de respostas.
+Sistema **event-driven** com Event Store (PostgreSQL), State Machine para jornada do paciente, Decision Engine com LangChain, e Action Orchestrator para execução de respostas.
 
 ## Core do produto (não negociável)
 
-1. **Motor de inteligência de jornada**
-   - leitura de eventos ao longo do tempo (primeiro contato, agendamento, atendimento, follow-ups, abandono, retorno)
-   - linha do tempo automática (sem input manual)
-2. **Detecção de risco (o ouro)**
-   - score de abandono, insatisfação e churn
-   - sinais: atraso, silêncio, repetição, linguagem, mudança de comportamento
-   - a Healz não reage; ela antecipa
-3. **Orquestração inteligente de ações**
-   - decide quando IA atua, quando escalar para humano, quando alertar gestor
-   - automação com lógica clara (regras + score)
-4. **Identidade única do paciente**
-   - nome, telefone, histórico mínimo e status calculado (ativo, em risco, sumido, retomado)
-5. **Governança & logs**
-   - registro de quem falou, quando, por qual canal e decisão tomada
-   - LGPD-ready desde o início
+### 1. Motor de inteligência de jornada
 
-## Must have (para vender e operar agora)
+- Leitura de eventos ao longo do tempo
+- Linha do tempo automática (sem input manual)
+- Reconstrução de estado a qualquer momento
 
-- Camada mínima de “CRM invisível”
-  - lista de pacientes, busca simples, visualização por status, timeline clara
-  - sem funil, sem pipeline, sem “arrastar card”
-- Integração nativa com WhatsApp
-  - canal principal das clínicas e onde a dor acontece
-- Alertas acionáveis
-  - poucos e bons; foco em risco real
-- Dash simples para gestor
-  - visão geral, pacientes em risco, recuperados e backlog crítico
+### 2. Detecção de risco (o diferencial)
+
+- Score de abandono, insatisfação e churn
+- Sinais: atraso, silêncio, repetição, linguagem, mudança de comportamento
+- **A Healz não reage; ela antecipa**
+
+### 3. Orquestração inteligente de ações
+
+- Decide quando IA atua sozinha
+- Quando escalar para humano
+- Quando alertar gestor
+- **Automação com lógica clara** (regras + score + LLM)
+
+### 4. Identidade única do paciente
+
+- Nome, telefone, histórico mínimo
+- Status calculado (ativo, em risco, sumido, retomado)
+- **Visão 360° automática**
+
+### 5. Governança & logs
+
+- Registro de quem falou, quando, por qual canal, decisão tomada
+- **LGPD-ready** desde o início
+- Auditoria completa via Event Store
+
+## Must have (MVP para vender e operar)
+
+### Camada mínima de "CRM invisível"
+
+- ✅ Lista de pacientes com busca
+- ✅ Visualização por status
+- ✅ Timeline clara de interações
+- ❌ Sem funil, pipeline ou "arrastar card"
+
+### Integração nativa WhatsApp
+
+- ✅ Evolution API (self-hosted)
+- ✅ Canal principal onde a dor acontece
+- ✅ Respostas automáticas + escalação
+
+### Alertas acionáveis
+
+- ✅ Poucos e bons
+- ✅ Foco em risco real
+- ✅ Notificação apenas quando necessário
+
+### Dashboard simples para gestor
+
+- ✅ Visão geral de pacientes
+- ✅ Lista de pacientes em risco
+- ✅ Pacientes recuperados
+- ✅ Backlog crítico
 
 ## Plus (aumenta ticket e stickiness)
 
-- **Clínicas**: relatórios mensais automáticos, insights de retenção, comparativos simples (antes/depois)
-- **Operadoras**: score agregado por carteira, heatmap de risco, alertas de churn sistêmico, evidência de governança
-- **Gestores**: configuração de regras, ajuste de thresholds, perfis de prioridade
+### Para clínicas
+
+- Relatórios mensais automáticos
+- Insights de retenção
+- Comparativos antes/depois
+
+### Para operadoras (futuro)
+
+- Score agregado por carteira
+- Heatmap de risco
+- Alertas de churn sistêmico
+- Evidência de governança
+
+### Para gestores
+
+- Configuração de regras de risco
+- Ajuste de thresholds
+- Perfis de prioridade
 
 ## Regra de ouro do produto
 
-Se exige input humano recorrente, não entra no MVP.  
-O valor da Healz é: reduzir esforço, reduzir erro, reduzir dependência de pessoas.
+> **Se exige input humano recorrente, não entra no MVP.**
 
-## Como isso vira dinheiro
+O valor da Healz é:
 
-- **Clínicas**: pagam por organização + retenção
-- **Operadoras**: pagam por proteção de carteira
-- **Governo**: validação + escala futura
+- ✅ Reduzir esforço
+- ✅ Reduzir erro
+- ✅ Reduzir dependência de pessoas
 
-Mesmo core, superfícies diferentes.
+## Modelo de negócio
+
+| Público        | Pagam por                           |
+| -------------- | ----------------------------------- |
+| **Clínicas**   | Organização + retenção de pacientes |
+| **Operadoras** | Proteção de carteira (futuro)       |
+| **Governo**    | Validação + escala (futuro)         |
+
+**Mesmo core, superfícies diferentes.**
 
 ## Documentação adicional
 
-- [**ARCHITECTURE.md**](./ARCHITECTURE.md) - Arquitetura detalhada do sistema, componentes e fluxos
+- [**ARCHITECTURE.md**](./ARCHITECTURE.md) - Arquitetura detalhada do sistema
 - [**STACK.md**](./STACK.md) - Stack tecnológica e decisões técnicas
+- [**DATABASE.md**](./DATABASE.md) - Modelo de dados e schemas _(a criar)_
+- [**EVENTS.md**](./EVENTS.md) - Catálogo de eventos do sistema _(a criar)_
+- [**STATE_MACHINE.md**](./STATE_MACHINE.md) - Estados e transições _(a criar)_
