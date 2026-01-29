@@ -60,7 +60,7 @@ Continue para: STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 | AGGREGATES.md    | ✅ Completo | 2025-01-29         | Bounded Contexts e Agregados         |
 | EVENTS.md        | ✅ Completo | 2025-01-29         | Catálogo de eventos                  |
 | STATE_MACHINE.md | ✅ Completo | 2025-01-29         | Máquina de estados                   |
-| PROJECTIONS.md   | ⏳ Pendente | -                  | Read Models                          |
+| PROJECTIONS.md   | ✅ Completo | 2025-01-29         | Read Models e Views materializadas   |
 | API.md           | ⏳ Pendente | -                  | Especificação de APIs                |
 
 ---
@@ -93,20 +93,6 @@ Continue para: STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 ---
 
 ## 🔄 Próximas Documentações
-
-### STATE_MACHINE.md
-
-- Estados da Patient Journey
-- Transições permitidas
-- Triggers de cada transição
-- Diagramas de estados
-
-### PROJECTIONS.md
-
-- Read Models materializados
-- Estratégias de projeção
-- Queries otimizadas
-- Sincronização com Event Store
 
 ### API.md
 
