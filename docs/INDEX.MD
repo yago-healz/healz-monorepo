@@ -13,9 +13,13 @@
 - [**DATABASE.md**](./DATABASE.md) - Modelo de dados multi-tenant e Event Store
 - [**AGGREGATES.md**](./AGGREGATES.md) - Bounded Contexts e Agregados do sistema
 
-### Documentação Detalhada (a criar)
+### Documentação Detalhada
 
-- **STATE_MACHINE.md** - Estados, transições e triggers da Patient Journey
+- [**STATE_MACHINE.md**](./STATE_MACHINE.md) - Estados, transições e triggers da Patient Journey
+- [**EVENTS.md**](./EVENTS.md) - Catálogo completo de eventos do sistema
+
+### Documentação Planejada
+
 - **PROJECTIONS.md** - Read Models e Views materializadas
 - **API.md** - Especificação de APIs REST e GraphQL
 
@@ -55,7 +59,7 @@ Continue para: STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 | DATABASE.md      | ✅ Completo | 2025-01-29         | Event Store e modelo multi-tenant    |
 | AGGREGATES.md    | ✅ Completo | 2025-01-29         | Bounded Contexts e Agregados         |
 | EVENTS.md        | ✅ Completo | 2025-01-29         | Catálogo de eventos                  |
-| STATE_MACHINE.md | ⏳ Pendente | -                  | Máquina de estados                   |
+| STATE_MACHINE.md | ✅ Completo | 2025-01-29         | Máquina de estados                   |
 | PROJECTIONS.md   | ⏳ Pendente | -                  | Read Models                          |
 | API.md           | ⏳ Pendente | -                  | Especificação de APIs                |
 
@@ -82,8 +86,8 @@ Continue para: STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 2. STACK.md
 3. DATABASE.md
 4. AGGREGATES.md
-5. EVENTS.md (quando disponível)
-6. STATE_MACHINE.md (quando disponível)
+5. EVENTS.md
+6. STATE_MACHINE.md
 7. API.md (quando disponível)
 
 ---

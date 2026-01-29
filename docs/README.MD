@@ -191,4 +191,4 @@ O valor da Healz é:
 - [**DATABASE.md**](./DATABASE.md) - Modelo de dados e Event Store
 - [**AGGREGATES.md**](./AGGREGATES.md) - Bounded Contexts e Agregados
 - [**EVENTS.md**](./EVENTS.md) - Catálogo completo de eventos
-- [**STATE_MACHINE.md**](./STATE_MACHINE.md) - Estados e transições _(a criar)_
+- [**STATE_MACHINE.md**](./STATE_MACHINE.md) - Máquina de estados da jornada do paciente
