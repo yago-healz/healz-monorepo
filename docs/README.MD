@@ -108,3 +108,8 @@ O valor da Healz é: reduzir esforço, reduzir erro, reduzir dependência de pes
 - **Governo**: validação + escala futura
 
 Mesmo core, superfícies diferentes.
+
+## Documentação adicional
+
+- [**ARCHITECTURE.md**](./ARCHITECTURE.md) - Arquitetura detalhada do sistema, componentes e fluxos
+- [**STACK.md**](./STACK.md) - Stack tecnológica e decisões técnicas
