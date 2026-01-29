@@ -188,6 +188,7 @@ O valor da Healz é:
 
 - [**ARCHITECTURE.md**](./ARCHITECTURE.md) - Arquitetura detalhada do sistema
 - [**STACK.md**](./STACK.md) - Stack tecnológica e decisões técnicas
-- [**DATABASE.md**](./DATABASE.md) - Modelo de dados e schemas _(a criar)_
-- [**EVENTS.md**](./EVENTS.md) - Catálogo de eventos do sistema _(a criar)_
+- [**DATABASE.md**](./DATABASE.md) - Modelo de dados e Event Store
+- [**AGGREGATES.md**](./AGGREGATES.md) - Bounded Contexts e Agregados
+- [**EVENTS.md**](./EVENTS.md) - Catálogo completo de eventos
 - [**STATE_MACHINE.md**](./STATE_MACHINE.md) - Estados e transições _(a criar)_

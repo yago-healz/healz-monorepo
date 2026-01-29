@@ -55,7 +55,7 @@ Continue para: EVENTS.md, STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 | STACK.md         | ✅ Completo | 2025-01-29         | Escolhas tecnológicas                |
 | DATABASE.md      | ✅ Completo | 2025-01-29         | Event Store e modelo multi-tenant    |
 | AGGREGATES.md    | ✅ Completo | 2025-01-29         | Bounded Contexts e Agregados         |
-| EVENTS.md        | ⏳ Pendente | -                  | Catálogo de eventos                  |
+| EVENTS.md        | ✅ Completo | 2025-01-29         | Catálogo de eventos                  |
 | STATE_MACHINE.md | ⏳ Pendente | -                  | Máquina de estados                   |
 | PROJECTIONS.md   | ⏳ Pendente | -                  | Read Models                          |
 | API.md           | ⏳ Pendente | -                  | Especificação de APIs                |
