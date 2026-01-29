@@ -15,7 +15,6 @@
 
 ### Documentação Detalhada (a criar)
 
-- **EVENTS.md** - Catálogo completo de eventos do sistema
 - **STATE_MACHINE.md** - Estados, transições e triggers da Patient Journey
 - **PROJECTIONS.md** - Read Models e Views materializadas
 - **API.md** - Especificação de APIs REST e GraphQL
@@ -42,7 +41,7 @@ Leia [AGGREGATES.md](./AGGREGATES.md) para entender Bounded Contexts e Agregados
 
 ### Para implementar
 
-Continue para: EVENTS.md, STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
+Continue para: STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 
 ---
 
@@ -90,13 +89,6 @@ Continue para: EVENTS.md, STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 ---
 
 ## 🔄 Próximas Documentações
-
-### EVENTS.md
-
-- Catálogo completo de todos os eventos
-- Schema de cada evento
-- Exemplos de payloads
-- Versionamento de eventos
 
 ### STATE_MACHINE.md
 
