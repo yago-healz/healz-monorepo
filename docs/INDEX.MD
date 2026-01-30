@@ -32,6 +32,11 @@
 - [**SECURITY.md**](./SECURITY.md) - 🆕 Segurança e compliance LGPD
 - [**INFRASTRUCTURE.md**](./INFRASTRUCTURE.md) - 🆕 Infrastructure as Code com Terraform
 
+### Guias de Implementação
+
+- [**IMPLEMENTATION_SETUP.md**](./IMPLEMENTATION_SETUP.md) - 🆕 Setup do monorepo (pnpm, Turborepo, NestJS, React, Docker)
+- [**IMPLEMENTATION_DEPLOYMENT.md**](./IMPLEMENTATION_DEPLOYMENT.md) - 🆕 Deployment e CI/CD no Render (Blueprint/IaC)
+
 ### Documentação Planejada
 
 - **API.md** - Especificação de APIs REST e GraphQL
@@ -90,6 +95,8 @@ Continue para: EVENTS.md, STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 | **MONITORING.md**         | ✅ Completo | 2025-01-30         | 🆕 Observabilidade completa              |
 | **SECURITY.md**           | ✅ Completo | 2025-01-30         | 🆕 Segurança e LGPD                      |
 | **INFRASTRUCTURE.md**     | ✅ Completo | 2025-01-30         | 🆕 Infrastructure as Code (Terraform)    |
+| **IMPLEMENTATION_SETUP.md** | ✅ Completo | 2025-01-30       | 🆕 Setup monorepo (pnpm, Turbo, Docker)  |
+| **IMPLEMENTATION_DEPLOYMENT.md** | ✅ Completo | 2025-01-30  | 🆕 Deployment Render (Blueprint/IaC)     |
 | API.md                    | ⏳ Pendente | -                  | Especificação de APIs                    |
 
 ---
@@ -154,6 +161,11 @@ Use como referência:
 - MONITORING.md - Metrics, logs, traces
 - SECURITY.md - Security policies
 - INFRASTRUCTURE.md - Terraform modules
+
+**Para Implementação Inicial (setup do projeto):**
+
+1. **IMPLEMENTATION_SETUP.md** ⭐ (comece aqui!)
+2. IMPLEMENTATION_DEPLOYMENT.md
 
 ---
 
