@@ -8,6 +8,7 @@
 
 ### Documentação Técnica
 
+- [**CORE_CONCEPTS.md**](./CORE_CONCEPTS.md) - ⭐ **Comece aqui!** Conceitos fundamentais da arquitetura (Evento, Correlação, Operação, Agregado, Jornada)
 - [**ARCHITECTURE.md**](./ARCHITECTURE.md) - Arquitetura do sistema e componentes principais
 - [**STACK.md**](./STACK.md) - Stack tecnológica e decisões técnicas
 - [**DATABASE.md**](./DATABASE.md) - Modelo de dados multi-tenant e Event Store
@@ -15,12 +16,12 @@
 
 ### Documentação Detalhada
 
-- [**STATE_MACHINE.md**](./STATE_MACHINE.md) - Estados, transições e triggers da Patient Journey
 - [**EVENTS.md**](./EVENTS.md) - Catálogo completo de eventos do sistema
+- [**STATE_MACHINE.md**](./STATE_MACHINE.md) - Estados, transições e triggers da Patient Journey
+- [**PROJECTIONS.md**](./PROJECTIONS.md) - Read Models e Views materializadas
 
 ### Documentação Planejada
 
-- **PROJECTIONS.md** - Read Models e Views materializadas
 - **API.md** - Especificação de APIs REST e GraphQL
 
 ---
@@ -30,6 +31,10 @@
 ### Para entender o produto
 
 Comece por [README.md](./README.md)
+
+### Para entender os conceitos fundamentais ⭐
+
+**COMECE AQUI!** Leia [CORE_CONCEPTS.md](./CORE_CONCEPTS.md) - Explica de forma didática os 5 conceitos principais: Evento, Correlação, Operação, Agregado e Jornada
 
 ### Para entender a arquitetura
 
@@ -45,23 +50,24 @@ Leia [AGGREGATES.md](./AGGREGATES.md) para entender Bounded Contexts e Agregados
 
 ### Para implementar
 
-Continue para: STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
+Continue para: EVENTS.md, STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 
 ---
 
 ## ✅ Status da Documentação
 
-| Documento        | Status      | Última atualização | Descrição                            |
-| ---------------- | ----------- | ------------------ | ------------------------------------ |
-| README.md        | ✅ Completo | 2025-01-29         | Visão de produto e proposta de valor |
-| ARCHITECTURE.md  | ✅ Completo | 2025-01-29         | Componentes e fluxo de dados         |
-| STACK.md         | ✅ Completo | 2025-01-29         | Escolhas tecnológicas                |
-| DATABASE.md      | ✅ Completo | 2025-01-29         | Event Store e modelo multi-tenant    |
-| AGGREGATES.md    | ✅ Completo | 2025-01-29         | Bounded Contexts e Agregados         |
-| EVENTS.md        | ✅ Completo | 2025-01-29         | Catálogo de eventos                  |
-| STATE_MACHINE.md | ✅ Completo | 2025-01-29         | Máquina de estados                   |
-| PROJECTIONS.md   | ✅ Completo | 2025-01-29         | Read Models e Views materializadas   |
-| API.md           | ⏳ Pendente | -                  | Especificação de APIs                |
+| Documento          | Status      | Última atualização | Descrição                                   |
+| ------------------ | ----------- | ------------------ | ------------------------------------------- |
+| README.md          | ✅ Completo | 2025-01-29         | Visão de produto e proposta de valor        |
+| CORE_CONCEPTS.md   | ✅ Completo | 2025-01-29         | ⭐ Conceitos fundamentais da arquitetura    |
+| ARCHITECTURE.md    | ✅ Completo | 2025-01-29         | Componentes e fluxo de dados                |
+| STACK.md           | ✅ Completo | 2025-01-29         | Escolhas tecnológicas                       |
+| DATABASE.md        | ✅ Completo | 2025-01-29         | Event Store e modelo multi-tenant           |
+| AGGREGATES.md      | ✅ Completo | 2025-01-29         | Bounded Contexts e Agregados                |
+| EVENTS.md          | ✅ Completo | 2025-01-29         | Catálogo de eventos                         |
+| STATE_MACHINE.md   | ✅ Completo | 2025-01-29         | Máquina de estados                          |
+| PROJECTIONS.md     | ✅ Completo | 2025-01-29         | Read Models e Views materializadas          |
+| API.md             | ⏳ Pendente | -                  | Especificação de APIs                       |
 
 ---
 
@@ -75,20 +81,31 @@ Continue para: STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 **Para Arquitetos / Tech Leads:**
 
 1. README.md
+2. **CORE_CONCEPTS.md** ⭐ (conceitos fundamentais)
+3. ARCHITECTURE.md
+4. STACK.md
+5. DATABASE.md
+6. AGGREGATES.md
+
+**Para Desenvolvedores (novo no projeto):**
+
+1. **CORE_CONCEPTS.md** ⭐ (comece aqui!)
 2. ARCHITECTURE.md
 3. STACK.md
 4. DATABASE.md
 5. AGGREGATES.md
+6. EVENTS.md
+7. STATE_MACHINE.md
+8. PROJECTIONS.md
+9. API.md (quando disponível)
 
-**Para Desenvolvedores:**
+**Para Desenvolvedores (já familiarizados):**
 
-1. ARCHITECTURE.md
-2. STACK.md
-3. DATABASE.md
-4. AGGREGATES.md
-5. EVENTS.md
-6. STATE_MACHINE.md
-7. API.md (quando disponível)
+Use como referência:
+- EVENTS.md - Catálogo de eventos
+- AGGREGATES.md - Regras de negócio
+- STATE_MACHINE.md - Transições de jornada
+- PROJECTIONS.md - Queries e read models
 
 ---
 

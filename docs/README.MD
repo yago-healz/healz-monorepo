@@ -186,6 +186,10 @@ O valor da Healz é:
 
 ## Documentação adicional
 
+### Para entender os conceitos fundamentais ⭐
+- [**CORE_CONCEPTS.md**](./CORE_CONCEPTS.md) - Explicação didática de Evento, Correlação, Operação, Agregado e Jornada
+
+### Documentação técnica detalhada
 - [**ARCHITECTURE.md**](./ARCHITECTURE.md) - Arquitetura detalhada do sistema
 - [**STACK.md**](./STACK.md) - Stack tecnológica e decisões técnicas
 - [**DATABASE.md**](./DATABASE.md) - Modelo de dados e Event Store
