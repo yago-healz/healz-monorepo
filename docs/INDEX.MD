@@ -22,6 +22,16 @@
 - [**DATA_MODELING.md**](./DATA_MODELING.md) - 🆕 Modelagem de dados com Drizzle ORM, schemas e projections
 - [**MULTI_TENANT_DEEP_DIVE.md**](./MULTI_TENANT_DEEP_DIVE.md) - 🆕 Implementação profunda de multi-tenancy com RLS
 
+### Documentação de DevOps & Infraestrutura
+
+- [**DEVOPS_STRATEGY.md**](./DEVOPS_STRATEGY.md) - 🆕 Estratégia completa de DevOps (arquitetura, cloud, monorepo)
+- [**CLOUD_ARCHITECTURE.md**](./CLOUD_ARCHITECTURE.md) - 🆕 Arquitetura cloud GCP detalhada
+- [**CI_CD.md**](./CI_CD.md) - 🆕 Pipeline de CI/CD com Turborepo e GitHub Actions
+- [**DEPLOYMENT.md**](./DEPLOYMENT.md) - 🆕 Estratégia de deployment e database migrations
+- [**MONITORING.md**](./MONITORING.md) - 🆕 Observabilidade (metrics, logs, traces)
+- [**SECURITY.md**](./SECURITY.md) - 🆕 Segurança e compliance LGPD
+- [**INFRASTRUCTURE.md**](./INFRASTRUCTURE.md) - 🆕 Infrastructure as Code com Terraform
+
 ### Documentação Planejada
 
 - **API.md** - Especificação de APIs REST e GraphQL
@@ -73,6 +83,13 @@ Continue para: EVENTS.md, STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 | PROJECTIONS.md            | ✅ Completo | 2025-01-29         | Read Models e Views materializadas       |
 | DATA_MODELING.md          | ✅ Completo | 2025-01-30         | 🆕 Modelagem de dados com Drizzle ORM    |
 | MULTI_TENANT_DEEP_DIVE.md | ✅ Completo | 2025-01-30         | 🆕 Multi-tenancy com RLS e isolamento    |
+| **DEVOPS_STRATEGY.md**    | ✅ Completo | 2025-01-30         | 🆕 Estratégia DevOps e decisões cloud    |
+| **CLOUD_ARCHITECTURE.md** | ✅ Completo | 2025-01-30         | 🆕 Arquitetura GCP detalhada             |
+| **CI_CD.md**              | ✅ Completo | 2025-01-30         | 🆕 Pipeline CI/CD e monorepo             |
+| **DEPLOYMENT.md**         | ✅ Completo | 2025-01-30         | 🆕 Deployment e migrations               |
+| **MONITORING.md**         | ✅ Completo | 2025-01-30         | 🆕 Observabilidade completa              |
+| **SECURITY.md**           | ✅ Completo | 2025-01-30         | 🆕 Segurança e LGPD                      |
+| **INFRASTRUCTURE.md**     | ✅ Completo | 2025-01-30         | 🆕 Infrastructure as Code (Terraform)    |
 | API.md                    | ⏳ Pendente | -                  | Especificação de APIs                    |
 
 ---
@@ -107,6 +124,16 @@ Continue para: EVENTS.md, STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 10. PROJECTIONS.md
 11. API.md (quando disponível)
 
+**Para DevOps / SRE:**
+
+1. **DEVOPS_STRATEGY.md** (comece aqui!)
+2. CLOUD_ARCHITECTURE.md (GCP services)
+3. INFRASTRUCTURE.md (Terraform IaC)
+4. CI_CD.md (GitHub Actions + Turborepo)
+5. DEPLOYMENT.md (Zero-downtime deployments)
+6. MONITORING.md (Observability)
+7. SECURITY.md (LGPD compliance)
+
 **Para Desenvolvedores (já familiarizados):**
 
 Use como referência:
@@ -117,6 +144,16 @@ Use como referência:
 - PROJECTIONS.md - Queries e read models
 - DATA_MODELING.md - Schemas e queries com Drizzle
 - MULTI_TENANT_DEEP_DIVE.md - RLS e multi-tenancy
+
+**Para DevOps (já familiarizados):**
+
+Use como referência:
+
+- CI_CD.md - Pipeline configuration
+- DEPLOYMENT.md - Deployment procedures
+- MONITORING.md - Metrics, logs, traces
+- SECURITY.md - Security policies
+- INFRASTRUCTURE.md - Terraform modules
 
 ---
 
