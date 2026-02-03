@@ -75,29 +75,29 @@ Continue para: EVENTS.md, STATE_MACHINE.md, PROJECTIONS.md e API.md (em breve)
 
 ## ✅ Status da Documentação
 
-| Documento                 | Status      | Última atualização | Descrição                                |
-| ------------------------- | ----------- | ------------------ | ---------------------------------------- |
-| README.md                 | ✅ Completo | 2025-01-29         | Visão de produto e proposta de valor     |
-| CORE_CONCEPTS.md          | ✅ Completo | 2025-01-29         | ⭐ Conceitos fundamentais da arquitetura |
-| ARCHITECTURE.md           | ✅ Completo | 2025-01-29         | Componentes e fluxo de dados             |
-| STACK.md                  | ✅ Completo | 2025-01-29         | Escolhas tecnológicas                    |
-| DATABASE.md               | ✅ Completo | 2025-01-29         | Event Store e modelo multi-tenant        |
-| AGGREGATES.md             | ✅ Completo | 2025-01-29         | Bounded Contexts e Agregados             |
-| EVENTS.md                 | ✅ Completo | 2025-01-29         | Catálogo de eventos                      |
-| STATE_MACHINE.md          | ✅ Completo | 2025-01-29         | Máquina de estados                       |
-| PROJECTIONS.md            | ✅ Completo | 2025-01-29         | Read Models e Views materializadas       |
-| DATA_MODELING.md          | ✅ Completo | 2025-01-30         | 🆕 Modelagem de dados com Drizzle ORM    |
-| MULTI_TENANT_DEEP_DIVE.md | ✅ Completo | 2025-01-30         | 🆕 Multi-tenancy com RLS e isolamento    |
-| **DEVOPS_STRATEGY.md**    | ✅ Completo | 2025-01-30         | 🆕 Estratégia DevOps e decisões cloud    |
-| **CLOUD_ARCHITECTURE.md** | ✅ Completo | 2025-01-30         | 🆕 Arquitetura GCP detalhada             |
-| **CI_CD.md**              | ✅ Completo | 2025-01-30         | 🆕 Pipeline CI/CD e monorepo             |
-| **DEPLOYMENT.md**         | ✅ Completo | 2025-01-30         | 🆕 Deployment e migrations               |
-| **MONITORING.md**         | ✅ Completo | 2025-01-30         | 🆕 Observabilidade completa              |
-| **SECURITY.md**           | ✅ Completo | 2025-01-30         | 🆕 Segurança e LGPD                      |
-| **INFRASTRUCTURE.md**     | ✅ Completo | 2025-01-30         | 🆕 Infrastructure as Code (Terraform)    |
-| **IMPLEMENTATION_SETUP.md** | ✅ Completo | 2025-01-30       | 🆕 Setup monorepo (pnpm, Turbo, Docker)  |
-| **IMPLEMENTATION_DEPLOYMENT.md** | ✅ Completo | 2025-01-30  | 🆕 Deployment Render (Blueprint/IaC)     |
-| API.md                    | ⏳ Pendente | -                  | Especificação de APIs                    |
+| Documento                        | Status      | Última atualização | Descrição                                |
+| -------------------------------- | ----------- | ------------------ | ---------------------------------------- |
+| README.md                        | ✅ Completo | 2025-01-29         | Visão de produto e proposta de valor     |
+| CORE_CONCEPTS.md                 | ✅ Completo | 2025-01-29         | ⭐ Conceitos fundamentais da arquitetura |
+| ARCHITECTURE.md                  | ✅ Completo | 2025-01-29         | Componentes e fluxo de dados             |
+| STACK.md                         | ✅ Completo | 2025-01-29         | Escolhas tecnológicas                    |
+| DATABASE.md                      | ✅ Completo | 2025-01-29         | Event Store e modelo multi-tenant        |
+| AGGREGATES.md                    | ✅ Completo | 2025-01-29         | Bounded Contexts e Agregados             |
+| EVENTS.md                        | ✅ Completo | 2025-01-29         | Catálogo de eventos                      |
+| STATE_MACHINE.md                 | ✅ Completo | 2025-01-29         | Máquina de estados                       |
+| PROJECTIONS.md                   | ✅ Completo | 2025-01-29         | Read Models e Views materializadas       |
+| DATA_MODELING.md                 | ✅ Completo | 2025-01-30         | 🆕 Modelagem de dados com Drizzle ORM    |
+| MULTI_TENANT_DEEP_DIVE.md        | ✅ Completo | 2025-01-30         | 🆕 Multi-tenancy com RLS e isolamento    |
+| **DEVOPS_STRATEGY.md**           | ✅ Completo | 2025-01-30         | 🆕 Estratégia DevOps e decisões cloud    |
+| **CLOUD_ARCHITECTURE.md**        | ✅ Completo | 2025-01-30         | 🆕 Arquitetura GCP detalhada             |
+| **CI_CD.md**                     | ✅ Completo | 2025-01-30         | 🆕 Pipeline CI/CD e monorepo             |
+| **DEPLOYMENT.md**                | ✅ Completo | 2025-01-30         | 🆕 Deployment e migrations               |
+| **MONITORING.md**                | ✅ Completo | 2025-01-30         | 🆕 Observabilidade completa              |
+| **SECURITY.md**                  | ✅ Completo | 2025-01-30         | 🆕 Segurança e LGPD                      |
+| **INFRASTRUCTURE.md**            | ✅ Completo | 2025-01-30         | 🆕 Infrastructure as Code (Terraform)    |
+| **IMPLEMENTATION_SETUP.md**      | ✅ Completo | 2025-01-30         | 🆕 Setup monorepo (pnpm, Turbo, Docker)  |
+| **IMPLEMENTATION_DEPLOYMENT.md** | ✅ Completo | 2025-01-30         | 🆕 Deployment Render (Blueprint/IaC)     |
+| API.md                           | ⏳ Pendente | -                  | Especificação de APIs                    |
 
 ---
 
