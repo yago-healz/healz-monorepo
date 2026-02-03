@@ -6,7 +6,13 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "clean": "turbo run clean && rm -rf node_modules"
+    "clean": "turbo run clean && rm -rf node_modules",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:logs": "docker compose -f docker/docker-compose.yml logs -f",
+    "db:migrate": "pnpm --filter @healz/api drizzle-kit migrate",
+    "db:push": "pnpm --filter @healz/api drizzle-kit push",
+    "db:studio": "pnpm --filter @healz/api drizzle-kit studio"
   },
   "devDependencies": {
     "turbo": "^2"
