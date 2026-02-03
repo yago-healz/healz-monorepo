@@ -1,5 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
-import { forwardRef, ButtonHTMLAttributes } from 'react';
+import { forwardRef } from 'react';
+import type { ButtonHTMLAttributes } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
