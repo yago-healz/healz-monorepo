@@ -5,7 +5,7 @@ services:
     runtime: node
     plan: free
     buildCommand: pnpm install --frozen-lockfile --prod=false && pnpm --filter @healz/api build
-    startCommand: node apps/api/dist/main
+    startCommand: node apps/api/dist/src/main.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
