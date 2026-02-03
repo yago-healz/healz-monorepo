@@ -4,9 +4,8 @@ services:
     name: healz-api
     runtime: node
     plan: free
-    rootDir: apps/api
-    buildCommand: cd ../.. && pnpm install --frozen-lockfile --prod=false && pnpm --filter @healz/api build
-    startCommand: node dist/main
+    buildCommand: pnpm install --frozen-lockfile --prod=false && pnpm --filter @healz/api build
+    startCommand: node apps/api/dist/main
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -34,9 +33,8 @@ services:
   - type: web
     name: healz-web
     runtime: static
-    rootDir: apps/web
-    buildCommand: cd ../.. && pnpm install --frozen-lockfile --prod=false && pnpm --filter @healz/web build
-    staticPublishPath: dist
+    buildCommand: pnpm install --frozen-lockfile --prod=false && pnpm --filter @healz/web build
+    staticPublishPath: apps/web/dist
     headers:
       - path: /*
         name: Cache-Control
