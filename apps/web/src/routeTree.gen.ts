@@ -9,38 +9,154 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PublicRouteImport } from './routes/_public'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PublicOnboardingIndexRouteImport } from './routes/_public/onboarding/index'
+import { Route as PublicOnboardingStep5RouteImport } from './routes/_public/onboarding/step-5'
+import { Route as PublicOnboardingStep4RouteImport } from './routes/_public/onboarding/step-4'
+import { Route as PublicOnboardingStep3RouteImport } from './routes/_public/onboarding/step-3'
+import { Route as PublicOnboardingStep2RouteImport } from './routes/_public/onboarding/step-2'
+import { Route as PublicOnboardingStep1RouteImport } from './routes/_public/onboarding/step-1'
+import { Route as PublicOnboardingReviewRouteImport } from './routes/_public/onboarding/review'
+import { Route as PublicOnboardingCompleteRouteImport } from './routes/_public/onboarding/complete'
 
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicOnboardingIndexRoute = PublicOnboardingIndexRouteImport.update({
+  id: '/onboarding/',
+  path: '/onboarding/',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicOnboardingStep5Route = PublicOnboardingStep5RouteImport.update({
+  id: '/onboarding/step-5',
+  path: '/onboarding/step-5',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicOnboardingStep4Route = PublicOnboardingStep4RouteImport.update({
+  id: '/onboarding/step-4',
+  path: '/onboarding/step-4',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicOnboardingStep3Route = PublicOnboardingStep3RouteImport.update({
+  id: '/onboarding/step-3',
+  path: '/onboarding/step-3',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicOnboardingStep2Route = PublicOnboardingStep2RouteImport.update({
+  id: '/onboarding/step-2',
+  path: '/onboarding/step-2',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicOnboardingStep1Route = PublicOnboardingStep1RouteImport.update({
+  id: '/onboarding/step-1',
+  path: '/onboarding/step-1',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicOnboardingReviewRoute = PublicOnboardingReviewRouteImport.update({
+  id: '/onboarding/review',
+  path: '/onboarding/review',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicOnboardingCompleteRoute =
+  PublicOnboardingCompleteRouteImport.update({
+    id: '/onboarding/complete',
+    path: '/onboarding/complete',
+    getParentRoute: () => PublicRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/onboarding/complete': typeof PublicOnboardingCompleteRoute
+  '/onboarding/review': typeof PublicOnboardingReviewRoute
+  '/onboarding/step-1': typeof PublicOnboardingStep1Route
+  '/onboarding/step-2': typeof PublicOnboardingStep2Route
+  '/onboarding/step-3': typeof PublicOnboardingStep3Route
+  '/onboarding/step-4': typeof PublicOnboardingStep4Route
+  '/onboarding/step-5': typeof PublicOnboardingStep5Route
+  '/onboarding/': typeof PublicOnboardingIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/onboarding/complete': typeof PublicOnboardingCompleteRoute
+  '/onboarding/review': typeof PublicOnboardingReviewRoute
+  '/onboarding/step-1': typeof PublicOnboardingStep1Route
+  '/onboarding/step-2': typeof PublicOnboardingStep2Route
+  '/onboarding/step-3': typeof PublicOnboardingStep3Route
+  '/onboarding/step-4': typeof PublicOnboardingStep4Route
+  '/onboarding/step-5': typeof PublicOnboardingStep5Route
+  '/onboarding': typeof PublicOnboardingIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_public': typeof PublicRouteWithChildren
+  '/_public/onboarding/complete': typeof PublicOnboardingCompleteRoute
+  '/_public/onboarding/review': typeof PublicOnboardingReviewRoute
+  '/_public/onboarding/step-1': typeof PublicOnboardingStep1Route
+  '/_public/onboarding/step-2': typeof PublicOnboardingStep2Route
+  '/_public/onboarding/step-3': typeof PublicOnboardingStep3Route
+  '/_public/onboarding/step-4': typeof PublicOnboardingStep4Route
+  '/_public/onboarding/step-5': typeof PublicOnboardingStep5Route
+  '/_public/onboarding/': typeof PublicOnboardingIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/onboarding/complete'
+    | '/onboarding/review'
+    | '/onboarding/step-1'
+    | '/onboarding/step-2'
+    | '/onboarding/step-3'
+    | '/onboarding/step-4'
+    | '/onboarding/step-5'
+    | '/onboarding/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/onboarding/complete'
+    | '/onboarding/review'
+    | '/onboarding/step-1'
+    | '/onboarding/step-2'
+    | '/onboarding/step-3'
+    | '/onboarding/step-4'
+    | '/onboarding/step-5'
+    | '/onboarding'
+  id:
+    | '__root__'
+    | '/'
+    | '/_public'
+    | '/_public/onboarding/complete'
+    | '/_public/onboarding/review'
+    | '/_public/onboarding/step-1'
+    | '/_public/onboarding/step-2'
+    | '/_public/onboarding/step-3'
+    | '/_public/onboarding/step-4'
+    | '/_public/onboarding/step-5'
+    | '/_public/onboarding/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PublicRoute: typeof PublicRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +164,93 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_public/onboarding/': {
+      id: '/_public/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof PublicOnboardingIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/onboarding/step-5': {
+      id: '/_public/onboarding/step-5'
+      path: '/onboarding/step-5'
+      fullPath: '/onboarding/step-5'
+      preLoaderRoute: typeof PublicOnboardingStep5RouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/onboarding/step-4': {
+      id: '/_public/onboarding/step-4'
+      path: '/onboarding/step-4'
+      fullPath: '/onboarding/step-4'
+      preLoaderRoute: typeof PublicOnboardingStep4RouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/onboarding/step-3': {
+      id: '/_public/onboarding/step-3'
+      path: '/onboarding/step-3'
+      fullPath: '/onboarding/step-3'
+      preLoaderRoute: typeof PublicOnboardingStep3RouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/onboarding/step-2': {
+      id: '/_public/onboarding/step-2'
+      path: '/onboarding/step-2'
+      fullPath: '/onboarding/step-2'
+      preLoaderRoute: typeof PublicOnboardingStep2RouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/onboarding/step-1': {
+      id: '/_public/onboarding/step-1'
+      path: '/onboarding/step-1'
+      fullPath: '/onboarding/step-1'
+      preLoaderRoute: typeof PublicOnboardingStep1RouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/onboarding/review': {
+      id: '/_public/onboarding/review'
+      path: '/onboarding/review'
+      fullPath: '/onboarding/review'
+      preLoaderRoute: typeof PublicOnboardingReviewRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/onboarding/complete': {
+      id: '/_public/onboarding/complete'
+      path: '/onboarding/complete'
+      fullPath: '/onboarding/complete'
+      preLoaderRoute: typeof PublicOnboardingCompleteRouteImport
+      parentRoute: typeof PublicRoute
+    }
   }
 }
 
+interface PublicRouteChildren {
+  PublicOnboardingCompleteRoute: typeof PublicOnboardingCompleteRoute
+  PublicOnboardingReviewRoute: typeof PublicOnboardingReviewRoute
+  PublicOnboardingStep1Route: typeof PublicOnboardingStep1Route
+  PublicOnboardingStep2Route: typeof PublicOnboardingStep2Route
+  PublicOnboardingStep3Route: typeof PublicOnboardingStep3Route
+  PublicOnboardingStep4Route: typeof PublicOnboardingStep4Route
+  PublicOnboardingStep5Route: typeof PublicOnboardingStep5Route
+  PublicOnboardingIndexRoute: typeof PublicOnboardingIndexRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicOnboardingCompleteRoute: PublicOnboardingCompleteRoute,
+  PublicOnboardingReviewRoute: PublicOnboardingReviewRoute,
+  PublicOnboardingStep1Route: PublicOnboardingStep1Route,
+  PublicOnboardingStep2Route: PublicOnboardingStep2Route,
+  PublicOnboardingStep3Route: PublicOnboardingStep3Route,
+  PublicOnboardingStep4Route: PublicOnboardingStep4Route,
+  PublicOnboardingStep5Route: PublicOnboardingStep5Route,
+  PublicOnboardingIndexRoute: PublicOnboardingIndexRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PublicRoute: PublicRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
