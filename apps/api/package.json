@@ -21,6 +21,7 @@
     "@nestjs/config": "^3",
     "@nestjs/core": "^10",
     "@nestjs/platform-express": "^10",
+    "@nestjs/swagger": "^11.2.6",
     "better-auth": "^1.4.18",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.1",
@@ -28,6 +29,7 @@
     "postgres": "^3",
     "reflect-metadata": "^0.2",
     "rxjs": "^7",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
