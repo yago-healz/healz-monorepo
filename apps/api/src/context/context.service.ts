@@ -66,23 +66,24 @@ export class ContextService {
         const userClinics = await db.query.clinicUser.findMany({
           where: eq(clinicUser.userId, userId),
           with: {
-            clinic: {
-              where: eq(clinic.organizationId, m.organizationId),
-            },
+            clinic: true,
           },
         });
+
+        // Filtrar apenas clínicas da organização atual
+        const orgClinics = userClinics.filter(
+          (cu) => cu.clinic && cu.clinic.organizationId === m.organizationId,
+        );
 
         return {
           organization: m.organization,
           role: m.role,
-          clinics: userClinics
-            .filter((cu) => cu.clinic)
-            .map((cu) => ({
-              id: cu.clinic.id,
-              name: cu.clinic.name,
-              slug: cu.clinic.slug,
-              role: cu.role,
-            })),
+          clinics: orgClinics.map((cu) => ({
+            id: cu.clinic!.id,
+            name: cu.clinic!.name,
+            slug: cu.clinic!.slug,
+            role: cu.role,
+          })),
         };
       }),
     );
