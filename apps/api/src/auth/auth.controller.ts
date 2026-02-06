@@ -72,9 +72,21 @@ All requests are converted from Express format to Web API format and handled by 
     const response = await auth.handler(webRequest);
 
     // Converte Web Response para Express res
+    // IMPORTANTE: Set-Cookie pode ter múltiplos valores, então precisa tratamento especial
+    const setCookies: string[] = [];
     response.headers.forEach((value, key) => {
-      res.setHeader(key, value);
+      if (key.toLowerCase() === 'set-cookie') {
+        setCookies.push(value);
+      } else {
+        res.setHeader(key, value);
+      }
     });
+
+    // Set all cookies
+    if (setCookies.length > 0) {
+      res.setHeader('Set-Cookie', setCookies);
+    }
+
     res.status(response.status).send(await response.text());
   }
 }

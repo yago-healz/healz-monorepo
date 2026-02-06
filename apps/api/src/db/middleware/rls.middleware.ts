@@ -29,6 +29,16 @@ export class RlsMiddleware implements NestMiddleware {
       }
     }
 
+    // Cleanup: Reset RLS context after response is sent
+    // This prevents context leakage between requests
+    res.on('finish', async () => {
+      try {
+        await db.execute(sql`SELECT set_config('app.current_org_id', null, true)`);
+      } catch (error) {
+        console.error('Failed to cleanup RLS context:', error);
+      }
+    });
+
     next();
   }
 }

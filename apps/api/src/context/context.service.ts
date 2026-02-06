@@ -141,7 +141,7 @@ export class ContextService {
       }
     }
 
-    // Atualizar sessão
+    // Atualizar sessão com organização e clínica
     await db
       .update(session)
       .set({

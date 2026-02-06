@@ -3,7 +3,6 @@ import { relations } from 'drizzle-orm';
 
 // ============ ENUMS ============
 export const userStatusEnum = pgEnum('user_status', ['active', 'inactive', 'suspended']);
-export const orgStatusEnum = pgEnum('org_status', ['active', 'suspended', 'cancelled']);
 export const clinicStatusEnum = pgEnum('clinic_status', ['active', 'inactive']);
 export const roleNameEnum = pgEnum('role_name', ['admin', 'manager', 'doctor', 'receptionist']);
 
@@ -67,9 +66,6 @@ export const organization = pgTable('organization', {
   id: text('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   slug: varchar('slug', { length: 100 }).notNull().unique(),
-  logo: text('logo'),
-  metadata: jsonb('metadata'),
-  status: orgStatusEnum('status').notNull().default('active'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

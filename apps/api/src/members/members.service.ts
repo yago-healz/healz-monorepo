@@ -13,6 +13,7 @@ import { InviteMemberDto } from "./dto";
 @Injectable()
 export class MembersService {
   async findByOrg(orgId: string) {
+    // Keep using direct query as it's simpler and we have custom roles
     return db.query.member.findMany({
       where: eq(member.organizationId, orgId),
       with: {

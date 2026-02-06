@@ -1,12 +1,18 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { organization } from "better-auth/plugins";
+import { openAPI, organization } from "better-auth/plugins";
 import { db } from "../db/connection";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
+  secret: process.env.BETTER_AUTH_SECRET || "fallback-secret-for-development-only",
+  baseURL: process.env.BASE_URL || "http://localhost:3001",
+  trustedOrigins: [
+    process.env.FRONTEND_URL || "http://localhost:3000",
+    "http://localhost:3001",
+  ],
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
@@ -24,6 +30,7 @@ export const auth = betterAuth({
     organization({
       allowUserToCreateOrganization: true,
     }),
+    openAPI(),
   ],
 });
 
