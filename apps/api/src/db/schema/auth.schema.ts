@@ -61,3 +61,24 @@ export const refreshTokens = pgTable("refresh_tokens", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Tabela para convites de usuários
+export const invites = pgTable("invites", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: varchar("email", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  clinicId: uuid("clinic_id")
+    .references(() => clinics.id)
+    .notNull(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id)
+    .notNull(),
+  role: userRoleEnum("role").notNull(),
+  invitedBy: uuid("invited_by")
+    .references(() => users.id)
+    .notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"), // null = não usado, preenchido = já aceito
+  createdAt: timestamp("created_at").defaultNow(),
+});

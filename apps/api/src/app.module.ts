@@ -6,6 +6,10 @@ import { AuditInterceptor } from "./audit/audit.interceptor";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
 import { MailModule } from "./mail/mail.module";
+import { SignupModule } from "./signup/signup.module";
+import { InvitesModule } from "./invites/invites.module";
+import { OrganizationsModule } from "./organizations/organizations.module";
+import { ClinicsModule } from "./clinics/clinics.module";
 import { RlsMiddleware } from "./db/middleware";
 import { HealthController } from "./health.controller";
 
@@ -32,6 +36,10 @@ import { HealthController } from "./health.controller";
     AuthModule,
     AuditModule,
     MailModule,
+    SignupModule,
+    InvitesModule,
+    OrganizationsModule,
+    ClinicsModule,
   ],
   controllers: [HealthController],
   providers: [
@@ -47,8 +55,11 @@ import { HealthController } from "./health.controller";
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Apply RLS middleware to all routes except auth endpoints
+    // Apply RLS middleware to all routes except auth, signup and invite accept endpoints
     // This ensures the organization context is set before any database queries
-    consumer.apply(RlsMiddleware).exclude("api/auth/(.*)").forRoutes("*");
+    consumer
+      .apply(RlsMiddleware)
+      .exclude("api/v1/auth/(.*)", "api/v1/signup(.*)", "api/v1/invites/accept")
+      .forRoutes("*");
   }
 }

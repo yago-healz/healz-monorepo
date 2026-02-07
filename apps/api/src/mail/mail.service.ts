@@ -47,4 +47,38 @@ export class MailService {
       `,
     });
   }
+
+  async sendInviteEmail(
+    to: string,
+    token: string,
+    inviterName: string,
+    organizationName: string,
+    role: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get("FRONTEND_URL") || "http://localhost:3000";
+    const inviteUrl = `${frontendUrl}/accept-invite?token=${token}`;
+
+    const roleTranslation: Record<string, string> = {
+      admin: "Administrador",
+      doctor: "Médico",
+      secretary: "Secretário",
+    };
+
+    await this.resend.emails.send({
+      from: "Healz <onboarding@resend.dev>",
+      to,
+      subject: `Você foi convidado para ${organizationName}`,
+      html: `
+        <h2>Convite para ${organizationName}</h2>
+        <p>Você foi convidado por ${inviterName} para fazer parte de ${organizationName} como <strong>${roleTranslation[role] || role}</strong>.</p>
+        <p>Clique no link abaixo para aceitar o convite e criar sua conta:</p>
+        <a href="${inviteUrl}">Aceitar Convite</a>
+        <p>Este convite expira em 7 dias.</p>
+        <p>Se você não esperava este convite, pode ignorar este email.</p>
+        <hr />
+        <p style="color: #666; font-size: 12px;">Healz - Sistema de Gestão de Clínicas</p>
+      `,
+    });
+  }
 }
