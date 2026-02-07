@@ -8,6 +8,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { CurrentUser } from "./decorators/current-user.decorator";
@@ -21,6 +22,7 @@ export class AuthController {
 
   @Post("login")
   @HttpCode(200)
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
@@ -56,6 +58,7 @@ export class AuthController {
 
   @Post("refresh")
   @HttpCode(200)
+  @Throttle({ default: { ttl: 60000, limit: 20 } })
   async refresh(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,

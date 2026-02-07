@@ -24,6 +24,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^10",
     "@nestjs/swagger": "^11.2.6",
+    "@nestjs/throttler": "^6.5.0",
     "bcrypt": "^6.0.0",
     "better-auth": "^1.4.18",
     "class-transformer": "^0.5.1",
