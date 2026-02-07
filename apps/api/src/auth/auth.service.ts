@@ -11,12 +11,16 @@ import { and, eq, lt } from "drizzle-orm";
 import { db } from "../db";
 import { clinics, refreshTokens, userClinicRoles, users } from "../db/schema";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
+import { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private auditService: AuditService,
+  ) {}
 
-  async login(email: string, password: string, preferredClinicId?: string) {
+  async login(email: string, password: string, preferredClinicId?: string, ip?: string) {
     // 1. Validar credenciais
     const user = await db
       .select()
@@ -25,6 +29,14 @@ export class AuthService {
       .limit(1);
 
     if (!user[0]) {
+      // Log failed login attempt
+      this.auditService.log({
+        action: "LOGIN_FAILED",
+        resource: "/api/auth/login",
+        method: "POST",
+        ip,
+        metadata: { email },
+      });
       throw new UnauthorizedException("Invalid credentials");
     }
 
@@ -33,6 +45,14 @@ export class AuthService {
       user[0].passwordHash,
     );
     if (!isPasswordValid) {
+      // Log failed login attempt
+      this.auditService.log({
+        action: "LOGIN_FAILED",
+        resource: "/api/auth/login",
+        method: "POST",
+        ip,
+        metadata: { email },
+      });
       throw new UnauthorizedException("Invalid credentials");
     }
 
@@ -78,6 +98,18 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload, { expiresIn: "15m" });
     const { token: refreshToken } = await this.generateRefreshToken(user[0].id);
+
+    // Log successful login
+    this.auditService.log({
+      userId: user[0].id,
+      organizationId: activeClinic.organizationId,
+      clinicId: activeClinic.clinicId,
+      action: "LOGIN",
+      resource: "/api/auth/login",
+      method: "POST",
+      ip,
+      statusCode: 200,
+    });
 
     return {
       accessToken,
@@ -253,7 +285,7 @@ export class AuthService {
     return { token, family: tokenFamily };
   }
 
-  async logout(refreshTokenValue: string) {
+  async logout(refreshTokenValue: string, userId?: string) {
     const tokenRecord = await db
       .select()
       .from(refreshTokens)
@@ -265,6 +297,16 @@ export class AuthService {
       await db
         .delete(refreshTokens)
         .where(eq(refreshTokens.family, tokenRecord[0].family));
+
+      // Log logout (use provided userId or get from token)
+      const logUserId = userId || tokenRecord[0].userId;
+      this.auditService.log({
+        userId: logUserId,
+        action: "LOGOUT",
+        resource: "/api/auth/logout",
+        method: "POST",
+        statusCode: 204,
+      });
     }
   }
 

@@ -25,12 +25,14 @@ export class AuthController {
   @Throttle({ default: { ttl: 60000, limit: 5 } })
   async login(
     @Body() loginDto: LoginDto,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
     const result = await this.authService.login(
       loginDto.email,
       loginDto.password,
       loginDto.clinicId,
+      request.ip,
     );
 
     // Armazenar refresh token em httpOnly cookie
@@ -87,10 +89,11 @@ export class AuthController {
   async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
+    @CurrentUser() user: JwtPayload,
   ) {
     const refreshToken = request.cookies["refreshToken"];
     if (refreshToken) {
-      await this.authService.logout(refreshToken);
+      await this.authService.logout(refreshToken, user.userId);
     }
     response.clearCookie("refreshToken");
   }
