@@ -14,9 +14,9 @@ O fluxo: após registro, o usuário recebe um email com link contendo token. Ao 
 - `apps/api/src/auth/dto/verify-email.dto.ts` — DTO de verificação
 - `apps/api/src/auth/dto/index.ts` — exportar novo DTO
 - `apps/api/src/mail/mail.module.ts` — novo módulo de email
-- `apps/api/src/mail/mail.service.ts` — serviço de envio
+- `apps/api/src/mail/mail.service.ts` — serviço de envio com Resend
 - `apps/api/src/auth/guards/email-verified.guard.ts` — guard opcional
-- `apps/api/.env` — variáveis de configuração do email
+- `apps/api/.env` — adicionar RESEND_API_KEY
 
 ## Passos
 
@@ -41,60 +41,36 @@ export const users = pgTable("users", {
 
 Gerar migration: `pnpm drizzle-kit generate`
 
-### 2. Criar módulo de email
-
-**Criar `apps/api/src/mail/mail.service.ts`:**
-
-Usar `nodemailer` para envio. Em desenvolvimento, usar [Ethereal](https://ethereal.email/) (emails fake para teste) ou `console.log` do link.
+### 2. Instalar Resend
 
 ```bash
 cd apps/api
-pnpm add nodemailer
-pnpm add -D @types/nodemailer
+pnpm add resend
 ```
+
+### 3. Criar módulo de email
+
+**Criar `apps/api/src/mail/mail.service.ts`:**
 
 ```typescript
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import * as nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 @Injectable()
 export class MailService {
-  private transporter: nodemailer.Transporter;
+  private resend: Resend;
 
   constructor(private configService: ConfigService) {
-    const isDev = configService.get("NODE_ENV") !== "production";
-
-    if (isDev) {
-      // Em dev, usa Ethereal (fake SMTP) — emails são capturados sem enviar de verdade
-      // Alternativa: apenas logar no console
-      this.transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        auth: {
-          user: configService.get("SMTP_USER"),
-          pass: configService.get("SMTP_PASS"),
-        },
-      });
-    } else {
-      this.transporter = nodemailer.createTransport({
-        host: configService.get("SMTP_HOST"),
-        port: configService.get<number>("SMTP_PORT"),
-        secure: true,
-        auth: {
-          user: configService.get("SMTP_USER"),
-          pass: configService.get("SMTP_PASS"),
-        },
-      });
-    }
+    this.resend = new Resend(configService.get("RESEND_API_KEY"));
   }
 
   async sendVerificationEmail(to: string, token: string): Promise<void> {
     const frontendUrl = this.configService.get("FRONTEND_URL") || "http://localhost:3000";
     const verificationUrl = `${frontendUrl}/verify-email?token=${token}`;
 
-    const info = await this.transporter.sendMail({
-      from: this.configService.get("MAIL_FROM") || "Healz <noreply@healz.com>",
+    await this.resend.emails.send({
+      from: "Healz <onboarding@resend.dev>",
       to,
       subject: "Verifique seu email - Healz",
       html: `
@@ -105,18 +81,24 @@ export class MailService {
         <p>Se você não criou uma conta, ignore este email.</p>
       `,
     });
-
-    // Em dev, logar URL para preview do email
-    if (this.configService.get("NODE_ENV") !== "production") {
-      console.log("Verification email preview:", nodemailer.getTestMessageUrl(info));
-      console.log("Verification URL:", verificationUrl);
-    }
   }
 
   async sendPasswordResetEmail(to: string, token: string): Promise<void> {
-    // Será implementado no plano de password reset
-    // Adicionado aqui para o MailService já ter a assinatura pronta
-    throw new Error("Not implemented");
+    const frontendUrl = this.configService.get("FRONTEND_URL") || "http://localhost:3000";
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+
+    await this.resend.emails.send({
+      from: "Healz <onboarding@resend.dev>",
+      to,
+      subject: "Recuperação de senha - Healz",
+      html: `
+        <h2>Recuperação de Senha</h2>
+        <p>Clique no link abaixo para redefinir sua senha:</p>
+        <a href="${resetUrl}">Redefinir Senha</a>
+        <p>Este link expira em 1 hora.</p>
+        <p>Se você não solicitou a recuperação, ignore este email.</p>
+      `,
+    });
   }
 }
 ```
@@ -135,30 +117,24 @@ import { MailService } from "./mail.service";
 export class MailModule {}
 ```
 
-### 3. Adicionar variáveis de ambiente
+### 4. Adicionar variáveis de ambiente
 
 **Em `.env`:**
 
 ```env
-# Mail (dev - usar Ethereal: https://ethereal.email/create)
-SMTP_HOST=smtp.ethereal.email
-SMTP_PORT=587
-SMTP_USER=seu_usuario_ethereal
-SMTP_PASS=sua_senha_ethereal
-MAIL_FROM=Healz <noreply@healz.com>
+# Resend
+RESEND_API_KEY=re_seu_token_aqui
+FRONTEND_URL=http://localhost:3000
 ```
 
 **Atualizar `.env.example`:**
 
 ```env
-SMTP_HOST=smtp.ethereal.email
-SMTP_PORT=587
-SMTP_USER=
-SMTP_PASS=
-MAIL_FROM=Healz <noreply@healz.com>
+RESEND_API_KEY=
+FRONTEND_URL=http://localhost:3000
 ```
 
-### 4. Criar DTO de verificação
+### 5. Criar DTO de verificação
 
 **Criar `apps/api/src/auth/dto/verify-email.dto.ts`:**
 
@@ -173,7 +149,7 @@ export class VerifyEmailDto {
 
 **Atualizar `apps/api/src/auth/dto/index.ts`** para exportar.
 
-### 5. Implementar métodos no `auth.service.ts`
+### 6. Implementar métodos no `auth.service.ts`
 
 ```typescript
 import * as crypto from "crypto";
@@ -245,7 +221,7 @@ async resendVerificationEmail(userId: string): Promise<void> {
 }
 ```
 
-### 6. Adicionar endpoints no `auth.controller.ts`
+### 7. Adicionar endpoints no `auth.controller.ts`
 
 ```typescript
 @Post("verify-email")
@@ -264,7 +240,7 @@ async resendVerification(@CurrentUser() user: JwtPayload) {
 }
 ```
 
-### 7. Enviar email de verificação no registro
+### 8. Enviar email de verificação no registro
 
 Se já existir um endpoint de registro, adicionar a chamada ao `sendVerificationEmail` após criar o usuário. Se não existir, incluir no fluxo quando for criado.
 
@@ -285,7 +261,7 @@ return {
 };
 ```
 
-### 8. (Opcional) Guard de email verificado
+### 9. (Opcional) Guard de email verificado
 
 Para endpoints que exigem email verificado, criar um guard:
 
@@ -328,14 +304,14 @@ Uso:
 async sensitiveAction() { /* ... */ }
 ```
 
-### 9. Registrar `MailModule` no `app.module.ts`
+### 10. Registrar `MailModule` no `app.module.ts`
 
 ```typescript
 import { MailModule } from "./mail/mail.module";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: "apps/api/.env" }),
+    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     MailModule,
   ],
@@ -343,7 +319,7 @@ import { MailModule } from "./mail/mail.module";
 })
 ```
 
-### 10. Gerar e aplicar migration
+### 11. Gerar e aplicar migration
 
 ```bash
 cd apps/api
@@ -353,9 +329,15 @@ pnpm drizzle-kit migrate
 
 ## Resultado Esperado
 
-- Novos usuários recebem email de verificação após registro
+- Novos usuários recebem email de verificação após registro via Resend
 - Endpoint `POST /auth/verify-email` valida o token e marca email como verificado
 - Endpoint `POST /auth/resend-verification` permite reenvio (requer autenticação)
-- Em dev, links de verificação são logados no console
+- Emails são enviados através do Resend (simples e confiável)
 - Guard opcional permite exigir email verificado em endpoints sensíveis
 - Campo `emailVerified` retornado no login para o frontend
+
+## Notas Importantes
+
+- **Domínio**: Por padrão, Resend usa `onboarding@resend.dev`. Para produção, configure um domínio próprio no painel do Resend
+- **API Key**: Obtenha em https://resend.com/api-keys
+- **Rate Limits**: Verifique os limites do plano Resend (free tier: 100 emails/dia)
