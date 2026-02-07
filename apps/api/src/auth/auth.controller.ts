@@ -1,92 +1,81 @@
-import { Controller, All, Req, Res } from '@nestjs/common';
-import { Request, Response } from 'express';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiExcludeEndpoint,
-} from '@nestjs/swagger';
-import { auth } from './auth';
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from "@nestjs/common";
+import { Request, Response } from "express";
+import { AuthService } from "./auth.service";
+import { CurrentUser } from "./decorators/current-user.decorator";
+import { LoginDto, SwitchContextDto } from "./dto";
+import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { JwtPayload } from "./interfaces/jwt-payload.interface";
 
-/**
- * Adaptador entre NestJS/Express e Better Auth.
- * Converte requisições Express para Web API (Fetch) e vice-versa,
- * delegando toda a lógica de autenticação para o Better Auth.
- *
- * Endpoints disponíveis (Better Auth):
- * - POST /api/auth/sign-up - Criar nova conta
- * - POST /api/auth/sign-in - Fazer login
- * - POST /api/auth/sign-out - Fazer logout
- * - GET /api/auth/session - Obter sessão atual
- * - POST /api/auth/verify-email - Verificar email
- * - POST /api/auth/forgot-password - Solicitar reset de senha
- * - POST /api/auth/reset-password - Resetar senha
- */
-@ApiTags('Authentication')
-@Controller('api/auth')
+@Controller("auth")
 export class AuthController {
-  @All('*')
-  @ApiOperation({
-    summary: 'Better Auth passthrough adapter',
-    description: `This endpoint acts as a passthrough adapter for Better Auth library, handling all authentication flows.
+  constructor(private authService: AuthService) {}
 
-Available Better Auth endpoints:
-- POST /api/auth/sign-up - Create a new user account
-- POST /api/auth/sign-in - Sign in with email and password
-- POST /api/auth/sign-out - Sign out and invalidate session
-- GET /api/auth/session - Get current session information
-- POST /api/auth/verify-email - Verify email address
-- POST /api/auth/forgot-password - Request password reset
-- POST /api/auth/reset-password - Reset password with token
+  @Post("login")
+  @HttpCode(200)
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.login(
+      loginDto.email,
+      loginDto.password,
+      loginDto.clinicId,
+    );
 
-All requests are converted from Express format to Web API format and handled by Better Auth.`,
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Authentication operation successful',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad request - Invalid credentials or data',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or expired session',
-  })
-  async handleAuth(@Req() req: Request, @Res() res: Response) {
-    // Converte Express req para Web Request
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const headers = new Headers();
-    Object.entries(req.headers).forEach(([key, value]) => {
-      if (value) headers.set(key, Array.isArray(value) ? value[0] : value);
+    // Armazenar refresh token em httpOnly cookie
+    response.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
     });
 
-    const webRequest = new Request(url.toString(), {
-      method: req.method,
-      headers,
-      body: req.method !== 'GET' && req.method !== 'HEAD'
-        ? JSON.stringify(req.body)
-        : undefined,
-    });
+    return {
+      accessToken: result.accessToken,
+      user: result.user,
+    };
+  }
 
-    const response = await auth.handler(webRequest);
+  @Post("switch-context")
+  @UseGuards(JwtAuthGuard)
+  async switchContext(
+    @Body() dto: SwitchContextDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.authService.switchContext(user.userId, dto.clinicId);
+  }
 
-    // Converte Web Response para Express res
-    // IMPORTANTE: Set-Cookie pode ter múltiplos valores, então precisa tratamento especial
-    const setCookies: string[] = [];
-    response.headers.forEach((value, key) => {
-      if (key.toLowerCase() === 'set-cookie') {
-        setCookies.push(value);
-      } else {
-        res.setHeader(key, value);
-      }
-    });
-
-    // Set all cookies
-    if (setCookies.length > 0) {
-      res.setHeader('Set-Cookie', setCookies);
+  @Post("refresh")
+  @HttpCode(200)
+  async refresh(@Req() request: Request) {
+    const refreshToken = request.cookies["refreshToken"];
+    if (!refreshToken) {
+      throw new UnauthorizedException("No refresh token");
     }
 
-    res.status(response.status).send(await response.text());
+    return this.authService.refreshAccessToken(refreshToken);
+  }
+
+  @Post("logout")
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(204)
+  async logout(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken = request.cookies["refreshToken"];
+    if (refreshToken) {
+      await this.authService.logout(refreshToken);
+    }
+    response.clearCookie("refreshToken");
   }
 }

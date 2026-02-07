@@ -7,3 +7,6 @@ const pool = new Pool({
 });
 
 export const db = drizzle(pool, { schema });
+
+// Re-export all schema tables for convenience
+export * from "./schema";
