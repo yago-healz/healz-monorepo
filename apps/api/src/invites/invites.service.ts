@@ -172,7 +172,7 @@ export class InvitesService {
     try {
       await db.transaction(async (tx) => {
         // Criar user
-        const [user] = await tx
+        const userResult = await tx
           .insert(users)
           .values({
             email: invite[0].email,
@@ -182,11 +182,11 @@ export class InvitesService {
           })
           .returning();
 
-        createdUser = user;
+        createdUser = (userResult as any[])[0];
 
         // Criar userClinicRole
         await tx.insert(userClinicRoles).values({
-          userId: user.id,
+          userId: createdUser.id,
           clinicId: invite[0].clinicId,
           role: invite[0].role,
         });
@@ -198,12 +198,12 @@ export class InvitesService {
           .where(eq(invites.id, invite[0].id));
 
         // Buscar clinic para contexto
-        const [clinicData] = await tx
+        const clinicResult = await tx
           .select()
           .from(clinics)
           .where(eq(clinics.id, invite[0].clinicId));
 
-        clinic = clinicData;
+        clinic = (clinicResult as any[])[0];
       });
     } catch (error) {
       console.error("Accept invite transaction failed:", error);

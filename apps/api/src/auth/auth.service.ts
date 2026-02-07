@@ -59,6 +59,20 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
+    // 1.5 Verificar se usuário está ativo
+    if (user[0].status !== "active") {
+      this.auditService.log({
+        action: "LOGIN_FAILED",
+        resource: "/api/auth/login",
+        method: "POST",
+        ip,
+        metadata: { email, reason: "user_inactive" },
+      });
+      throw new UnauthorizedException(
+        "Conta desativada. Entre em contato com o suporte.",
+      );
+    }
+
     // 2. Buscar todas as clínicas que o usuário tem acesso
     const userClinics = await db
       .select({
@@ -75,10 +89,44 @@ export class AuthService {
       throw new UnauthorizedException("User has no clinic access");
     }
 
+    // 2.5 Filtrar apenas clínicas e organizações ativas
+    const { organizations } = await import("../db/schema");
+
+    const activeUserClinics = [];
+    for (const uc of userClinics) {
+      const [clinicData] = await db
+        .select({
+          clinicStatus: clinics.status,
+          orgStatus: organizations.status,
+        })
+        .from(clinics)
+        .innerJoin(organizations, eq(clinics.organizationId, organizations.id))
+        .where(eq(clinics.id, uc.clinicId))
+        .limit(1);
+
+      if (
+        clinicData?.clinicStatus === "active" &&
+        clinicData?.orgStatus === "active"
+      ) {
+        activeUserClinics.push(uc);
+      }
+    }
+
+    if (activeUserClinics.length === 0) {
+      this.auditService.log({
+        action: "LOGIN_FAILED",
+        resource: "/api/auth/login",
+        method: "POST",
+        ip,
+        metadata: { email, reason: "no_active_clinics" },
+      });
+      throw new UnauthorizedException("Nenhuma clínica ativa disponível");
+    }
+
     // 3. Determinar clínica ativa
-    let activeClinic = userClinics[0];
+    let activeClinic = activeUserClinics[0];
     if (preferredClinicId) {
-      const preferred = userClinics.find(
+      const preferred = activeUserClinics.find(
         (c) => c.clinicId === preferredClinicId,
       );
       if (preferred) {
@@ -92,7 +140,7 @@ export class AuthService {
       email: user[0].email,
       organizationId: activeClinic.organizationId,
       activeClinicId: activeClinic.clinicId,
-      clinicAccess: userClinics.map((c) => ({
+      clinicAccess: activeUserClinics.map((c) => ({
         clinicId: c.clinicId,
         clinicName: c.clinicName,
         role: c.role,
@@ -113,6 +161,12 @@ export class AuthService {
       ip,
       statusCode: 200,
     });
+
+    // Atualizar lastLoginAt
+    await db
+      .update(users)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(users.id, user[0].id));
 
     return {
       accessToken,

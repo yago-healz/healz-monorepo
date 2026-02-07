@@ -11,7 +11,9 @@ export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 100 }).notNull().unique(),
+  status: varchar("status", { length: 20 }).default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at"),
 });
 
 export const clinics = pgTable("clinics", {
@@ -20,10 +22,12 @@ export const clinics = pgTable("clinics", {
     .references(() => organizations.id)
     .notNull(),
   name: varchar("name", { length: 255 }).notNull(),
+  status: varchar("status", { length: 20 }).default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at"),
 });
 
-export const users = pgTable("users", {
+export const users: any = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
@@ -33,7 +37,13 @@ export const users = pgTable("users", {
   emailVerificationExpiry: timestamp("email_verification_expiry"),
   resetPasswordToken: varchar("reset_password_token", { length: 255 }),
   resetPasswordExpiry: timestamp("reset_password_expiry"),
+  status: varchar("status", { length: 20 }).default("active").notNull(),
+  deactivatedAt: timestamp("deactivated_at"),
+  deactivatedBy: uuid("deactivated_by").references((): any => users.id),
+  deactivationReason: varchar("deactivation_reason", { length: 500 }),
+  lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at"),
 });
 
 // Tabela de relacionamento: usuário pode estar em múltiplas clínicas com roles diferentes

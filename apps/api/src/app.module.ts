@@ -10,6 +10,7 @@ import { SignupModule } from "./signup/signup.module";
 import { InvitesModule } from "./invites/invites.module";
 import { OrganizationsModule } from "./organizations/organizations.module";
 import { ClinicsModule } from "./clinics/clinics.module";
+import { PlatformAdminModule } from "./platform-admin/platform-admin.module";
 import { RlsMiddleware } from "./db/middleware";
 import { HealthController } from "./health.controller";
 
@@ -40,6 +41,7 @@ import { HealthController } from "./health.controller";
     InvitesModule,
     OrganizationsModule,
     ClinicsModule,
+    PlatformAdminModule,
   ],
   controllers: [HealthController],
   providers: [

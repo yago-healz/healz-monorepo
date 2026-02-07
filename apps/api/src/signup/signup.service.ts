@@ -63,7 +63,7 @@ export class SignupService {
     try {
       await db.transaction(async (tx) => {
         // Criar organization
-        const [org] = await tx
+        const orgResult = await tx
           .insert(organizations)
           .values({
             name: dto.organization.name,
@@ -71,21 +71,21 @@ export class SignupService {
           })
           .returning();
 
-        createdOrg = org;
+        createdOrg = (orgResult as any[])[0];
 
         // Criar clinic vinculada à org
-        const [clinic] = await tx
+        const clinicResult = await tx
           .insert(clinics)
           .values({
             name: dto.clinic.name,
-            organizationId: org.id,
+            organizationId: createdOrg.id,
           })
           .returning();
 
-        createdClinic = clinic;
+        createdClinic = (clinicResult as any[])[0];
 
         // Criar user
-        const [user] = await tx
+        const userResult = await tx
           .insert(users)
           .values({
             email: dto.user.email,
@@ -95,12 +95,12 @@ export class SignupService {
           })
           .returning();
 
-        createdUser = user;
+        createdUser = (userResult as any[])[0];
 
         // Criar userClinicRole (user como admin da clinic)
         await tx.insert(userClinicRoles).values({
-          userId: user.id,
-          clinicId: clinic.id,
+          userId: createdUser.id,
+          clinicId: createdClinic.id,
           role: "admin",
         });
       });
