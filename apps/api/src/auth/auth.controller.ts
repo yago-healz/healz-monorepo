@@ -56,13 +56,26 @@ export class AuthController {
 
   @Post("refresh")
   @HttpCode(200)
-  async refresh(@Req() request: Request) {
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const refreshToken = request.cookies["refreshToken"];
     if (!refreshToken) {
       throw new UnauthorizedException("No refresh token");
     }
 
-    return this.authService.refreshAccessToken(refreshToken);
+    const result = await this.authService.refreshAccessToken(refreshToken);
+
+    // Setar novo refresh token no cookie
+    response.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return { accessToken: result.accessToken };
   }
 
   @Post("logout")

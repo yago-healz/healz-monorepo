@@ -6,7 +6,8 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
-import { and, eq } from "drizzle-orm";
+import { randomBytes, randomUUID } from "crypto";
+import { and, eq, lt } from "drizzle-orm";
 import { db } from "../db";
 import { clinics, refreshTokens, userClinicRoles, users } from "../db/schema";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
@@ -76,7 +77,7 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(payload, { expiresIn: "15m" });
-    const refreshToken = await this.generateRefreshToken(user[0].id);
+    const { token: refreshToken } = await this.generateRefreshToken(user[0].id);
 
     return {
       accessToken,
@@ -156,7 +157,7 @@ export class AuthService {
   }
 
   async refreshAccessToken(refreshTokenValue: string) {
-    // 1. Verificar se refresh token existe e é válido
+    // 1. Verificar se refresh token existe
     const tokenRecord = await db
       .select()
       .from(refreshTokens)
@@ -167,15 +168,36 @@ export class AuthService {
       throw new UnauthorizedException("Invalid refresh token");
     }
 
+    // 2. Detecção de reuso: token já foi rotacionado
+    if (tokenRecord[0].revokedAt) {
+      // Revogar TODA a família (possível roubo de token)
+      await db
+        .delete(refreshTokens)
+        .where(eq(refreshTokens.family, tokenRecord[0].family));
+      throw new UnauthorizedException("Token reuse detected. All sessions revoked.");
+    }
+
+    // 3. Verificar se token expirou
     if (new Date() > tokenRecord[0].expiresAt) {
-      // Token expirado, remover do banco
       await db
         .delete(refreshTokens)
         .where(eq(refreshTokens.id, tokenRecord[0].id));
       throw new UnauthorizedException("Refresh token expired");
     }
 
-    // 2. Buscar dados do usuário para gerar novo access token
+    // 4. Marcar token atual como revogado (já usado)
+    await db
+      .update(refreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(eq(refreshTokens.id, tokenRecord[0].id));
+
+    // 5. Gerar novo refresh token na mesma família
+    const newRefresh = await this.generateRefreshToken(
+      tokenRecord[0].userId,
+      tokenRecord[0].family,
+    );
+
+    // 6. Buscar dados do usuário para gerar novo access token
     const user = await db
       .select()
       .from(users)
@@ -193,7 +215,7 @@ export class AuthService {
       .innerJoin(clinics, eq(userClinicRoles.clinicId, clinics.id))
       .where(eq(userClinicRoles.userId, user[0].id));
 
-    // 3. Gerar novo access token (mantém mesmo contexto de clínica ativa)
+    // 7. Gerar novo access token (mantém mesmo contexto de clínica ativa)
     const payload: JwtPayload = {
       userId: user[0].id,
       email: user[0].email,
@@ -208,14 +230,15 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload, { expiresIn: "15m" });
 
-    return { accessToken };
+    return { accessToken, refreshToken: newRefresh.token };
   }
 
-  private async generateRefreshToken(userId: string): Promise<string> {
-    const token = this.jwtService.sign(
-      { sub: userId, type: "refresh" },
-      { expiresIn: "7d" },
-    );
+  private async generateRefreshToken(
+    userId: string,
+    family?: string,
+  ): Promise<{ token: string; family: string }> {
+    const token = randomBytes(64).toString("hex");
+    const tokenFamily = family ?? randomUUID();
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
@@ -223,15 +246,31 @@ export class AuthService {
     await db.insert(refreshTokens).values({
       userId,
       token,
+      family: tokenFamily,
       expiresAt,
     });
 
-    return token;
+    return { token, family: tokenFamily };
   }
 
   async logout(refreshTokenValue: string) {
+    const tokenRecord = await db
+      .select()
+      .from(refreshTokens)
+      .where(eq(refreshTokens.token, refreshTokenValue))
+      .limit(1);
+
+    if (tokenRecord[0]) {
+      // Deletar toda a família de tokens
+      await db
+        .delete(refreshTokens)
+        .where(eq(refreshTokens.family, tokenRecord[0].family));
+    }
+  }
+
+  async cleanupExpiredTokens() {
     await db
       .delete(refreshTokens)
-      .where(eq(refreshTokens.token, refreshTokenValue));
+      .where(lt(refreshTokens.expiresAt, new Date()));
   }
 }
