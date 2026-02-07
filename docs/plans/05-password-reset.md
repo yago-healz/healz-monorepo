@@ -4,7 +4,7 @@
 
 Não existe fluxo de recuperação de senha. Se o usuário esquecer a senha, não tem como recuperar o acesso. O fluxo padrão: solicitar reset via email, receber link com token temporário, definir nova senha.
 
-**Pré-requisito**: O módulo de email (`MailModule`) precisa estar implementado (ver plano 04-email-verification). Se implementar antes do email verification, criar o `MailModule` primeiro.
+**Pré-requisito**: O módulo de email (`MailModule`) com Resend **deve** estar implementado (ver plano 04-email-verification). O `MailService` já possui o método `sendPasswordResetEmail` implementado, então este plano foca apenas nos campos da database, DTOs e endpoints.
 
 ## Arquivos a Criar/Alterar
 
@@ -14,7 +14,6 @@ Não existe fluxo de recuperação de senha. Se o usuário esquecer a senha, nã
 - `apps/api/src/auth/dto/forgot-password.dto.ts` — DTO
 - `apps/api/src/auth/dto/reset-password.dto.ts` — DTO
 - `apps/api/src/auth/dto/index.ts` — exportar DTOs
-- `apps/api/src/mail/mail.service.ts` — implementar email de reset
 
 ## Passos
 
@@ -64,37 +63,9 @@ export class ResetPasswordDto {
 
 Exportar ambos em `dto/index.ts`.
 
-### 3. Implementar email de reset no `MailService`
+### 3. Implementar métodos no `auth.service.ts`
 
-**Em `mail.service.ts`**, implementar o método (já tem a assinatura do plano anterior):
-
-```typescript
-async sendPasswordResetEmail(to: string, token: string): Promise<void> {
-  const frontendUrl = this.configService.get("FRONTEND_URL") || "http://localhost:3000";
-  const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
-
-  const info = await this.transporter.sendMail({
-    from: this.configService.get("MAIL_FROM") || "Healz <noreply@healz.com>",
-    to,
-    subject: "Redefinição de Senha - Healz",
-    html: `
-      <h2>Redefinição de Senha</h2>
-      <p>Você solicitou a redefinição da sua senha.</p>
-      <p>Clique no link abaixo para criar uma nova senha:</p>
-      <a href="${resetUrl}">Redefinir Senha</a>
-      <p>Este link expira em 1 hora.</p>
-      <p>Se você não solicitou esta alteração, ignore este email. Sua senha permanecerá a mesma.</p>
-    `,
-  });
-
-  if (this.configService.get("NODE_ENV") !== "production") {
-    console.log("Reset email preview:", nodemailer.getTestMessageUrl(info));
-    console.log("Reset URL:", resetUrl);
-  }
-}
-```
-
-### 4. Implementar métodos no `auth.service.ts`
+**Nota**: O `MailService.sendPasswordResetEmail()` já está implementado com Resend no plano 04-email-verification. Basta injetar o `MailService` no constructor se ainda não estiver.
 
 ```typescript
 async forgotPassword(email: string): Promise<void> {
@@ -158,7 +129,7 @@ async resetPassword(token: string, newPassword: string): Promise<void> {
 }
 ```
 
-### 5. Adicionar endpoints no `auth.controller.ts`
+### 4. Adicionar endpoints no `auth.controller.ts`
 
 ```typescript
 @Post("forgot-password")
@@ -179,7 +150,7 @@ async resetPassword(@Body() dto: ResetPasswordDto) {
 
 **Nota**: nenhum dos dois endpoints requer autenticação (o usuário esqueceu a senha, não consegue fazer login).
 
-### 6. Rate limiting nos endpoints de reset
+### 5. Rate limiting nos endpoints de reset
 
 Estes endpoints são alvos de abuso. Aplicar throttle específico:
 
@@ -197,7 +168,7 @@ async resetPassword(/* ... */) { /* ... */ }
 
 **Nota**: requer que o plano 02-rate-limiting já esteja implementado. Caso contrário, ignorar este passo por agora.
 
-### 7. Gerar e aplicar migration
+### 6. Gerar e aplicar migration
 
 ```bash
 cd apps/api
@@ -215,8 +186,14 @@ pnpm drizzle-kit migrate
 
 ## Resultado Esperado
 
-- `POST /auth/forgot-password` — envia email com link de reset (resposta sempre genérica)
+- `POST /auth/forgot-password` — envia email com link de reset via Resend (resposta sempre genérica)
 - `POST /auth/reset-password` — valida token e atualiza senha
 - Tokens expiram em 1 hora
 - Após reset, usuário é deslogado de todos os dispositivos
-- Em dev, link de reset é logado no console
+- Emails enviados através do Resend com template HTML
+
+## Notas Adicionais
+
+- **MailService**: O método `sendPasswordResetEmail` já está implementado no `MailService` usando Resend (ver plano 04-email-verification)
+- **Domínio**: Por padrão usa `onboarding@resend.dev`. Para produção, configure um domínio próprio no painel do Resend
+- **Rate Limits**: Resend free tier permite 100 emails/dia, 3000/mês

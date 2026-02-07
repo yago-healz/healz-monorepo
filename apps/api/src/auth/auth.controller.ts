@@ -12,7 +12,13 @@ import { Throttle } from "@nestjs/throttler";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { CurrentUser } from "./decorators/current-user.decorator";
-import { LoginDto, SwitchContextDto, VerifyEmailDto } from "./dto";
+import {
+  LoginDto,
+  SwitchContextDto,
+  VerifyEmailDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from "./dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
 
@@ -111,5 +117,25 @@ export class AuthController {
   async resendVerification(@CurrentUser() user: JwtPayload) {
     await this.authService.resendVerificationEmail(user.userId);
     return { message: "Email de verificação reenviado" };
+  }
+
+  @Post("forgot-password")
+  @HttpCode(200)
+  @Throttle({ default: { ttl: 60000, limit: 3 } })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.authService.forgotPassword(dto.email);
+    // Sempre retorna sucesso (previne enumeração de emails)
+    return {
+      message:
+        "Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.",
+    };
+  }
+
+  @Post("reset-password")
+  @HttpCode(200)
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.authService.resetPassword(dto.token, dto.newPassword);
+    return { message: "Senha alterada com sucesso. Faça login com sua nova senha." };
   }
 }

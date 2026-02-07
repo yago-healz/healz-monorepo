@@ -381,4 +381,66 @@ export class AuthService {
 
     await this.sendVerificationEmail(userId);
   }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    // IMPORTANTE: sempre retornar sucesso, mesmo se email não existir.
+    // Isso previne enumeração de emails.
+    if (!user[0]) return;
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiry = new Date();
+    expiry.setHours(expiry.getHours() + 1); // 1 hora
+
+    await db
+      .update(users)
+      .set({
+        resetPasswordToken: token,
+        resetPasswordExpiry: expiry,
+      })
+      .where(eq(users.id, user[0].id));
+
+    await this.mailService.sendPasswordResetEmail(email, token);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.resetPasswordToken, token))
+      .limit(1);
+
+    if (!user[0]) {
+      throw new BadRequestException("Token inválido");
+    }
+
+    if (new Date() > user[0].resetPasswordExpiry!) {
+      throw new BadRequestException(
+        "Token expirado. Solicite um novo reset de senha.",
+      );
+    }
+
+    // Hash da nova senha
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Atualizar senha e limpar token
+    await db
+      .update(users)
+      .set({
+        passwordHash,
+        resetPasswordToken: null,
+        resetPasswordExpiry: null,
+      })
+      .where(eq(users.id, user[0].id));
+
+    // Revogar todos os refresh tokens do usuário (forçar re-login)
+    await db
+      .delete(refreshTokens)
+      .where(eq(refreshTokens.userId, user[0].id));
+  }
 }
