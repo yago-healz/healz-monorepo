@@ -12,7 +12,7 @@ import { Throttle } from "@nestjs/throttler";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { CurrentUser } from "./decorators/current-user.decorator";
-import { LoginDto, SwitchContextDto } from "./dto";
+import { LoginDto, SwitchContextDto, VerifyEmailDto } from "./dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
 
@@ -96,5 +96,20 @@ export class AuthController {
       await this.authService.logout(refreshToken, user.userId);
     }
     response.clearCookie("refreshToken");
+  }
+
+  @Post("verify-email")
+  @HttpCode(200)
+  async verifyEmail(@Body() dto: VerifyEmailDto) {
+    await this.authService.verifyEmail(dto.token);
+    return { message: "Email verificado com sucesso" };
+  }
+
+  @Post("resend-verification")
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  async resendVerification(@CurrentUser() user: JwtPayload) {
+    await this.authService.resendVerificationEmail(user.userId);
+    return { message: "Email de verificação reenviado" };
   }
 }

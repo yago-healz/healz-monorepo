@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { AuditInterceptor } from "./audit/audit.interceptor";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
+import { MailModule } from "./mail/mail.module";
 import { RlsMiddleware } from "./db/middleware";
 import { HealthController } from "./health.controller";
 
@@ -30,6 +31,7 @@ import { HealthController } from "./health.controller";
     }),
     AuthModule,
     AuditModule,
+    MailModule,
   ],
   controllers: [HealthController],
   providers: [

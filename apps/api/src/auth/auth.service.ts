@@ -6,18 +6,21 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
+import * as crypto from "crypto";
 import { randomBytes, randomUUID } from "crypto";
 import { and, eq, lt } from "drizzle-orm";
 import { db } from "../db";
 import { clinics, refreshTokens, userClinicRoles, users } from "../db/schema";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
 import { AuditService } from "../audit/audit.service";
+import { MailService } from "../mail/mail.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private auditService: AuditService,
+    private mailService: MailService,
   ) {}
 
   async login(email: string, password: string, preferredClinicId?: string, ip?: string) {
@@ -118,6 +121,7 @@ export class AuthService {
         id: user[0].id,
         email: user[0].email,
         name: user[0].name,
+        emailVerified: user[0].emailVerified,
         activeClinic: {
           id: activeClinic.clinicId,
           name: activeClinic.clinicName,
@@ -314,5 +318,67 @@ export class AuthService {
     await db
       .delete(refreshTokens)
       .where(lt(refreshTokens.expiresAt, new Date()));
+  }
+
+  async sendVerificationEmail(userId: string): Promise<void> {
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiry = new Date();
+    expiry.setHours(expiry.getHours() + 24); // 24 horas
+
+    const user = await db
+      .update(users)
+      .set({
+        emailVerificationToken: token,
+        emailVerificationExpiry: expiry,
+      })
+      .where(eq(users.id, userId))
+      .returning({ email: users.email });
+
+    await this.mailService.sendVerificationEmail(user[0].email, token);
+  }
+
+  async verifyEmail(token: string): Promise<void> {
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.emailVerificationToken, token))
+      .limit(1);
+
+    if (!user[0]) {
+      throw new BadRequestException("Token inválido");
+    }
+
+    if (new Date() > user[0].emailVerificationExpiry!) {
+      throw new BadRequestException(
+        "Token expirado. Solicite um novo email de verificação.",
+      );
+    }
+
+    await db
+      .update(users)
+      .set({
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpiry: null,
+      })
+      .where(eq(users.id, user[0].id));
+  }
+
+  async resendVerificationEmail(userId: string): Promise<void> {
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user[0]) {
+      throw new BadRequestException("Usuário não encontrado");
+    }
+
+    if (user[0].emailVerified) {
+      throw new BadRequestException("Email já verificado");
+    }
+
+    await this.sendVerificationEmail(userId);
   }
 }
