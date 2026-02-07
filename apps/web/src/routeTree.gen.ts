@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PublicVerifyEmailRouteImport } from './routes/_public/verify-email'
+import { Route as PublicResetPasswordRouteImport } from './routes/_public/reset-password'
+import { Route as PublicLoginRouteImport } from './routes/_public/login'
+import { Route as PublicForgotPasswordRouteImport } from './routes/_public/forgot-password'
 import { Route as PublicOnboardingIndexRouteImport } from './routes/_public/onboarding/index'
 import { Route as PublicOnboardingStep5RouteImport } from './routes/_public/onboarding/step-5'
 import { Route as PublicOnboardingStep4RouteImport } from './routes/_public/onboarding/step-4'
@@ -28,6 +32,26 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PublicVerifyEmailRoute = PublicVerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicResetPasswordRoute = PublicResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicLoginRoute = PublicLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicForgotPasswordRoute = PublicForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => PublicRoute,
 } as any)
 const PublicOnboardingIndexRoute = PublicOnboardingIndexRouteImport.update({
   id: '/onboarding/',
@@ -73,6 +97,10 @@ const PublicOnboardingCompleteRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/forgot-password': typeof PublicForgotPasswordRoute
+  '/login': typeof PublicLoginRoute
+  '/reset-password': typeof PublicResetPasswordRoute
+  '/verify-email': typeof PublicVerifyEmailRoute
   '/onboarding/complete': typeof PublicOnboardingCompleteRoute
   '/onboarding/review': typeof PublicOnboardingReviewRoute
   '/onboarding/step-1': typeof PublicOnboardingStep1Route
@@ -84,6 +112,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof PublicForgotPasswordRoute
+  '/login': typeof PublicLoginRoute
+  '/reset-password': typeof PublicResetPasswordRoute
+  '/verify-email': typeof PublicVerifyEmailRoute
   '/onboarding/complete': typeof PublicOnboardingCompleteRoute
   '/onboarding/review': typeof PublicOnboardingReviewRoute
   '/onboarding/step-1': typeof PublicOnboardingStep1Route
@@ -97,6 +129,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_public': typeof PublicRouteWithChildren
+  '/_public/forgot-password': typeof PublicForgotPasswordRoute
+  '/_public/login': typeof PublicLoginRoute
+  '/_public/reset-password': typeof PublicResetPasswordRoute
+  '/_public/verify-email': typeof PublicVerifyEmailRoute
   '/_public/onboarding/complete': typeof PublicOnboardingCompleteRoute
   '/_public/onboarding/review': typeof PublicOnboardingReviewRoute
   '/_public/onboarding/step-1': typeof PublicOnboardingStep1Route
@@ -110,6 +146,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
+    | '/login'
+    | '/reset-password'
+    | '/verify-email'
     | '/onboarding/complete'
     | '/onboarding/review'
     | '/onboarding/step-1'
@@ -121,6 +161,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
+    | '/login'
+    | '/reset-password'
+    | '/verify-email'
     | '/onboarding/complete'
     | '/onboarding/review'
     | '/onboarding/step-1'
@@ -133,6 +177,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_public'
+    | '/_public/forgot-password'
+    | '/_public/login'
+    | '/_public/reset-password'
+    | '/_public/verify-email'
     | '/_public/onboarding/complete'
     | '/_public/onboarding/review'
     | '/_public/onboarding/step-1'
@@ -163,6 +211,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_public/verify-email': {
+      id: '/_public/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof PublicVerifyEmailRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/reset-password': {
+      id: '/_public/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof PublicResetPasswordRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/login': {
+      id: '/_public/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof PublicLoginRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/forgot-password': {
+      id: '/_public/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof PublicForgotPasswordRouteImport
+      parentRoute: typeof PublicRoute
     }
     '/_public/onboarding/': {
       id: '/_public/onboarding/'
@@ -224,6 +300,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface PublicRouteChildren {
+  PublicForgotPasswordRoute: typeof PublicForgotPasswordRoute
+  PublicLoginRoute: typeof PublicLoginRoute
+  PublicResetPasswordRoute: typeof PublicResetPasswordRoute
+  PublicVerifyEmailRoute: typeof PublicVerifyEmailRoute
   PublicOnboardingCompleteRoute: typeof PublicOnboardingCompleteRoute
   PublicOnboardingReviewRoute: typeof PublicOnboardingReviewRoute
   PublicOnboardingStep1Route: typeof PublicOnboardingStep1Route
@@ -235,6 +315,10 @@ interface PublicRouteChildren {
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
+  PublicForgotPasswordRoute: PublicForgotPasswordRoute,
+  PublicLoginRoute: PublicLoginRoute,
+  PublicResetPasswordRoute: PublicResetPasswordRoute,
+  PublicVerifyEmailRoute: PublicVerifyEmailRoute,
   PublicOnboardingCompleteRoute: PublicOnboardingCompleteRoute,
   PublicOnboardingReviewRoute: PublicOnboardingReviewRoute,
   PublicOnboardingStep1Route: PublicOnboardingStep1Route,
