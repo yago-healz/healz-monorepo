@@ -1,7 +1,7 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
-import { db } from '../connection';
-import { sql } from 'drizzle-orm';
+import { Injectable, NestMiddleware } from "@nestjs/common";
+import { sql } from "drizzle-orm";
+import { NextFunction, Request, Response } from "express";
+import { db } from "../";
 
 /**
  * RLS Middleware - Sets the current organization context for Row-Level Security
@@ -20,10 +20,10 @@ export class RlsMiddleware implements NestMiddleware {
     if (session?.activeOrganizationId) {
       try {
         await db.execute(
-          sql`SELECT set_config('app.current_org_id', ${session.activeOrganizationId}, true)`
+          sql`SELECT set_config('app.current_org_id', ${session.activeOrganizationId}, true)`,
         );
       } catch (error) {
-        console.error('Failed to set RLS context:', error);
+        console.error("Failed to set RLS context:", error);
         // Continue request even if RLS context fails
         // This allows the request to proceed, but queries will return empty results
       }
@@ -31,11 +31,13 @@ export class RlsMiddleware implements NestMiddleware {
 
     // Cleanup: Reset RLS context after response is sent
     // This prevents context leakage between requests
-    res.on('finish', async () => {
+    res.on("finish", async () => {
       try {
-        await db.execute(sql`SELECT set_config('app.current_org_id', null, true)`);
+        await db.execute(
+          sql`SELECT set_config('app.current_org_id', null, true)`,
+        );
       } catch (error) {
-        console.error('Failed to cleanup RLS context:', error);
+        console.error("Failed to cleanup RLS context:", error);
       }
     });
 
