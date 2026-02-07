@@ -1,860 +1,839 @@
-# Autenticação e Multi-tenancy - Healz
+# Autenticação e Multi-Tenant - Healz API
 
 ## Visão Geral
 
-Este documento especifica a arquitetura de autenticação e multi-tenancy do Healz, incluindo integração com Auth0/Clerk, JWT tokens, context switching e Row-Level Security.
+A API implementa um sistema de autenticação robusto com refresh token rotation, email verification, password reset e suporte a multi-tenant com isolamento de dados por organização.
 
-**Princípios:**
+### Stack
 
-- JWT com contexto organizacional
-- Context switching para médicos multi-clínica
-- Row-Level Security (RLS) automática
-- Defesa em profundidade (RLS + application-level)
+- **Framework**: NestJS
+- **Autenticação**: JWT (access token) + Refresh tokens com rotation
+- **Database**: PostgreSQL + Drizzle ORM
+- **Email**: Resend
+- **Rate Limiting**: @nestjs/throttler
+- **Auditoria**: Interceptor automático + logs explícitos
 
 ---
 
-## Estrutura JWT Token
+## Arquitetura de Dados
 
-### Payload do Token
+### Hierarquia Organizacional
 
-```typescript
-// src/auth/types/jwt-payload.interface.ts
-export interface JwtPayload {
-  // === User Info ===
-  userId: string;
-  email: string;
-  authProviderId: string; // Auth0/Clerk ID
-
-  // === Context ===
-  organizationId: string;
-  clinicId?: string; // Opcional - pode não estar em contexto de clínica
-
-  // === Permissions ===
-  role: string;
-  permissions: string[];
-
-  // === Standard JWT Claims ===
-  iat: number; // Issued at
-  exp: number; // Expiration
-}
+```
+Organization (organização/empresa)
+└── Clinic (clínica/unidade)
+    └── User (usuário com role específico)
 ```
 
-### Exemplo de Token Decodificado
+### Schema de Autenticação
+
+- **users**: Dados do usuário (email, senha, verificação de email, reset de senha)
+- **refreshTokens**: Tokens de refresh com rotation (family, revokedAt para detecção de reuso)
+- **organizations**: Organizações (contexto multi-tenant)
+- **clinics**: Clínicas vinculadas a organizações
+- **userClinicRoles**: Relacionamento usuário-clínica com roles (admin, doctor, secretary)
+- **auditLogs**: Log automático de todas as ações
+
+---
+
+## Fluxos de Autenticação
+
+### 1. Login
+
+**Endpoint**: `POST /api/auth/login`
 
 ```json
 {
-  "userId": "550e8400-e29b-41d4-a716-446655440000",
-  "email": "maria@example.com",
-  "authProviderId": "auth0|123456789",
-  "organizationId": "org-abc-123",
-  "clinicId": "clinic-xyz-456",
-  "role": "receptionist",
-  "permissions": [
-    "appointments.view",
-    "appointments.create",
-    "appointments.update",
-    "patients.view",
-    "patients.create",
-    "conversations.view",
-    "conversations.reply"
-  ],
-  "iat": 1738281600,
-  "exp": 1738310400
+  "email": "user@example.com",
+  "password": "password123",
+  "clinicId": "uuid-opcional"
 }
 ```
+
+**Processo**:
+
+1. Valida credenciais (email + hash da senha)
+2. Busca todas as clínicas que o usuário tem acesso
+3. Define clínica ativa (preferida ou primeira disponível)
+4. Gera JWT access token (15 minutos) contendo:
+   - `userId`, `email`
+   - `organizationId`, `activeClinicId`
+   - `clinicAccess` (lista de clínicas disponíveis com roles)
+5. Gera refresh token (opaco, 7 dias) com `family` UUID para rotation
+6. Retorna access token no JSON
+7. Armazena refresh token em **httpOnly cookie** (seguro contra XSS)
+8. Loga login bem-sucedido com IP
+
+**Resposta**:
+
+```json
+{
+  "accessToken": "eyJ...",
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "name": "Nome do Usuário",
+    "emailVerified": true,
+    "activeClinic": {
+      "id": "clinic-uuid",
+      "name": "Clínica Principal",
+      "organizationId": "org-uuid",
+      "role": "doctor"
+    },
+    "availableClinics": [
+      { "clinicId": "...", "clinicName": "...", "role": "..." }
+    ]
+  }
+}
+```
+
+### 2. Refresh Token Rotation
+
+**Endpoint**: `POST /api/auth/refresh`
+
+**Processo**:
+
+1. Lê refresh token do **httpOnly cookie**
+2. Valida se token existe e não expirou
+3. **Detecção de roubo**: Se `revokedAt` estiver preenchido, token já foi usado
+   - → Revoga **toda a família** de tokens (possível ataque)
+   - → Força re-login em todos os dispositivos
+4. Marca token atual como revogado (`revokedAt = now()`)
+5. Gera novo refresh token na **mesma família**
+6. Gera novo access token mantendo o contexto de clínica
+7. Define novo refresh token no cookie
+8. Retorna novo access token
+
+**Por que rotation?**: Cada uso invalida o anterior. Se um token vazar, é válido apenas 1 vez. Reuso detecta roubo.
+
+### 3. Logout
+
+**Endpoint**: `POST /api/auth/logout`
+**Requer**: JWT válido
+
+**Processo**:
+
+1. Lê refresh token do cookie
+2. Deleta **toda a família** de refresh tokens (logout de todos os dispositivos)
+3. Limpa cookie de refresh token
+4. Loga ação com IP
+
+### 4. Switch Context (Trocar Clínica Ativa)
+
+**Endpoint**: `POST /api/auth/switch-context`
+**Requer**: JWT válido
+
+```json
+{
+  "clinicId": "clinic-uuid"
+}
+```
+
+**Processo**:
+
+1. Valida se usuário tem acesso à clínica
+2. Gera novo access token com novo contexto
+3. Mantém mesmo refresh token (não afeta sessão)
+
+### 5. Email Verification
+
+**Endpoint Envio**: `POST /api/auth/resend-verification`
+**Requer**: JWT válido
+
+**Processo**:
+
+1. Gera token aleatório (32 bytes hex)
+2. Define expiração de 24 horas
+3. Envia email via Resend com link: `{FRONTEND_URL}/verify-email?token={token}`
+4. Frontend faz POST para `/api/auth/verify-email` com token
+
+**Endpoint Verificação**: `POST /api/auth/verify-email`
+
+```json
+{
+  "token": "token-from-email"
+}
+```
+
+1. Busca user pelo `emailVerificationToken`
+2. Valida expiração
+3. Marca `emailVerified = true`
+4. Limpa token e expiração
+
+### 6. Password Reset
+
+**Endpoint Solicitação**: `POST /api/auth/forgot-password`
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Processo**:
+
+1. Busca usuário por email
+2. **Não revela** se email existe (sempre retorna mensagem genérica)
+3. Se existe:
+   - Gera token de reset (32 bytes hex)
+   - Define expiração de 1 hora
+   - Envia email com link: `{FRONTEND_URL}/reset-password?token={token}`
+4. Resposta sempre: "Se o email estiver cadastrado, você receberá instruções..."
+
+**Endpoint Reset**: `POST /api/auth/reset-password`
+
+```json
+{
+  "token": "token-from-email",
+  "newPassword": "newPassword123"
+}
+```
+
+1. Busca user pelo `resetPasswordToken`
+2. Valida expiração (1 hora)
+3. Faz hash da nova senha (bcrypt com salt 10)
+4. Atualiza `passwordHash`
+5. **Revoga todos os refresh tokens** do usuário (força re-login)
+6. Limpa token e expiração
 
 ---
 
-## Auth Service
+## Signup e Gerenciamento de Usuários
 
-### Interface Principal
+### 7. Signup B2B (Empresa Nova)
 
-```typescript
-// src/auth/auth.service.ts
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { ConfigService } from "@nestjs/config";
-import { DrizzleService } from "../db/drizzle.service";
-import { eq, and } from "drizzle-orm";
-import {
-  users,
-  clinics,
-  clinicUsers,
-  organizationUsers,
-  roles,
-} from "../db/schema";
-import { JwtPayload } from "./types/jwt-payload.interface";
+**Endpoint**: `POST /api/signup` (Público)
 
-@Injectable()
-export class AuthService {
-  constructor(
-    private jwtService: JwtService,
-    private configService: ConfigService,
-    private db: DrizzleService,
-  ) {}
-
-  /**
-   * Callback do Auth0/Clerk - criar ou atualizar usuário
-   */
-  async handleAuthCallback(authData: AuthCallbackDto): Promise<AuthResponse> {
-    // 1. Buscar ou criar usuário
-    let user = await this.findUserByAuthProviderId(authData.authProviderId);
-
-    if (!user) {
-      user = await this.createUser({
-        authProviderId: authData.authProviderId,
-        email: authData.email,
-        fullName: authData.fullName,
-        phone: authData.phone,
-      });
-    }
-
-    // 2. Buscar primeira organização acessível
-    const orgAccess = await this.getFirstOrganizationAccess(user.id);
-
-    if (!orgAccess) {
-      throw new UnauthorizedException("User has no organization access");
-    }
-
-    // 3. Gerar token
-    return this.generateToken(user, orgAccess);
-  }
-
-  /**
-   * Context Switching - trocar de clínica
-   */
-  async switchContext(
-    userId: string,
-    targetClinicId: string,
-  ): Promise<AuthResponse> {
-    // 1. Verificar se usuário tem acesso à clínica
-    const clinicAccess = await this.db.db
-      .select({
-        clinic: clinics,
-        clinicUser: clinicUsers,
-        role: roles,
-      })
-      .from(clinicUsers)
-      .innerJoin(clinics, eq(clinics.id, clinicUsers.clinicId))
-      .innerJoin(roles, eq(roles.id, clinicUsers.roleId))
-      .where(
-        and(
-          eq(clinicUsers.userId, userId),
-          eq(clinicUsers.clinicId, targetClinicId),
-          eq(clinicUsers.status, "active"),
-        ),
-      )
-      .limit(1);
-
-    if (!clinicAccess.length) {
-      throw new UnauthorizedException(
-        "User does not have access to this clinic",
-      );
-    }
-
-    const [access] = clinicAccess;
-
-    // 2. Buscar usuário
-    const user = await this.findUserById(userId);
-
-    // 3. Mesclar permissões customizadas
-    const permissions = this.mergePermissions(
-      access.role.permissions as string[],
-      access.clinicUser.customPermissions as string[] | null,
-    );
-
-    // 4. Gerar novo token
-    const payload: JwtPayload = {
-      userId: user.id,
-      email: user.email,
-      authProviderId: user.authProviderId,
-      organizationId: access.clinic.organizationId,
-      clinicId: targetClinicId,
-      role: access.role.name,
-      permissions,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 8 * 60 * 60, // 8 horas
-    };
-
-    return {
-      accessToken: this.jwtService.sign(payload),
-      context: {
-        organizationId: access.clinic.organizationId,
-        clinicId: targetClinicId,
-        role: access.role.name,
-      },
-    };
-  }
-
-  /**
-   * Listar clínicas disponíveis para context switching
-   */
-  async getAvailableContexts(userId: string): Promise<AvailableContext[]> {
-    const contexts = await this.db.db
-      .select({
-        organization: {
-          id: clinics.organizationId,
-          name: organizations.name,
-        },
-        clinic: {
-          id: clinics.id,
-          name: clinics.name,
-        },
-        role: {
-          id: roles.id,
-          name: roles.name,
-        },
-      })
-      .from(clinicUsers)
-      .innerJoin(clinics, eq(clinics.id, clinicUsers.clinicId))
-      .innerJoin(organizations, eq(organizations.id, clinics.organizationId))
-      .innerJoin(roles, eq(roles.id, clinicUsers.roleId))
-      .where(
-        and(eq(clinicUsers.userId, userId), eq(clinicUsers.status, "active")),
-      );
-
-    return contexts.map((ctx) => ({
-      organizationId: ctx.organization.id,
-      organizationName: ctx.organization.name,
-      clinicId: ctx.clinic.id,
-      clinicName: ctx.clinic.name,
-      role: ctx.role.name,
-    }));
-  }
-
-  /**
-   * Mesclar permissões base + customizadas
-   */
-  private mergePermissions(
-    rolePermissions: string[],
-    customPermissions?: string[] | null,
-  ): string[] {
-    if (!customPermissions || customPermissions.length === 0) {
-      return rolePermissions;
-    }
-
-    // Custom permissions podem adicionar ou remover
-    // Formato: ["patients.view", "-appointments.delete"]
-    const additions = customPermissions.filter((p) => !p.startsWith("-"));
-    const removals = customPermissions
-      .filter((p) => p.startsWith("-"))
-      .map((p) => p.substring(1));
-
-    return [
-      ...rolePermissions.filter((p) => !removals.includes(p)),
-      ...additions,
-    ];
-  }
-
-  /**
-   * Gerar token JWT
-   */
-  private async generateToken(
-    user: User,
-    access: OrgAccess,
-  ): Promise<AuthResponse> {
-    const payload: JwtPayload = {
-      userId: user.id,
-      email: user.email,
-      authProviderId: user.authProviderId,
-      organizationId: access.organizationId,
-      clinicId: access.clinicId || undefined,
-      role: access.role.name,
-      permissions: access.role.permissions as string[],
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 8 * 60 * 60, // 8 horas
-    };
-
-    return {
-      accessToken: this.jwtService.sign(payload),
-      context: {
-        organizationId: access.organizationId,
-        clinicId: access.clinicId,
-        role: access.role.name,
-      },
-    };
-  }
-
-  // ... métodos auxiliares (findUserById, createUser, etc)
-}
-```
-
----
-
-## JWT Strategy
-
-```typescript
-// src/auth/strategies/jwt.strategy.ts
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { PassportStrategy } from "@nestjs/passport";
-import { ExtractJwt, Strategy } from "passport-jwt";
-import { ConfigService } from "@nestjs/config";
-import { JwtPayload } from "../types/jwt-payload.interface";
-
-@Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private configService: ConfigService) {
-    super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: configService.get<string>("JWT_SECRET"),
-    });
-  }
-
-  async validate(payload: JwtPayload): Promise<JwtPayload> {
-    // Payload já foi validado pelo passport-jwt
-    // Aqui podemos adicionar validações extras se necessário
-
-    if (!payload.userId || !payload.organizationId) {
-      throw new UnauthorizedException("Invalid token payload");
-    }
-
-    return payload;
-  }
-}
-```
-
----
-
-## Guards e Decorators
-
-### JWT Auth Guard
-
-```typescript
-// src/auth/guards/jwt-auth.guard.ts
-import { Injectable } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
-
-@Injectable()
-export class JwtAuthGuard extends AuthGuard("jwt") {}
-```
-
-### Tenant Isolation Guard
-
-```typescript
-// src/auth/guards/tenant-isolation.guard.ts
-import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { TENANT_ISOLATED } from "../decorators/tenant-isolated.decorator";
-
-@Injectable()
-export class TenantIsolationGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
-
-  canActivate(context: ExecutionContext): boolean {
-    const isTenantIsolated = this.reflector.get<boolean>(
-      TENANT_ISOLATED,
-      context.getHandler(),
-    );
-
-    if (!isTenantIsolated) {
-      return true; // Endpoint não requer isolamento
-    }
-
-    const request = context.switchToHttp().getRequest();
-    const user = request.user;
-
-    // Garantir que organizationId está presente
-    if (!user || !user.organizationId) {
-      return false;
-    }
-
-    // Adicionar contexto para uso posterior
-    request.tenantId = user.organizationId;
-    request.clinicId = user.clinicId;
-
-    return true;
-  }
-}
-```
-
-### Permissions Guard
-
-```typescript
-// src/auth/guards/permissions.guard.ts
-import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { REQUIRED_PERMISSIONS } from "../decorators/permissions.decorator";
-import { JwtPayload } from "../types/jwt-payload.interface";
-
-@Injectable()
-export class PermissionsGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
-
-  canActivate(context: ExecutionContext): boolean {
-    const requiredPermissions = this.reflector.get<string[]>(
-      REQUIRED_PERMISSIONS,
-      context.getHandler(),
-    );
-
-    if (!requiredPermissions || requiredPermissions.length === 0) {
-      return true;
-    }
-
-    const request = context.switchToHttp().getRequest();
-    const user: JwtPayload = request.user;
-
-    if (!user || !user.permissions) {
-      return false;
-    }
-
-    // Verificar se user tem todas as permissões requeridas
-    return requiredPermissions.every((permission) =>
-      this.hasPermission(user.permissions, permission),
-    );
-  }
-
-  private hasPermission(userPermissions: string[], required: string): boolean {
-    // Suporta wildcard: ["appointments.*"] permite "appointments.view", "appointments.create", etc
-    return userPermissions.some((permission) => {
-      if (permission === "*") return true; // Admin
-      if (permission === required) return true;
-
-      // Wildcard check
-      if (permission.endsWith(".*")) {
-        const prefix = permission.slice(0, -2);
-        return required.startsWith(prefix);
-      }
-
-      return false;
-    });
-  }
-}
-```
-
-### Decorators
-
-```typescript
-// src/auth/decorators/current-user.decorator.ts
-import { createParamDecorator, ExecutionContext } from "@nestjs/common";
-import { JwtPayload } from "../types/jwt-payload.interface";
-
-export const CurrentUser = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): JwtPayload => {
-    const request = ctx.switchToHttp().getRequest();
-    return request.user;
+```json
+{
+  "organization": {
+    "name": "Clínica XYZ",
+    "slug": "clinica-xyz"
   },
-);
-
-// src/auth/decorators/tenant-isolated.decorator.ts
-import { SetMetadata } from "@nestjs/common";
-
-export const TENANT_ISOLATED = "tenant_isolated";
-export const TenantIsolated = () => SetMetadata(TENANT_ISOLATED, true);
-
-// src/auth/decorators/permissions.decorator.ts
-import { SetMetadata } from "@nestjs/common";
-
-export const REQUIRED_PERMISSIONS = "required_permissions";
-export const RequirePermissions = (...permissions: string[]) =>
-  SetMetadata(REQUIRED_PERMISSIONS, permissions);
-```
-
----
-
-## Row-Level Security (RLS)
-
-### RLS Interceptor
-
-```typescript
-// src/db/interceptors/rls.interceptor.ts
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from "@nestjs/common";
-import { Observable } from "rxjs";
-import { DrizzleService } from "../drizzle.service";
-import { sql } from "drizzle-orm";
-
-@Injectable()
-export class RlsInterceptor implements NestInterceptor {
-  constructor(private db: DrizzleService) {}
-
-  async intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Promise<Observable<any>> {
-    const request = context.switchToHttp().getRequest();
-    const user = request.user; // Do JWT
-
-    if (user) {
-      // Setar contexto PostgreSQL para RLS policies
-      await this.db.db.execute(sql`
-        SELECT set_config('app.current_user_id', ${user.userId}, true);
-        SELECT set_config('app.current_tenant_id', ${user.organizationId}, true);
-        SELECT set_config('app.current_clinic_id', ${user.clinicId || ""}, true);
-      `);
-    }
-
-    return next.handle();
+  "clinic": {
+    "name": "Unidade Principal"
+  },
+  "user": {
+    "name": "Dr. João Silva",
+    "email": "joao@clinica-xyz.com",
+    "password": "senha123"
   }
 }
 ```
 
-### SQL Policies (aplicadas via migration)
+**Processo**:
+
+1. Valida dados de entrada (nome org, slug único, email único, senha forte)
+2. Cria em transação atômica:
+   - Organization
+   - Primeira Clinic
+   - User (role: admin)
+   - UserClinicRole (vincula user à clinic como admin)
+3. Gera emailVerificationToken e envia email (fire-and-forget)
+4. Gera accessToken e refreshToken
+5. Retorna tokens para auto-login
+
+**Resposta**:
+
+```json
+{
+  "accessToken": "eyJ...",
+  "user": {
+    "id": "uuid",
+    "email": "joao@clinica-xyz.com",
+    "name": "Dr. João Silva",
+    "emailVerified": false,
+    "activeClinic": {
+      "id": "clinic-uuid",
+      "name": "Unidade Principal",
+      "organizationId": "org-uuid",
+      "role": "admin"
+    },
+    "availableClinics": [...]
+  },
+  "organization": {
+    "id": "org-uuid",
+    "name": "Clínica XYZ",
+    "slug": "clinica-xyz"
+  }
+}
+```
+
+**Rate Limit**: 3 requisições por minuto
+
+### 8. Enviar Convite
+
+**Endpoint**: `POST /api/invites` (Autenticado - Apenas Admins)
+
+```json
+{
+  "email": "medico@example.com",
+  "name": "Dr. Maria Santos",
+  "clinicId": "clinic-uuid",
+  "role": "doctor"
+}
+```
+
+**Processo**:
+
+1. Valida se usuário autenticado é admin da organização
+2. Valida se email já existe (retorna erro se sim)
+3. Valida se clinic pertence à mesma org do admin
+4. Gera token aleatório (32 bytes hex)
+5. Cria registro em invites table (expira em 7 dias)
+6. Envia email com link: `{FRONTEND_URL}/accept-invite?token={token}`
+
+**Resposta**:
+
+```json
+{
+  "message": "Convite enviado com sucesso",
+  "invite": {
+    "id": "invite-uuid",
+    "email": "medico@example.com",
+    "clinicId": "clinic-uuid",
+    "role": "doctor",
+    "expiresAt": "2026-02-14T10:00:00Z"
+  }
+}
+```
+
+**Rate Limit**: 10 requisições por minuto
+
+### 9. Aceitar Convite
+
+**Endpoint**: `POST /api/invites/accept` (Público - Requer token válido)
+
+```json
+{
+  "token": "token-from-email",
+  "password": "senha123"
+}
+```
+
+**Processo**:
+
+1. Busca invite por token
+2. Valida se não expirou (7 dias)
+3. Valida se não foi usado
+4. Cria em transação atômica:
+   - User (com name e email do invite)
+   - UserClinicRole (vincula à clinic com role do invite)
+   - Marca invite como usado
+5. Gera emailVerificationToken e envia email (fire-and-forget)
+6. Gera accessToken e refreshToken
+7. Retorna tokens para auto-login
+
+**Resposta**:
+
+```json
+{
+  "accessToken": "eyJ...",
+  "user": {
+    "id": "uuid",
+    "email": "medico@example.com",
+    "name": "Dr. Maria Santos",
+    "emailVerified": false,
+    "activeClinic": {
+      "id": "clinic-uuid",
+      "name": "Unidade Principal",
+      "organizationId": "org-uuid",
+      "role": "doctor"
+    },
+    "availableClinics": [...]
+  }
+}
+```
+
+**Rate Limit**: 5 requisições por minuto
+
+### 10. Criar Nova Clínica
+
+**Endpoint**: `POST /api/organizations/:organizationId/clinics` (Autenticado - Apenas Org Admins)
+
+```json
+{
+  "name": "Unidade Centro"
+}
+```
+
+**Processo**:
+
+1. Valida se org existe
+2. Valida se usuário autenticado é admin da organização
+3. Cria clinic vinculada à org
+4. Cria userClinicRole (vincula criador como admin da nova clinic)
+
+**Resposta**:
+
+```json
+{
+  "id": "clinic-uuid",
+  "name": "Unidade Centro",
+  "organizationId": "org-uuid",
+  "createdAt": "2026-02-07T10:00:00Z"
+}
+```
+
+**Rate Limit**: 10 requisições por minuto
+
+### 11. Adicionar Usuário a Clínica
+
+**Endpoint**: `POST /api/clinics/:clinicId/members` (Autenticado - Apenas Admins da Org ou Clinic)
+
+```json
+{
+  "userId": "user-uuid",
+  "role": "secretary"
+}
+```
+
+**Processo**:
+
+1. Valida se clinic existe
+2. Valida se user existe
+3. Valida se usuário autenticado é admin da org ou clinic
+4. Valida se user já não está vinculado à clinic
+5. Cria userClinicRole
+
+**Resposta**:
+
+```json
+{
+  "message": "Usuário adicionado à clínica com sucesso",
+  "member": {
+    "userId": "user-uuid",
+    "clinicId": "clinic-uuid",
+    "role": "secretary"
+  }
+}
+```
+
+**Rate Limit**: 10 requisições por minuto
+
+---
+
+## Multi-Tenant
+
+### Context Switching
+
+Cada usuário pode estar em múltiplas clínicas. O contexto é armazenado no JWT:
+
+- `activeClinicId`: Clínica ativa atual
+- `organizationId`: Organização da clínica ativa
+- `clinicAccess`: Lista de clínicas disponíveis
+
+**Trocar clínica**: `POST /api/auth/switch-context` → novo access token com novo contexto.
+
+### Row-Level Security (RLS)
+
+**Middleware**: `RlsMiddleware` configura o contexto PostgreSQL:
 
 ```sql
--- Migration: Enable RLS
-ALTER TABLE patients_view ENABLE ROW LEVEL SECURITY;
-ALTER TABLE conversations_view ENABLE ROW LEVEL SECURITY;
-ALTER TABLE appointments_view ENABLE ROW LEVEL SECURITY;
-ALTER TABLE journey_view ENABLE ROW LEVEL SECURITY;
-
--- Policy: Isolamento por organização
-CREATE POLICY tenant_isolation ON patients_view
-  USING (organization_id = current_setting('app.current_tenant_id')::uuid);
-
--- Policy: Isolamento por clínica (quando aplicável)
-CREATE POLICY clinic_isolation ON conversations_view
-  USING (
-    clinic_id = current_setting('app.current_clinic_id')::uuid
-    OR current_setting('app.current_clinic_id') = ''
-  );
-
-CREATE POLICY clinic_isolation ON appointments_view
-  USING (
-    clinic_id = current_setting('app.current_clinic_id')::uuid
-    OR current_setting('app.current_clinic_id') = ''
-  );
-
-CREATE POLICY clinic_isolation ON journey_view
-  USING (
-    clinic_id = current_setting('app.current_clinic_id')::uuid
-    OR current_setting('app.current_clinic_id') = ''
-  );
+SELECT set_config('app.current_org_id', organization_id, true)
 ```
+
+**Policies** (no DB):
+
+- `clinic_org_isolation`: Clínicas isoladas por organização
+- `clinic_user_org_isolation`: Usuários só veem clínicas da sua org
+
+Sem o contexto correto, queries retornam dados vazios (segurança em camada DB).
 
 ---
 
-## DTOs
+## Rate Limiting
 
-```typescript
-// src/auth/dto/auth-callback.dto.ts
-import { IsString, IsEmail, IsOptional } from "class-validator";
+### Limites Globais
 
-export class AuthCallbackDto {
-  @IsString()
-  authProviderId: string;
+| Ambiente | short (1s) | medium (60s) |
+| -------- | ---------- | ------------ |
+| Dev      | 1000 req   | 1000 req     |
+| Prod     | 3 req      | 60 req       |
 
-  @IsEmail()
-  email: string;
+### Limites Específicos de Auth
 
-  @IsString()
-  fullName: string;
+| Endpoint                | Limite     |
+| ----------------------- | ---------- |
+| `/auth/login`           | 5 req/min  |
+| `/auth/refresh`         | 20 req/min |
+| `/auth/forgot-password` | 3 req/min  |
+| `/auth/reset-password`  | 5 req/min  |
 
-  @IsString()
-  @IsOptional()
-  phone?: string;
-}
-
-// src/auth/dto/switch-context.dto.ts
-import { IsUUID } from "class-validator";
-
-export class SwitchContextDto {
-  @IsUUID()
-  clinicId: string;
-}
-
-// src/auth/dto/auth-response.dto.ts
-export interface AuthResponse {
-  accessToken: string;
-  context: {
-    organizationId: string;
-    clinicId?: string;
-    role: string;
-  };
-}
-
-export interface AvailableContext {
-  organizationId: string;
-  organizationName: string;
-  clinicId: string;
-  clinicName: string;
-  role: string;
-}
-```
+**Resposta ao limite**: HTTP 429 (Too Many Requests)
 
 ---
 
-## Auth Controller
+## Auditoria
 
-```typescript
-// src/auth/auth.controller.ts
-import { Controller, Post, Get, Body, UseGuards } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { JwtAuthGuard } from "./guards/jwt-auth.guard";
-import { CurrentUser } from "./decorators/current-user.decorator";
-import { JwtPayload } from "./types/jwt-payload.interface";
-import {
-  AuthCallbackDto,
-  SwitchContextDto,
-  AuthResponse,
-  AvailableContext,
-} from "./dto";
+### Logs Automáticos
 
-@Controller("auth")
-export class AuthController {
-  constructor(private authService: AuthService) {}
+O `AuditInterceptor` loga automaticamente **toda ação autenticada**:
 
-  /**
-   * POST /auth/callback
-   * Callback do Auth0/Clerk após login
-   */
-  @Post("callback")
-  async handleAuthCallback(
-    @Body() dto: AuthCallbackDto,
-  ): Promise<AuthResponse> {
-    return this.authService.handleAuthCallback(dto);
-  }
+- Quem (userId)
+- O quê (action: READ, CREATE, UPDATE, DELETE)
+- Onde (resource: URL path)
+- Quando (timestamp)
+- De onde (IP)
+- Em qual contexto (organizationId, clinicId)
 
-  /**
-   * POST /auth/switch-context
-   * Trocar contexto de clínica
-   */
-  @Post("switch-context")
-  @UseGuards(JwtAuthGuard)
-  async switchContext(
-    @CurrentUser() user: JwtPayload,
-    @Body() dto: SwitchContextDto,
-  ): Promise<AuthResponse> {
-    return this.authService.switchContext(user.userId, dto.clinicId);
-  }
+### Logs Explícitos
 
-  /**
-   * GET /auth/me
-   * Retornar informações do usuário atual
-   */
-  @Get("me")
-  @UseGuards(JwtAuthGuard)
-  async getCurrentUser(@CurrentUser() user: JwtPayload) {
-    return {
-      userId: user.userId,
-      email: user.email,
-      organizationId: user.organizationId,
-      clinicId: user.clinicId,
-      role: user.role,
-      permissions: user.permissions,
-    };
-  }
+Auth eventos especiais logados no `auth.service.ts`:
 
-  /**
-   * GET /auth/available-contexts
-   * Listar clínicas disponíveis para context switching
-   */
-  @Get("available-contexts")
-  @UseGuards(JwtAuthGuard)
-  async getAvailableContexts(
-    @CurrentUser() user: JwtPayload,
-  ): Promise<AvailableContext[]> {
-    return this.authService.getAvailableContexts(user.userId);
-  }
+- `LOGIN` (sucesso)
+- `LOGIN_FAILED` (credenciais inválidas)
+- `LOGOUT`
 
-  /**
-   * POST /auth/refresh
-   * Renovar token (mantendo mesmo contexto)
-   */
-  @Post("refresh")
-  @UseGuards(JwtAuthGuard)
-  async refreshToken(@CurrentUser() user: JwtPayload): Promise<AuthResponse> {
-    // Re-gerar token com mesmo contexto
-    if (user.clinicId) {
-      return this.authService.switchContext(user.userId, user.clinicId);
-    }
-
-    // Se não tem clinicId, gerar com primeiro acesso disponível
-    const contexts = await this.authService.getAvailableContexts(user.userId);
-    if (contexts.length === 0) {
-      throw new UnauthorizedException("No available contexts");
-    }
-
-    return this.authService.switchContext(user.userId, contexts[0].clinicId);
-  }
-}
-```
+**Tabela**: `audit_logs` com campos: `userId`, `action`, `resource`, `method`, `statusCode`, `ip`, `userAgent`, `organizationId`, `clinicId`, `metadata`, `createdAt`
 
 ---
 
-## Auth Module
+## Testando os Fluxos
 
-```typescript
-// src/auth/auth.module.ts
-import { Module } from "@nestjs/common";
-import { JwtModule } from "@nestjs/jwt";
-import { PassportModule } from "@nestjs/passport";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { AuthService } from "./auth.service";
-import { AuthController } from "./auth.controller";
-import { JwtStrategy } from "./strategies/jwt.strategy";
-import { DrizzleModule } from "../db/drizzle.module";
-
-@Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: "jwt" }),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>("JWT_SECRET"),
-        signOptions: {
-          expiresIn: "8h",
-        },
-      }),
-    }),
-    DrizzleModule,
-  ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService, JwtModule],
-})
-export class AuthModule {}
-```
-
----
-
-## Environment Variables
+### Configuração Inicial
 
 ```bash
-# .env
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-JWT_EXPIRES_IN=8h
-
-# Auth0/Clerk
-AUTH_PROVIDER=auth0  # ou 'clerk'
-AUTH0_DOMAIN=your-domain.auth0.com
-AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
-
-# ou para Clerk
-CLERK_SECRET_KEY=sk_test_...
-CLERK_PUBLISHABLE_KEY=pk_test_...
+cd apps/api
+pnpm install
+pnpm db:migrate  # Aplicar migrations
 ```
 
----
+**Variáveis de Ambiente** (`.env`):
 
-## Uso nos Controllers
-
-### Exemplo Completo
-
-```typescript
-// src/patients/patients.controller.ts
-import { Controller, Get, UseGuards, Query, Param } from "@nestjs/common";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
-import { TenantIsolationGuard } from "../auth/guards/tenant-isolation.guard";
-import { PermissionsGuard } from "../auth/guards/permissions.guard";
-import { TenantIsolated } from "../auth/decorators/tenant-isolated.decorator";
-import { RequirePermissions } from "../auth/decorators/permissions.decorator";
-import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { JwtPayload } from "../auth/types/jwt-payload.interface";
-
-@Controller("patients")
-@UseGuards(JwtAuthGuard, TenantIsolationGuard, PermissionsGuard)
-@TenantIsolated()
-export class PatientsController {
-  /**
-   * GET /patients
-   * Listar pacientes da organização
-   */
-  @Get()
-  @RequirePermissions("patients.view")
-  async listPatients(
-    @CurrentUser() user: JwtPayload,
-    @Query() query: ListPatientsDto,
-  ) {
-    // Query automática filtra por organizationId via RLS
-    // E via application-level usando user.organizationId
-  }
-
-  /**
-   * GET /patients/:id
-   * Detalhes de um paciente
-   */
-  @Get(":id")
-  @RequirePermissions("patients.view")
-  async getPatient(
-    @CurrentUser() user: JwtPayload,
-    @Param("id") patientId: string,
-  ) {
-    // Buscar patient + validar se pertence à org do user
-  }
-}
+```env
+NODE_ENV=development
+DATABASE_URL=postgresql://user:password@localhost:5432/healz
+JWT_SECRET=sua-secret-key-para-testes
+RESEND_API_KEY=re_xxxxxxxx  # Obter em https://resend.com/api-keys
+FRONTEND_URL=http://localhost:3000
 ```
 
----
+### 1. Login e Refresh Token Rotation
 
-## Fluxos Completos
+```bash
+# Login
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"doctor@clinic.com","password":"password123"}' \
+  -v
 
-### Fluxo 1: Login Inicial
+# Resposta inclui:
+# - accessToken (no JSON)
+# - Set-Cookie: refreshToken (httpOnly)
 
-```
-1. Usuário faz login no Auth0/Clerk
-2. Frontend recebe callback com authProviderId
-3. Frontend chama POST /auth/callback com authProviderId
-4. Backend:
-   - Busca/cria usuário
-   - Busca primeira organização acessível
-   - Gera JWT com contexto inicial
-5. Frontend armazena token
-6. Frontend redireciona para dashboard
-```
+# Refresh (lê cookie automaticamente)
+curl -X POST http://localhost:3001/api/auth/refresh \
+  -b cookies.txt \
+  -c cookies.txt \
+  -H "Content-Type: application/json"
 
-### Fluxo 2: Context Switching
-
-```
-1. Usuário clica em "Trocar Clínica" no dashboard
-2. Frontend chama GET /auth/available-contexts
-3. Frontend exibe lista de clínicas disponíveis
-4. Usuário seleciona clínica
-5. Frontend chama POST /auth/switch-context { clinicId }
-6. Backend:
-   - Valida acesso
-   - Gera novo JWT com novo contexto
-7. Frontend substitui token antigo
-8. Dashboard recarrega com nova clínica
+# Retorna novo accessToken e atualiza cookie de refreshToken
 ```
 
-### Fluxo 3: Request Autenticado
+### 2. Detecção de Reuso de Token
 
+```bash
+# Login e guardar tokens
+RESPONSE=$(curl -s -c cookies.txt \
+  -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"doctor@clinic.com","password":"password123"}')
+
+ACCESS_TOKEN=$(echo $RESPONSE | jq -r '.accessToken')
+
+# Refresh 1x (sucesso)
+curl -X POST http://localhost:3001/api/auth/refresh \
+  -b cookies.txt -c cookies.txt \
+  -H "Content-Type: application/json"
+
+# Tentar usar token antigo novamente
+# Extrair o refresh token anterior e fazer outro refresh com ele
+# → HTTP 401: "Token reuse detected. All sessions revoked."
 ```
-1. Frontend envia request com header:
-   Authorization: Bearer eyJhbGc...
 
-2. JwtAuthGuard valida token
-3. JWT Strategy extrai payload
-4. TenantIsolationGuard valida organizationId
-5. PermissionsGuard valida permissões
-6. RlsInterceptor seta contexto PostgreSQL
-7. Controller executa com user context
-8. Queries automáticas filtram por tenant
+### 3. Email Verification
+
+```bash
+# Enviar email de verificação (requer autenticação)
+curl -X POST http://localhost:3001/api/auth/resend-verification \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -H "Content-Type: application/json"
+
+# Email é enviado via Resend
+# Verificar token na resposta (em dev, ou no log do Resend)
+
+# Verificar email
+curl -X POST http://localhost:3001/api/auth/verify-email \
+  -H "Content-Type: application/json" \
+  -d '{"token":"token-from-email"}'
+
+# Resposta: {"message":"Email verificado com sucesso"}
+```
+
+### 4. Password Reset
+
+```bash
+# Solicitar reset (não requer autenticação)
+curl -X POST http://localhost:3001/api/auth/forgot-password \
+  -H "Content-Type: application/json" \
+  -d '{"email":"doctor@clinic.com"}'
+
+# Resposta: sempre sucesso (previne enumeração)
+# Email é enviado via Resend
+
+# Verificar token no Resend ou no log
+
+# Reset password
+curl -X POST http://localhost:3001/api/auth/reset-password \
+  -H "Content-Type: application/json" \
+  -d '{"token":"token-from-email","newPassword":"newPassword123"}'
+
+# Depois: fazer login com nova senha
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"doctor@clinic.com","password":"newPassword123"}'
+```
+
+### 5. Context Switching
+
+```bash
+# Fazer login (retorna clinicAccess disponíveis)
+RESPONSE=$(curl -s -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"doctor@clinic.com","password":"password123"}')
+
+AVAILABLE=$(echo $RESPONSE | jq '.user.availableClinics')
+OTHER_CLINIC=$(echo $AVAILABLE | jq -r '.[1].clinicId')
+
+# Trocar para outra clínica
+curl -X POST http://localhost:3001/api/auth/switch-context \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"clinicId\":\"$OTHER_CLINIC\"}"
+
+# Novo access token com novo contexto
+```
+
+### 6. Rate Limiting
+
+```bash
+# Tentar login 6 vezes em 1 minuto (limite: 5)
+for i in {1..6}; do
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+    -X POST http://localhost:3001/api/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"email":"test@test.com","password":"wrong"}')
+  echo "Tentativa $i: $STATUS"
+done
+
+# 6ª tentativa retorna: 429 (Too Many Requests)
+```
+
+### 7. Logout
+
+```bash
+# Logout (requer JWT válido e refresh token no cookie)
+curl -X POST http://localhost:3001/api/auth/logout \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -b cookies.txt
+
+# Resposta: 204 No Content
+# Cookie de refreshToken é limpo
+
+# Tentar refresh com token revogado
+curl -X POST http://localhost:3001/api/auth/refresh \
+  -b cookies.txt
+# → HTTP 401: "Invalid refresh token"
+```
+
+### 8. Auditoria
+
+```bash
+# Toda ação autenticada é logada automaticamente
+# Verificar logs (exemplo com psql):
+psql -U user -d healz -c "
+  SELECT
+    created_at,
+    user_id,
+    action,
+    resource,
+    status_code,
+    ip
+  FROM audit_logs
+  WHERE created_at > NOW() - INTERVAL '1 hour'
+  ORDER BY created_at DESC;
+"
+```
+
+### 9. Signup B2B
+
+```bash
+# Signup de nova organização
+curl -X POST http://localhost:3001/api/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "organization": {
+      "name": "Clínica Exemplo",
+      "slug": "clinica-exemplo"
+    },
+    "clinic": {
+      "name": "Unidade Principal"
+    },
+    "user": {
+      "name": "Dr. João Silva",
+      "email": "joao@clinica-exemplo.com",
+      "password": "senha12345"
+    }
+  }' \
+  -v
+
+# Resposta inclui:
+# - accessToken (no JSON)
+# - Set-Cookie: refreshToken (httpOnly)
+# - Dados do usuário, clínica e organização criados
+```
+
+### 10. Enviar Convite
+
+```bash
+# Enviar convite (requer autenticação como admin)
+curl -X POST http://localhost:3001/api/invites \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "medico@example.com",
+    "name": "Dr. Maria Santos",
+    "clinicId": "clinic-uuid",
+    "role": "doctor"
+  }'
+
+# Resposta: confirmação de convite enviado
+# Email é enviado via Resend com link de aceitação
+```
+
+### 11. Aceitar Convite
+
+```bash
+# Aceitar convite com token do email
+curl -X POST http://localhost:3001/api/invites/accept \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "token-from-email",
+    "password": "senha12345"
+  }' \
+  -v
+
+# Resposta inclui:
+# - accessToken (no JSON)
+# - Set-Cookie: refreshToken (httpOnly)
+# - Auto-login após aceitar convite
+```
+
+### 12. Criar Nova Clínica
+
+```bash
+# Criar clínica em organização existente (requer admin)
+curl -X POST http://localhost:3001/api/organizations/$ORG_ID/clinics \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Unidade Centro"
+  }'
+
+# Resposta: dados da nova clínica criada
+# Criador é automaticamente adicionado como admin
+```
+
+### 13. Adicionar Membro a Clínica
+
+```bash
+# Adicionar usuário existente a clínica (requer admin da org ou clínica)
+curl -X POST http://localhost:3001/api/clinics/$CLINIC_ID/members \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user-uuid",
+    "role": "secretary"
+  }'
+
+# Resposta: confirmação de membro adicionado
 ```
 
 ---
 
 ## Segurança
 
-### Checklist de Segurança
+### Implementado
 
-- ✅ Tokens expiram em 8h
-- ✅ RLS aplicado em todas as views
-- ✅ Application-level filtering como camada extra
-- ✅ Validação de permissões granulares
-- ✅ Context switching validado
-- ✅ Secrets em variáveis de ambiente
-- ✅ HTTPS obrigatório em produção
+✅ **Senhas**: Hashadas com bcrypt (salt 10)
+✅ **JWT**: Assinados com secret, expiração 15 min
+✅ **Refresh Tokens**: Opacos (não JWTs), rotation a cada uso
+✅ **Detecção de Roubo**: Reuso de token revoga toda a sessão
+✅ **Email Verification**: Links com token de 24h
+✅ **Password Reset**: Links com token de 1h, revoga sessões anteriores
+✅ **Rate Limiting**: Brute force protection nos endpoints críticos
+✅ **RLS**: Row-level security no PostgreSQL
+✅ **Cookies**: httpOnly, secure (prod), SameSite=strict
+✅ **Auditoria**: Log automático de todas as ações
+✅ **Email Enumeration**: Resposta genérica no forgot-password
 
-### Próximas Melhorias
+### Implementado Recentemente
 
-- ⏳ Refresh tokens
-- ⏳ Token revocation
-- ⏳ Rate limiting por usuário
-- ⏳ Audit log de trocas de contexto
-- ⏳ 2FA (Two-Factor Authentication)
+- [x] **Signup e Gerenciamento de Usuários** (implementado 2026-02-07)
+  - POST /api/signup - Signup B2B (criar organização + clínica + admin)
+  - POST /api/invites - Enviar convite para novo usuário
+  - POST /api/invites/accept - Aceitar convite e criar conta
+  - POST /api/organizations/:id/clinics - Criar nova clínica
+  - POST /api/clinics/:id/members - Adicionar usuário a clínica
+
+### Melhorias Futuras
+
+- [ ] 2FA (TOTP/SMS)
+- [ ] Device management (controlar quais dispositivos podem acessar)
+- [ ] IP whitelist/blacklist
+- [ ] Detecção de anomalias (login de IPs suspeitos)
+- [ ] Session timeout dinâmico (atividade)
 
 ---
 
-## Documentação Relacionada
+## Troubleshooting
 
-- [DRIZZLE_SCHEMA.md](./DRIZZLE_SCHEMA.md) - Schema do banco de dados
-- [API_ENDPOINTS.md](./API_ENDPOINTS.md) - Endpoints da API
-- [MULTI_TENANT.md](../MULTI_TENANT.md) - Arquitetura multi-tenant
+### Problema: "Invalid refresh token"
+
+- **Causa**: Refresh token expirou (7 dias) ou foi revogado
+- **Solução**: Fazer login novamente
+
+### Problema: "Token reuse detected. All sessions revoked."
+
+- **Causa**: Token de refresh foi reutilizado (possível roubo detectado)
+- **Resultado**: Todas as sessões do usuário foram revogadas por segurança
+- **Solução**: Fazer login novamente e investigar possível compromissão
+
+### Problema: "Email não verificado" (se guard ativo)
+
+- **Causa**: Email não foi verificado ainda
+- **Solução**: Chamar `/api/auth/resend-verification` para reenviar email
+
+### Problema: "User does not have access to this clinic"
+
+- **Causa**: Usuário não está vinculado à clínica ou a clínica foi deletada
+- **Solução**: Verificar no DB se `userClinicRoles` existe para o par (userId, clinicId)
+
+### Problema: Rate limiting em desenvolvimento
+
+- **Causa**: Atingiu limite global (normalmente alto em dev, mas pode estar configurado diferente)
+- **Solução**: Esperar 1 minuto ou ajustar `NODE_ENV` ou aumentar limites em `app.module.ts`
+
+---
+
+## Referências
+
+- Documentação de implementação: `docs/plans/AUTH_MULTI_TENANT_IMPLEMENTATION.md`
+- Planos de features implementadas: `docs/plans/0[1-6]-*.md`
+- Plano de signup e gerenciamento de usuários: `docs/plans/07-signup-and-user-management.md`
+- Código-fonte:
+  - `apps/api/src/auth/` - Autenticação
+  - `apps/api/src/audit/` - Auditoria
+  - `apps/api/src/mail/` - Email
+  - `apps/api/src/db/schema/` - Schema DB
