@@ -51,6 +51,8 @@ export const refreshTokens = pgTable("refresh_tokens", {
     .references(() => users.id)
     .notNull(),
   token: varchar("token", { length: 500 }).notNull().unique(),
+  family: uuid("family").notNull(), // agrupa tokens da mesma sessão
+  revokedAt: timestamp("revoked_at"), // null = ativo, preenchido = já foi rotacionado
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
