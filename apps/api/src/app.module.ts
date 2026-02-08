@@ -12,6 +12,8 @@ import { OrganizationsModule } from "./organizations/organizations.module";
 import { ClinicsModule } from "./clinics/clinics.module";
 import { PlatformAdminModule } from "./platform-admin/platform-admin.module";
 import { EventSourcingModule } from "./event-sourcing/event-sourcing.module";
+import { PatientModule } from "./patient/patient.module";
+import { MessagingModule } from "./messaging/messaging.module";
 import { RlsMiddleware } from "./db/middleware";
 import { HealthController } from "./health.controller";
 
@@ -38,6 +40,8 @@ import { HealthController } from "./health.controller";
     AuthModule,
     AuditModule,
     EventSourcingModule,
+    PatientModule,
+    MessagingModule,
     MailModule,
     SignupModule,
     InvitesModule,
