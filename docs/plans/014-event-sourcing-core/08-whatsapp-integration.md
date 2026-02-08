@@ -2,131 +2,142 @@
 
 ## Objetivo
 
-Integrar o sistema com a WhatsApp Business API real, substituindo o gateway mock por uma implementação que recebe e envia mensagens através do WhatsApp.
+Integrar o sistema com a WhatsApp Business API real, substituindo o gateway mock por uma implementacao que recebe e envia mensagens atraves do WhatsApp.
 
-## Pré-requisitos
+## Pre-requisitos
 
-- ✅ Fase 1 concluída (Event Store Foundation)
-- ✅ Fase 3 concluída (WhatsApp Mock) - será substituído
-- ✅ Fase 4 concluída (Conversation Aggregate)
+- Fase 1 concluida (Event Store Foundation)
+- Fase 3 concluida (WhatsApp Mock) - sera substituido
+- Fase 4 concluida (Conversation Aggregate)
 
 ## Escopo
 
-### O que será implementado
+### O que sera implementado
 
 1. **WhatsApp Business API Client** - Cliente para interagir com API oficial
 2. **Webhook Receiver** - Endpoint para receber mensagens do WhatsApp
-3. **Message Sender** - Serviço para enviar mensagens
-4. **Message Templates** - Suporte a templates pré-aprovados
+3. **Message Sender** - Servico para enviar mensagens
+4. **Message Templates** - Suporte a templates pre-aprovados
 5. **Media Handler** - Upload/download de imagens, documentos, etc.
-6. **Webhook Verification** - Segurança do webhook
+6. **Webhook Verification** - Seguranca do webhook
 
-### O que NÃO será implementado
+### O que NAO sera implementado
 
-- ❌ WhatsApp Cloud API (usar Business API on-premise ou parceiro como Twilio)
-- ❌ Rich media cards/carousels (apenas texto, imagem, documento)
-- ❌ WhatsApp Payments
-- ❌ Catálogo de produtos
-- ❌ Botões interativos (futura iteração)
+- WhatsApp Cloud API (usar Business API on-premise ou parceiro como Twilio)
+- Rich media cards/carousels (apenas texto, imagem, documento)
+- WhatsApp Payments
+- Catalogo de produtos
+- Botoes interativos (futura iteracao)
 
 ## Arquitetura
 
 ```
-┌─────────────┐
-│  WhatsApp   │
-│   Server    │
-└──────┬──────┘
-       │
-       │ webhook
-       ▼
-┌──────────────────────────────┐
-│   Healz API                  │
-│                              │
-│  ┌────────────────────────┐  │
-│  │  Webhook Controller    │  │
-│  │  POST /webhooks/wa     │  │
-│  └───────────┬────────────┘  │
-│              │               │
-│              ▼               │
-│  ┌────────────────────────┐  │
-│  │  WhatsApp Gateway      │  │
-│  │  - Verify signature    │  │
-│  │  - Parse payload       │  │
-│  │  - Emit event          │  │
-│  └───────────┬────────────┘  │
-│              │               │
-│              ▼               │
-│  ┌────────────────────────┐  │
-│  │  Event Bus (RabbitMQ)  │  │
-│  │  MessageReceived       │  │
-│  └────────────────────────┘  │
-└──────────────────────────────┘
++---------------+
+|   WhatsApp    |
+|    Server     |
++-------+-------+
+        |
+        | webhook
+        v
++-------------------------------+
+|   Healz API                   |
+|                               |
+|  +-------------------------+  |
+|  |  Webhook Controller     |  |
+|  |  POST /webhooks/wa      |  |
+|  +------------+------------+  |
+|               |                |
+|               v                |
+|  +-------------------------+  |
+|  |  WhatsApp Gateway       |  |
+|  |  - Verify signature     |  |
+|  |  - Parse payload        |  |
+|  |  - Emit event           |  |
+|  +------------+------------+  |
+|               |                |
+|               v                |
+|  +-------------------------+  |
+|  |  Event Bus (RabbitMQ)   |  |
+|  |  MessageReceived        |  |
+|  +-------------------------+  |
++-------------------------------+
 ```
 
-## WhatsApp Business API Setup
+## Estrutura de Arquivos
 
-### Opções de Integração
+```
+apps/api/src/
++-- messaging/
+|   +-- messaging.module.ts            # Atualizar - trocar mock por real
+|   +-- domain/
+|   |   +-- messaging-gateway.interface.ts   # Ja existe (Fase 3)
+|   +-- infrastructure/
+|   |   +-- mock-messaging-gateway.service.ts  # Ja existe (Fase 3)
+|   |   +-- whatsapp-gateway.service.ts        # NOVO
+|   |   +-- whatsapp-config.ts                 # NOVO
+|   |   +-- whatsapp-templates.ts              # NOVO
+|   +-- api/
+|   |   +-- whatsapp-webhook.controller.ts     # NOVO
+|   |   +-- whatsapp-webhook.service.ts        # NOVO
+|   +-- test/
+|       +-- test-messaging.controller.ts       # Ja existe (Fase 3)
+```
 
-1. **WhatsApp Business API (oficial)** - Requer hosting próprio
-2. **Twilio WhatsApp API** - Mais simples, managed service (recomendado para MVP)
-3. **360dialog** - Parceiro oficial europeu
-4. **MessageBird** - Alternativa global
-
-**Recomendação para MVP:** Twilio (mais fácil de configurar, pricing transparente)
-
-### Configuração Twilio
+## Configuracao
 
 ```typescript
-// config/whatsapp.config.ts
+// infrastructure/whatsapp-config.ts
 
-export const whatsappConfig = {
-  provider: process.env.WHATSAPP_PROVIDER || 'twilio', // 'twilio' | 'official' | '360dialog'
-
-  // Twilio
+export interface WhatsAppConfig {
+  provider: "twilio" | "official" | "360dialog";
   twilio: {
-    accountSid: process.env.TWILIO_ACCOUNT_SID,
-    authToken: process.env.TWILIO_AUTH_TOKEN,
-    whatsappNumber: process.env.TWILIO_WHATSAPP_NUMBER, // whatsapp:+14155238886
-  },
-
-  // Webhook
+    accountSid: string;
+    authToken: string;
+    whatsappNumber: string;
+  };
   webhook: {
-    path: '/api/v1/webhooks/whatsapp',
-    verifyToken: process.env.WHATSAPP_VERIFY_TOKEN,
-  },
-
-  // Rate limiting
+    path: string;
+    verifyToken: string;
+  };
   rateLimits: {
-    messagesPerSecond: 10,
-    messagesPerDay: 1000,
-  },
-};
+    messagesPerSecond: number;
+    messagesPerDay: number;
+  };
+}
+
+export function createWhatsAppConfig(): WhatsAppConfig {
+  return {
+    provider: (process.env.WHATSAPP_PROVIDER as any) || "twilio",
+    twilio: {
+      accountSid: process.env.TWILIO_ACCOUNT_SID || "",
+      authToken: process.env.TWILIO_AUTH_TOKEN || "",
+      whatsappNumber: process.env.TWILIO_WHATSAPP_NUMBER || "",
+    },
+    webhook: {
+      path: "/api/v1/webhooks/whatsapp",
+      verifyToken: process.env.WHATSAPP_VERIFY_TOKEN || "",
+    },
+    rateLimits: {
+      messagesPerSecond: parseInt(process.env.WHATSAPP_RATE_LIMIT_PER_SECOND || "10"),
+      messagesPerDay: parseInt(process.env.WHATSAPP_RATE_LIMIT_PER_DAY || "1000"),
+    },
+  };
+}
 ```
 
-## WhatsApp Gateway Implementation
+## WhatsApp Gateway
+
+Implementa a interface `IMessagingGateway` definida na Fase 3.
 
 ```typescript
-// infrastructure/messaging/whatsapp/whatsapp.gateway.ts
+// infrastructure/whatsapp-gateway.service.ts
 
-import { Twilio } from 'twilio';
-
-export interface SendMessageOptions {
-  to: string; // Phone number in E.164 format
-  body: string;
-  mediaUrl?: string;
-  templateName?: string;
-  templateParams?: Record<string, string>;
-}
-
-export interface IncomingMessage {
-  from: string;
-  to: string;
-  body: string;
-  messageId: string;
-  timestamp: Date;
-  mediaUrl?: string;
-  mediaType?: string;
-}
+import { Injectable, Logger } from "@nestjs/common";
+import { Twilio } from "twilio";
+import {
+  IMessagingGateway, OutgoingMessage, MessageDeliveryStatus,
+} from "../domain/messaging-gateway.interface";
+import { WhatsAppConfig } from "./whatsapp-config";
 
 @Injectable()
 export class WhatsAppGateway implements IMessagingGateway {
@@ -134,10 +145,7 @@ export class WhatsAppGateway implements IMessagingGateway {
   private readonly client: Twilio;
   private readonly fromNumber: string;
 
-  constructor(
-    private readonly eventBus: EventBus,
-    @Inject('WHATSAPP_CONFIG') private readonly config: any,
-  ) {
+  constructor(private readonly config: WhatsAppConfig) {
     this.client = new Twilio(
       config.twilio.accountSid,
       config.twilio.authToken,
@@ -145,84 +153,119 @@ export class WhatsAppGateway implements IMessagingGateway {
     this.fromNumber = config.twilio.whatsappNumber;
   }
 
-  async sendMessage(options: SendMessageOptions): Promise<string> {
+  async sendMessage(message: OutgoingMessage): Promise<MessageDeliveryStatus> {
     try {
-      // Validar número
-      const to = this.formatPhoneNumber(options.to);
+      const to = this.formatPhoneNumber(message.to);
 
-      // Enviar via Twilio
-      const message = await this.client.messages.create({
+      const result = await this.client.messages.create({
         from: this.fromNumber,
         to: `whatsapp:${to}`,
-        body: options.body,
-        mediaUrl: options.mediaUrl ? [options.mediaUrl] : undefined,
+        body: message.content,
+        mediaUrl: message.mediaUrl ? [message.mediaUrl] : undefined,
       });
 
-      this.logger.log(`Message sent to ${to}: ${message.sid}`);
+      this.logger.log(`Message sent to ${to}: ${result.sid}`);
 
-      return message.sid;
+      return {
+        messageId: result.sid,
+        status: "sent",
+        timestamp: new Date(),
+      };
     } catch (error) {
       this.logger.error(`Failed to send message: ${error.message}`, error.stack);
-      throw new Error(`Failed to send WhatsApp message: ${error.message}`);
+      return {
+        messageId: "",
+        status: "failed",
+        timestamp: new Date(),
+        error: error.message,
+      };
     }
   }
+
+  async sendMessages(messages: OutgoingMessage[]): Promise<MessageDeliveryStatus[]> {
+    const results: MessageDeliveryStatus[] = [];
+    for (const message of messages) {
+      const result = await this.sendMessage(message);
+      results.push(result);
+    }
+    return results;
+  }
+
+  async getDeliveryStatus(messageId: string): Promise<MessageDeliveryStatus> {
+    try {
+      const message = await this.client.messages(messageId).fetch();
+      return {
+        messageId: message.sid,
+        status: this.mapTwilioStatus(message.status),
+        timestamp: new Date(),
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get status: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async checkPhoneNumber(phone: string): Promise<boolean> {
+    try {
+      const formatted = this.formatPhoneNumber(phone);
+      // Twilio lookup para verificar se numero e valido
+      await this.client.lookups.v2.phoneNumbers(formatted).fetch();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Template support
 
   async sendTemplate(
     to: string,
     templateName: string,
     params: Record<string, string>,
-  ): Promise<string> {
-    try {
-      // Templates pré-aprovados pelo WhatsApp
-      const body = this.renderTemplate(templateName, params);
-
-      return this.sendMessage({ to, body });
-    } catch (error) {
-      this.logger.error(`Failed to send template: ${error.message}`);
-      throw error;
-    }
+  ): Promise<MessageDeliveryStatus> {
+    const body = this.renderTemplate(templateName, params);
+    return this.sendMessage({ to, content: body });
   }
 
   async downloadMedia(mediaUrl: string): Promise<Buffer> {
-    try {
-      const response = await fetch(mediaUrl);
-      const buffer = await response.arrayBuffer();
-      return Buffer.from(buffer);
-    } catch (error) {
-      this.logger.error(`Failed to download media: ${error.message}`);
-      throw error;
-    }
+    const response = await fetch(mediaUrl);
+    const buffer = await response.arrayBuffer();
+    return Buffer.from(buffer);
   }
 
   // Helpers
 
   private formatPhoneNumber(phone: string): string {
-    // Remove caracteres não-numéricos
-    let cleaned = phone.replace(/\D/g, '');
-
-    // Adicionar código do país se não tiver
-    if (!cleaned.startsWith('55')) {
-      cleaned = '55' + cleaned;
+    let cleaned = phone.replace(/\D/g, "");
+    if (!cleaned.startsWith("55")) {
+      cleaned = "55" + cleaned;
     }
+    return "+" + cleaned;
+  }
 
-    return '+' + cleaned;
+  private mapTwilioStatus(status: string): "sent" | "delivered" | "read" | "failed" {
+    switch (status) {
+      case "delivered": return "delivered";
+      case "read": return "read";
+      case "failed":
+      case "undelivered": return "failed";
+      default: return "sent";
+    }
   }
 
   private renderTemplate(templateName: string, params: Record<string, string>): string {
     const templates: Record<string, string> = {
-      appointment_reminder: `Olá! Lembrando da sua consulta amanhã às {{time}}. Confirme sua presença respondendo SIM.`,
-      appointment_confirmed: `✅ Consulta confirmada para {{date}} às {{time}}. Te esperamos!`,
-      appointment_cancelled: `Sua consulta do dia {{date}} foi cancelada. Entre em contato para reagendar.`,
-      welcome: `Olá {{name}}! Bem-vindo(a) à {{clinic}}. Como podemos ajudar?`,
+      appointment_reminder: "Ola! Lembrando da sua consulta amanha as {{time}}. Confirme sua presenca respondendo SIM.",
+      appointment_confirmed: "Consulta confirmada para {{date}} as {{time}}. Te esperamos!",
+      appointment_cancelled: "Sua consulta do dia {{date}} foi cancelada. Entre em contato para reagendar.",
+      welcome: "Ola {{name}}! Bem-vindo(a) a {{clinic}}. Como podemos ajudar?",
     };
 
     let template = templates[templateName];
-
     if (!template) {
       throw new Error(`Template not found: ${templateName}`);
     }
 
-    // Substituir placeholders
     for (const [key, value] of Object.entries(params)) {
       template = template.replace(`{{${key}}}`, value);
     }
@@ -235,238 +278,244 @@ export class WhatsAppGateway implements IMessagingGateway {
 ## Webhook Controller
 
 ```typescript
-// presentation/controllers/whatsapp-webhook.controller.ts
+// api/whatsapp-webhook.controller.ts
 
-@Controller('webhooks/whatsapp')
+import {
+  Controller, Get, Post, Query, Body,
+  HttpCode, Logger, UnauthorizedException, Inject,
+} from "@nestjs/common";
+import { WhatsAppWebhookService } from "./whatsapp-webhook.service";
+import { WhatsAppConfig } from "../infrastructure/whatsapp-config";
+
+@Controller("webhooks/whatsapp")
 export class WhatsAppWebhookController {
   private readonly logger = new Logger(WhatsAppWebhookController.name);
 
   constructor(
-    private readonly whatsappService: WhatsAppWebhookService,
-    @Inject('WHATSAPP_CONFIG') private readonly config: any,
+    private readonly webhookService: WhatsAppWebhookService,
+    @Inject("WHATSAPP_CONFIG") private readonly config: WhatsAppConfig,
   ) {}
 
-  /**
-   * Webhook verification (GET)
-   * WhatsApp envia verificação inicial
-   */
+  // Webhook verification (GET) - WhatsApp envia verificacao inicial
   @Get()
   async verifyWebhook(@Query() query: any): Promise<any> {
-    const mode = query['hub.mode'];
-    const token = query['hub.verify_token'];
-    const challenge = query['hub.challenge'];
+    const mode = query["hub.mode"];
+    const token = query["hub.verify_token"];
+    const challenge = query["hub.challenge"];
 
-    if (mode === 'subscribe' && token === this.config.webhook.verifyToken) {
-      this.logger.log('Webhook verified successfully');
+    if (mode === "subscribe" && token === this.config.webhook.verifyToken) {
+      this.logger.log("Webhook verified successfully");
       return challenge;
     }
 
-    throw new UnauthorizedException('Invalid verification token');
+    throw new UnauthorizedException("Invalid verification token");
   }
 
-  /**
-   * Receber mensagens (POST)
-   */
+  // Receber mensagens (POST)
   @Post()
   @HttpCode(200)
   async receiveMessage(@Body() payload: any): Promise<void> {
     try {
-      // Validar signature (segurança)
-      // this.validateSignature(req.headers['x-twilio-signature'], req.body);
-
-      // Parse do payload Twilio
-      const incomingMessage = this.parseIncomingMessage(payload);
-
-      // Processar mensagem
-      await this.whatsappService.handleIncomingMessage(incomingMessage);
-
-      // Sempre retornar 200 imediatamente
-      // (processamento assíncrono via event bus)
+      const incomingMessage = this.parseTwilioPayload(payload);
+      await this.webhookService.handleIncomingMessage(incomingMessage);
     } catch (error) {
       this.logger.error(`Webhook error: ${error.message}`, error.stack);
-      // Ainda assim retornar 200 para não ficar recebendo retries
+      // Sempre retornar 200 para nao receber retries
     }
   }
 
-  /**
-   * Status updates (delivery, read receipts, etc.)
-   */
-  @Post('status')
+  // Status updates (delivery, read receipts)
+  @Post("status")
   @HttpCode(200)
   async receiveStatus(@Body() payload: any): Promise<void> {
     try {
-      const status = this.parseStatusUpdate(payload);
-      await this.whatsappService.handleStatusUpdate(status);
+      const status = {
+        messageId: payload.MessageSid,
+        status: payload.MessageStatus,
+        timestamp: new Date(),
+      };
+      await this.webhookService.handleStatusUpdate(status);
     } catch (error) {
       this.logger.error(`Status update error: ${error.message}`);
     }
   }
 
-  private parseIncomingMessage(payload: any): IncomingMessage {
-    // Formato Twilio
+  private parseTwilioPayload(payload: any) {
     return {
-      from: payload.From.replace('whatsapp:', ''),
-      to: payload.To.replace('whatsapp:', ''),
-      body: payload.Body || '',
-      messageId: payload.MessageSid,
+      from: payload.From?.replace("whatsapp:", "") || "",
+      to: payload.To?.replace("whatsapp:", "") || "",
+      body: payload.Body || "",
+      messageId: payload.MessageSid || "",
       timestamp: new Date(),
       mediaUrl: payload.MediaUrl0,
       mediaType: payload.MediaContentType0,
     };
   }
-
-  private parseStatusUpdate(payload: any): any {
-    return {
-      messageId: payload.MessageSid,
-      status: payload.MessageStatus, // sent, delivered, read, failed
-      timestamp: new Date(),
-    };
-  }
-
-  private validateSignature(signature: string, body: any): void {
-    // Implementar validação de assinatura Twilio
-    // https://www.twilio.com/docs/usage/webhooks/webhooks-security
-  }
 }
 ```
 
-## WhatsApp Service
+## Webhook Service
 
 ```typescript
-// application/services/whatsapp.service.ts
+// api/whatsapp-webhook.service.ts
+
+import { Injectable, Inject, Logger } from "@nestjs/common";
+import { randomUUID } from "crypto";
+import { eq, and } from "drizzle-orm";
+import { db } from "../../../db";
+import { patientView } from "../../../db/schema/patient-view.schema";
+import { conversationView } from "../../../db/schema/conversation-view.schema";
+import { IEventStore } from "../../../event-sourcing/event-store/event-store.interface";
+import { IEventBus } from "../../../event-sourcing/event-bus/event-bus.interface";
 
 @Injectable()
 export class WhatsAppWebhookService {
   private readonly logger = new Logger(WhatsAppWebhookService.name);
 
   constructor(
-    private readonly conversationService: ConversationService,
-    private readonly patientRepository: PatientRepository,
-    private readonly eventBus: EventBus,
+    @Inject("IEventStore") private readonly eventStore: IEventStore,
+    @Inject("IEventBus") private readonly eventBus: IEventBus,
   ) {}
 
-  async handleIncomingMessage(message: IncomingMessage): Promise<void> {
+  async handleIncomingMessage(message: {
+    from: string;
+    body: string;
+    messageId: string;
+    mediaUrl?: string;
+    mediaType?: string;
+  }): Promise<void> {
     try {
-      // 1. Buscar ou criar patient pelo número de telefone
-      const patient = await this.findOrCreatePatient(message.from);
+      // 1. Buscar patient pelo numero de telefone
+      const patient = await this.findPatientByPhone(message.from);
 
-      // 2. Buscar ou criar conversation
-      const conversation = await this.findOrCreateConversation(patient.id);
+      if (!patient) {
+        this.logger.warn(`No patient found for phone: ${message.from}`);
+        // TODO: auto-register patient ou ignorar
+        return;
+      }
 
-      // 3. Registrar mensagem recebida
-      await this.conversationService.receiveMessage(
-        conversation.id,
-        patient.id,
-        message.body,
-        {
-          messageId: message.messageId,
-          channel: 'whatsapp',
-          mediaUrl: message.mediaUrl,
-          mediaType: message.mediaType,
-        },
-      );
+      // 2. Buscar conversation ativa
+      const conversation = await this.findActiveConversation(patient.id);
 
-      this.logger.log(`Message processed: ${message.messageId}`);
+      if (!conversation) {
+        this.logger.warn(`No active conversation for patient: ${patient.id}`);
+        // TODO: auto-start conversation
+        return;
+      }
+
+      // 3. Processar como MessageReceived no Conversation Aggregate
+      // Delegar para ConversationService (Fase 4)
+      this.logger.log(`Message processed: ${message.messageId} from ${message.from}`);
     } catch (error) {
       this.logger.error(`Failed to handle incoming message: ${error.message}`, error.stack);
       throw error;
     }
   }
 
-  async handleStatusUpdate(status: any): Promise<void> {
-    // Atualizar status da mensagem (delivered, read, etc.)
+  async handleStatusUpdate(status: {
+    messageId: string;
+    status: string;
+    timestamp: Date;
+  }): Promise<void> {
     this.logger.log(`Status update: ${status.messageId} -> ${status.status}`);
-
-    // Pode emitir evento se necessário
-    // await this.eventBus.publish(new MessageStatusUpdatedEvent(...));
   }
 
-  private async findOrCreatePatient(phoneNumber: string): Promise<any> {
-    // Buscar patient por telefone
-    const result = await this.patientRepository.findByPhone(phoneNumber);
+  private async findPatientByPhone(phone: string): Promise<{ id: string } | null> {
+    const [result] = await db.select({ id: patientView.id })
+      .from(patientView)
+      .where(eq(patientView.phone, phone));
 
-    if (result) return result;
-
-    // Se não existe, criar automaticamente
-    this.logger.log(`Creating new patient for phone: ${phoneNumber}`);
-
-    const patientId = randomUUID();
-    const patient = Patient.register(
-      patientId,
-      'clinic-id', // TODO: identificar clínica pelo número WhatsApp
-      undefined, // firstName
-      undefined, // lastName
-      phoneNumber,
-      undefined, // email
-      randomUUID(), // correlationId
-    );
-
-    await this.patientRepository.save(patient);
-
-    return { id: patientId, phoneNumber };
+    return result || null;
   }
 
-  private async findOrCreateConversation(patientId: string): Promise<any> {
-    // Buscar conversation ativa
-    // Se não existe, criar nova
-    // Retornar { id, patientId }
+  private async findActiveConversation(patientId: string): Promise<{ id: string } | null> {
+    const [result] = await db.select({ id: conversationView.id })
+      .from(conversationView)
+      .where(
+        and(
+          eq(conversationView.patientId, patientId),
+          eq(conversationView.status, "active"),
+        ),
+      );
+
+    return result || null;
   }
 }
 ```
 
+## Module Configuration
+
+```typescript
+// messaging.module.ts (ATUALIZADO)
+
+import { Module } from "@nestjs/common";
+import { MockMessagingGateway } from "./infrastructure/mock-messaging-gateway.service";
+import { WhatsAppGateway } from "./infrastructure/whatsapp-gateway.service";
+import { createWhatsAppConfig } from "./infrastructure/whatsapp-config";
+import { TestMessagingController } from "./test/test-messaging.controller";
+import { WhatsAppWebhookController } from "./api/whatsapp-webhook.controller";
+import { WhatsAppWebhookService } from "./api/whatsapp-webhook.service";
+
+const config = createWhatsAppConfig();
+const isMock = process.env.MESSAGING_MODE !== "whatsapp";
+
+@Module({
+  controllers: [
+    WhatsAppWebhookController,
+    ...(isMock ? [TestMessagingController] : []),
+  ],
+  providers: [
+    {
+      provide: "WHATSAPP_CONFIG",
+      useValue: config,
+    },
+    {
+      provide: "IMessagingGateway",
+      useClass: isMock ? MockMessagingGateway : WhatsAppGateway,
+    },
+    WhatsAppWebhookService,
+  ],
+  exports: ["IMessagingGateway"],
+})
+export class MessagingModule {}
+```
+
+**Nota:** `MESSAGING_MODE=mock` usa MockMessagingGateway, `MESSAGING_MODE=whatsapp` usa WhatsAppGateway.
+
 ## Message Templates
 
 ```typescript
-// domain/templates/whatsapp-templates.ts
+// infrastructure/whatsapp-templates.ts
 
 export const WHATSAPP_TEMPLATES = {
-  // Template de boas-vindas (pré-aprovado)
   welcome: {
-    name: 'welcome',
-    category: 'UTILITY',
-    language: 'pt_BR',
-    components: [
-      {
-        type: 'BODY',
-        text: 'Olá {{1}}! Bem-vindo(a) à {{2}}. Como podemos ajudar você hoje?',
-      },
-    ],
+    name: "welcome",
+    category: "UTILITY",
+    language: "pt_BR",
+    body: "Ola {{1}}! Bem-vindo(a) a {{2}}. Como podemos ajudar voce hoje?",
   },
-
-  // Template de lembrete de consulta
   appointment_reminder: {
-    name: 'appointment_reminder',
-    category: 'UTILITY',
-    language: 'pt_BR',
-    components: [
-      {
-        type: 'BODY',
-        text: 'Olá {{1}}! Lembrando da sua consulta amanhã, dia {{2}} às {{3}}. Por favor, confirme sua presença respondendo SIM.',
-      },
-    ],
+    name: "appointment_reminder",
+    category: "UTILITY",
+    language: "pt_BR",
+    body: "Ola {{1}}! Lembrando da sua consulta amanha, dia {{2}} as {{3}}. Por favor, confirme sua presenca respondendo SIM.",
   },
-
-  // Template de confirmação
   appointment_confirmed: {
-    name: 'appointment_confirmed',
-    category: 'UTILITY',
-    language: 'pt_BR',
-    components: [
-      {
-        type: 'BODY',
-        text: '✅ Consulta confirmada para {{1}} às {{2}}. Endereço: {{3}}. Te esperamos!',
-      },
-    ],
+    name: "appointment_confirmed",
+    category: "UTILITY",
+    language: "pt_BR",
+    body: "Consulta confirmada para {{1}} as {{2}}. Endereco: {{3}}. Te esperamos!",
   },
 };
 ```
 
-## Environment Variables
+## Variaveis de Ambiente
 
 ```bash
 # .env
 
 # WhatsApp / Twilio
+MESSAGING_MODE=mock          # 'mock' | 'whatsapp'
 WHATSAPP_PROVIDER=twilio
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -486,33 +535,33 @@ WHATSAPP_RATE_LIMIT_PER_DAY=1000
 ### Testes do Gateway
 
 ```typescript
-describe('WhatsAppGateway', () => {
-  it('should send text message', async () => {
-    const gateway = new WhatsAppGateway(eventBus, config);
+describe("WhatsAppGateway", () => {
+  // Testes com Twilio mockado
+  let gateway: WhatsAppGateway;
+  let mockTwilioClient: any;
 
-    const messageId = await gateway.sendMessage({
-      to: '+5511999999999',
-      body: 'Hello, World!',
-    });
-
-    expect(messageId).toBeDefined();
+  beforeEach(() => {
+    // Mock Twilio client
+    const config = createWhatsAppConfig();
+    gateway = new WhatsAppGateway(config);
   });
 
-  it('should format phone number correctly', async () => {
-    const gateway = new WhatsAppGateway(eventBus, config);
-
-    const formatted = gateway['formatPhoneNumber']('11999999999');
-    expect(formatted).toBe('+5511999999999');
+  it("should format phone number correctly", () => {
+    const formatted = gateway["formatPhoneNumber"]("11999999999");
+    expect(formatted).toBe("+5511999999999");
   });
 
-  it('should render template with params', async () => {
-    const gateway = new WhatsAppGateway(eventBus, config);
-
-    const message = gateway['renderTemplate']('appointment_reminder', {
-      time: '14h',
+  it("should render template with params", () => {
+    const message = gateway["renderTemplate"]("appointment_reminder", {
+      time: "14h",
     });
+    expect(message).toContain("14h");
+  });
 
-    expect(message).toContain('14h');
+  it("should throw for unknown template", () => {
+    expect(() => {
+      gateway["renderTemplate"]("unknown_template", {});
+    }).toThrow("Template not found");
   });
 });
 ```
@@ -520,59 +569,56 @@ describe('WhatsAppGateway', () => {
 ### Testes do Webhook
 
 ```typescript
-describe('WhatsAppWebhookController (E2E)', () => {
-  it('GET /webhooks/whatsapp - should verify webhook', async () => {
+describe("WhatsAppWebhookController (E2E)", () => {
+  it("GET /webhooks/whatsapp - should verify webhook", async () => {
     const response = await request(app.getHttpServer())
-      .get('/webhooks/whatsapp')
+      .get("/webhooks/whatsapp")
       .query({
-        'hub.mode': 'subscribe',
-        'hub.verify_token': 'test_token',
-        'hub.challenge': '12345',
+        "hub.mode": "subscribe",
+        "hub.verify_token": "test_token",
+        "hub.challenge": "12345",
       })
       .expect(200);
 
-    expect(response.text).toBe('12345');
+    expect(response.text).toBe("12345");
   });
 
-  it('POST /webhooks/whatsapp - should receive message', async () => {
+  it("POST /webhooks/whatsapp - should receive message", async () => {
     const payload = {
-      From: 'whatsapp:+5511999999999',
-      To: 'whatsapp:+14155238886',
-      Body: 'Olá',
-      MessageSid: 'SM123456',
+      From: "whatsapp:+5511999999999",
+      To: "whatsapp:+14155238886",
+      Body: "Ola",
+      MessageSid: "SM123456",
     };
 
     await request(app.getHttpServer())
-      .post('/webhooks/whatsapp')
+      .post("/webhooks/whatsapp")
       .send(payload)
       .expect(200);
-
-    // Verificar que evento foi emitido
-    // Verificar que conversation foi criada
   });
 
-  it('should handle message with media', async () => {
+  it("should handle message with media", async () => {
     const payload = {
-      From: 'whatsapp:+5511999999999',
-      To: 'whatsapp:+14155238886',
-      Body: '',
-      MessageSid: 'SM123456',
-      MediaUrl0: 'https://example.com/image.jpg',
-      MediaContentType0: 'image/jpeg',
+      From: "whatsapp:+5511999999999",
+      To: "whatsapp:+14155238886",
+      Body: "",
+      MessageSid: "SM123456",
+      MediaUrl0: "https://example.com/image.jpg",
+      MediaContentType0: "image/jpeg",
     };
 
     await request(app.getHttpServer())
-      .post('/webhooks/whatsapp')
+      .post("/webhooks/whatsapp")
       .send(payload)
       .expect(200);
   });
 });
 ```
 
-## Configuração do Webhook no Twilio
+## Configuracao do Webhook no Twilio
 
 1. Acesse o console Twilio: https://console.twilio.com
-2. Vá em Messaging > Settings > WhatsApp Sandbox Settings
+2. Va em Messaging > Settings > WhatsApp Sandbox Settings
 3. Configure:
    - **When a message comes in:** `https://sua-api.com/api/v1/webhooks/whatsapp`
    - **Method:** POST
@@ -580,64 +626,62 @@ describe('WhatsAppWebhookController (E2E)', () => {
 
 ## Security Checklist
 
-- [ ] Validar assinatura Twilio em todas as requisições
+- [ ] Validar assinatura Twilio em todas as requisicoes
 - [ ] Rate limiting no webhook
 - [ ] Verificar token de webhook (hub.verify_token)
 - [ ] Sanitizar inputs de mensagens
-- [ ] Não expor credenciais em logs
-- [ ] HTTPS obrigatório (webhook)
+- [ ] Nao expor credenciais em logs
+- [ ] HTTPS obrigatorio (webhook)
 - [ ] Implementar retry logic com exponential backoff
 - [ ] Monitorar falhas de envio
 
-## Checklist de Implementação
+## Checklist de Implementacao
 
 - [ ] Configurar conta Twilio WhatsApp
-- [ ] Implementar WhatsAppGateway (substituir mock)
+- [ ] Criar WhatsAppConfig
+- [ ] Implementar WhatsAppGateway (implementa IMessagingGateway)
 - [ ] Criar WhatsAppWebhookController
-- [ ] Criar WhatsAppWebhookService
+- [ ] Criar WhatsAppWebhookService (com queries Drizzle)
 - [ ] Implementar message templates
-- [ ] Configurar webhook no Twilio
-- [ ] Implementar download de media
-- [ ] Criar testes unitários
+- [ ] Atualizar MessagingModule (trocar mock por real via env)
+- [ ] Criar testes unitarios
 - [ ] Criar testes E2E do webhook
 - [ ] Testar envio e recebimento end-to-end
 - [ ] Validar rate limiting
-- [ ] Documentar setup para produção
+- [ ] Documentar setup para producao
 
 ## Resultado Esperado
 
-Ao final desta fase, você deve ter:
+1. Integracao com WhatsApp Business API funcionando
+2. Recebimento de mensagens via webhook
+3. Envio de mensagens e templates
+4. Download de media (imagens, documentos)
+5. Webhook seguro com validacao de assinatura
+6. Todos os testes passando
+7. Mock substituido por implementacao real (via env var)
 
-1. ✅ Integração com WhatsApp Business API funcionando
-2. ✅ Recebimento de mensagens via webhook
-3. ✅ Envio de mensagens e templates
-4. ✅ Download de media (imagens, documentos)
-5. ✅ Webhook seguro com validação de assinatura
-6. ✅ Todos os testes passando
-7. ✅ Mock substituído por implementação real
-
-**Validação:**
-1. Enviar mensagem do WhatsApp → webhook recebe → cria/atualiza conversation
-2. Sistema envia mensagem → chega no WhatsApp do paciente
-3. Enviar imagem do WhatsApp → sistema baixa e armazena
-4. Usar template → mensagem formatada corretamente
-5. Rate limit → não excede limites da API
+**Validacao:**
+1. Enviar mensagem do WhatsApp -> webhook recebe -> cria/atualiza conversation
+2. Sistema envia mensagem -> chega no WhatsApp do paciente
+3. Enviar imagem do WhatsApp -> sistema baixa e armazena
+4. Usar template -> mensagem formatada corretamente
+5. Rate limit -> nao excede limites da API
 
 ## Troubleshooting
 
-### Webhook não recebe mensagens
-- Verificar se URL é HTTPS
-- Verificar se porta está acessível (não usar localhost)
+### Webhook nao recebe mensagens
+- Verificar se URL e HTTPS
+- Verificar se porta esta acessivel (nao usar localhost)
 - Usar ngrok para testes locais: `ngrok http 3001`
 - Verificar logs do Twilio
 
-### Mensagens não são enviadas
+### Mensagens nao sao enviadas
 - Verificar credenciais Twilio
-- Verificar formato do número (+55...)
-- Verificar se número está na sandbox (modo teste)
+- Verificar formato do numero (+55...)
+- Verificar se numero esta na sandbox (modo teste)
 - Verificar rate limits
 
 ### Template rejeitado
-- Templates precisam ser pré-aprovados pelo WhatsApp
-- Usar templates genéricos em dev
+- Templates precisam ser pre-aprovados pelo WhatsApp
+- Usar templates genericos em dev
 - Seguir guidelines do WhatsApp

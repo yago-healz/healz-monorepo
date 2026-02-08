@@ -2,126 +2,247 @@
 
 ## Objetivo
 
-Implementar o agregado Conversation que gerencia a comunicação entre pacientes e o sistema via WhatsApp, incluindo detecção de intenções e gerenciamento de contexto conversacional.
+Implementar o agregado Conversation que gerencia a comunicacao entre pacientes e o sistema via WhatsApp, incluindo deteccao de intencoes e gerenciamento de contexto conversacional.
 
-## Pré-requisitos
+## Pre-requisitos
 
-- ✅ Fase 1 concluída (Event Store Foundation)
-- ✅ Fase 2 concluída (Patient Aggregate)
+- Fase 1 concluida (Event Store Foundation)
+- Fase 2 concluida (Patient Aggregate)
 
 ## Escopo
 
-### O que será implementado
+### O que sera implementado
 
-1. **Agregado Conversation** - Lógica de conversas
-2. **Eventos** - MessageReceived, MessageSent, IntentDetected, ConversationStarted, ConversationEscalated
-3. **Projection** - conversation_view, message_view
-4. **Event Handlers** - Atualizam projections
+1. **Agregado Conversation** - Logica de conversas
+2. **Eventos** - ConversationStarted, MessageReceived, MessageSent, IntentDetected, ConversationEscalated
+3. **Projection** - conversation_view, message_view (Drizzle schemas)
+4. **Projection Handlers** - Atualizam projections via eventBus.subscribe()
 5. **Command Handlers** - Processam comandos
-6. **API REST temporária** - Para testes
+6. **API REST temporaria** - Para testes
 
-### O que NÃO será implementado
+### O que NAO sera implementado
 
-- ❌ IA real para detecção de intenções (Fase 5 - Carol Mock)
-- ❌ Integração WhatsApp real (Fase 8)
-- ❌ Jornada do paciente (Fase 7)
+- IA real para deteccao de intencoes (Fase 5 - Carol Mock)
+- Integracao WhatsApp real (Fase 8)
+- Jornada do paciente (Fase 7)
+
+## Estrutura de Arquivos
+
+```
+apps/api/src/
++-- db/schema/
+|   +-- conversation-view.schema.ts   # NOVO - Projection tables
+|   +-- index.ts                      # Atualizar com export
++-- conversation/
+|   +-- conversation.module.ts
+|   +-- domain/
+|   |   +-- conversation.aggregate.ts
+|   |   +-- events/
+|   |       +-- conversation-started.event.ts
+|   |       +-- message-received.event.ts
+|   |       +-- message-sent.event.ts
+|   |       +-- intent-detected.event.ts
+|   |       +-- conversation-escalated.event.ts
+|   +-- application/
+|   |   +-- commands/
+|   |   |   +-- receive-message.handler.ts
+|   |   +-- event-handlers/
+|   |       +-- conversation-projection.handler.ts
+|   +-- api/
+|       +-- conversation.controller.ts
+|       +-- dtos/
+|           +-- receive-message.dto.ts
+```
+
+## Projection Schemas (Drizzle)
+
+```typescript
+// src/db/schema/conversation-view.schema.ts
+
+import {
+  pgTable, uuid, varchar, boolean, integer,
+  timestamp, text, decimal, index,
+} from "drizzle-orm/pg-core";
+
+export const conversationView = pgTable("conversation_view", {
+  id: uuid("id").primaryKey(),
+  patientId: uuid("patient_id").notNull(),
+  tenantId: uuid("tenant_id").notNull(),
+  clinicId: uuid("clinic_id").notNull(),
+
+  status: varchar("status", { length: 20 }).notNull().default("active"),
+  channel: varchar("channel", { length: 20 }).notNull(),
+
+  isEscalated: boolean("is_escalated").default(false),
+  escalatedToUserId: uuid("escalated_to_user_id"),
+  escalatedAt: timestamp("escalated_at", { withTimezone: true }),
+
+  lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
+  messageCount: integer("message_count").default(0),
+
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+}, (table) => [
+  index("idx_conversation_view_patient").on(table.patientId),
+  index("idx_conversation_view_tenant").on(table.tenantId),
+  index("idx_conversation_view_status").on(table.status),
+  index("idx_conversation_view_escalated").on(table.isEscalated),
+]);
+
+export const messageView = pgTable("message_view", {
+  id: uuid("id").primaryKey(),
+  conversationId: uuid("conversation_id").notNull(),
+
+  direction: varchar("direction", { length: 10 }).notNull(), // 'incoming' | 'outgoing'
+  fromPhone: varchar("from_phone", { length: 20 }),
+  toPhone: varchar("to_phone", { length: 20 }),
+
+  content: text("content").notNull(),
+  messageType: varchar("message_type", { length: 20 }).default("text"),
+  mediaUrl: text("media_url"),
+
+  sentBy: varchar("sent_by", { length: 20 }), // 'bot' | 'agent' | 'system' | 'patient'
+
+  intent: varchar("intent", { length: 50 }),
+  intentConfidence: decimal("intent_confidence", { precision: 3, scale: 2 }),
+
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+}, (table) => [
+  index("idx_message_view_conversation").on(table.conversationId),
+  index("idx_message_view_created_at").on(table.createdAt),
+  index("idx_message_view_intent").on(table.intent),
+]);
+```
+
+**Nota:** Adicionar `export * from "./conversation-view.schema"` no `src/db/schema/index.ts` e rodar migration.
 
 ## Eventos
 
-### 1. ConversationStarted
+Todos seguem o padrao factory function retornando `DomainEvent<T>`.
 
 ```typescript
+// domain/events/conversation-started.event.ts
+
+import { randomUUID } from "crypto";
+import { DomainEvent } from "../../../event-sourcing/domain/domain-event.interface";
+
 export interface ConversationStartedData {
   conversation_id: string;
   patient_id: string;
   clinic_id: string;
   tenant_id: string;
-  channel: 'whatsapp' | 'web' | 'sms';
-  started_by: 'patient' | 'agent' | 'system';
+  channel: "whatsapp" | "web" | "sms";
+  started_by: "patient" | "agent" | "system";
 }
 
-export class ConversationStarted implements DomainEvent<ConversationStartedData> {
-  readonly event_type = 'ConversationStarted';
-  readonly aggregate_type = 'Conversation';
-  // ... implementation similar to PatientRegistered
+export function createConversationStartedEvent(params: {
+  aggregateId: string;
+  aggregateVersion: number;
+  tenantId: string;
+  clinicId: string;
+  correlationId: string;
+  causationId?: string;
+  userId?: string;
+  data: ConversationStartedData;
+}): DomainEvent<ConversationStartedData> {
+  return {
+    event_id: randomUUID(),
+    event_type: "ConversationStarted",
+    aggregate_type: "Conversation",
+    aggregate_id: params.aggregateId,
+    aggregate_version: params.aggregateVersion,
+    tenant_id: params.tenantId,
+    clinic_id: params.clinicId,
+    correlation_id: params.correlationId,
+    causation_id: params.causationId,
+    user_id: params.userId,
+    created_at: new Date(),
+    event_data: params.data,
+  };
 }
 ```
 
-### 2. MessageReceived
-
 ```typescript
+// domain/events/message-received.event.ts
+
 export interface MessageReceivedData {
   conversation_id: string;
   message_id: string;
   from_phone: string;
   content: string;
-  message_type: 'text' | 'image' | 'document';
+  message_type: "text" | "image" | "document";
   media_url?: string;
   received_at: string; // ISO 8601
 }
 
-export class MessageReceived implements DomainEvent<MessageReceivedData> {
-  readonly event_type = 'MessageReceived';
-  readonly aggregate_type = 'Conversation';
-  // ... implementation
+export function createMessageReceivedEvent(params: {
+  aggregateId: string;
+  aggregateVersion: number;
+  tenantId: string;
+  clinicId: string;
+  correlationId: string;
+  causationId?: string;
+  data: MessageReceivedData;
+}): DomainEvent<MessageReceivedData> {
+  return {
+    event_id: randomUUID(),
+    event_type: "MessageReceived",
+    aggregate_type: "Conversation",
+    aggregate_id: params.aggregateId,
+    aggregate_version: params.aggregateVersion,
+    tenant_id: params.tenantId,
+    clinic_id: params.clinicId,
+    correlation_id: params.correlationId,
+    causation_id: params.causationId,
+    created_at: new Date(),
+    event_data: params.data,
+  };
 }
 ```
 
-### 3. MessageSent
-
 ```typescript
+// domain/events/message-sent.event.ts
+
 export interface MessageSentData {
   conversation_id: string;
   message_id: string;
   to_phone: string;
   content: string;
-  message_type: 'text' | 'image' | 'document';
+  message_type: "text" | "image" | "document";
   media_url?: string;
-  sent_by: 'bot' | 'agent' | 'system';
+  sent_by: "bot" | "agent" | "system";
   sent_at: string;
 }
 
-export class MessageSent implements DomainEvent<MessageSentData> {
-  readonly event_type = 'MessageSent';
-  readonly aggregate_type = 'Conversation';
-  // ... implementation
-}
+// Mesmo padrao factory function - createMessageSentEvent(...)
 ```
 
-### 4. IntentDetected
-
 ```typescript
+// domain/events/intent-detected.event.ts
+
 export interface IntentDetectedData {
   conversation_id: string;
   message_id: string;
-  intent: string; // 'schedule_appointment' | 'cancel_appointment' | 'confirm_appointment' | etc
+  intent: string;
   confidence: number; // 0.0 to 1.0
-  entities?: Record<string, any>; // Extracted entities (date, time, etc)
+  entities?: Record<string, any>;
   detected_at: string;
 }
 
-export class IntentDetected implements DomainEvent<IntentDetectedData> {
-  readonly event_type = 'IntentDetected';
-  readonly aggregate_type = 'Conversation';
-  // ... implementation
-}
+// Mesmo padrao factory function - createIntentDetectedEvent(...)
 ```
 
-### 5. ConversationEscalated
-
 ```typescript
+// domain/events/conversation-escalated.event.ts
+
 export interface ConversationEscalatedData {
   conversation_id: string;
-  reason: 'manual_request' | 'low_confidence' | 'sensitive_topic' | 'error';
+  reason: "manual_request" | "low_confidence" | "sensitive_topic" | "error";
   escalated_to_user_id?: string;
   escalated_at: string;
 }
 
-export class ConversationEscalated implements DomainEvent<ConversationEscalatedData> {
-  readonly event_type = 'ConversationEscalated';
-  readonly aggregate_type = 'Conversation';
-  // ... implementation
-}
+// Mesmo padrao factory function - createConversationEscalatedEvent(...)
 ```
 
 ## Agregado Conversation
@@ -129,7 +250,15 @@ export class ConversationEscalated implements DomainEvent<ConversationEscalatedD
 ```typescript
 // domain/conversation.aggregate.ts
 
-export type ConversationStatus = 'active' | 'escalated' | 'resolved' | 'abandoned';
+import { AggregateRoot } from "../../event-sourcing/domain/aggregate-root";
+import { DomainEvent } from "../../event-sourcing/domain/domain-event.interface";
+import { createConversationStartedEvent, ConversationStartedData } from "./events/conversation-started.event";
+import { createMessageReceivedEvent, MessageReceivedData } from "./events/message-received.event";
+import { createMessageSentEvent, MessageSentData } from "./events/message-sent.event";
+import { createIntentDetectedEvent, IntentDetectedData } from "./events/intent-detected.event";
+import { createConversationEscalatedEvent, ConversationEscalatedData } from "./events/conversation-escalated.event";
+
+export type ConversationStatus = "active" | "escalated" | "resolved" | "abandoned";
 
 export class Conversation extends AggregateRoot {
   private conversationId: string;
@@ -137,39 +266,36 @@ export class Conversation extends AggregateRoot {
   private clinicId: string;
   private tenantId: string;
   private status: ConversationStatus;
-  private channel: 'whatsapp' | 'web' | 'sms';
+  private channel: "whatsapp" | "web" | "sms";
   private isEscalated: boolean;
   private escalatedToUserId?: string;
   private consecutiveBotMessages: number;
   private lastMessageAt?: Date;
-  
+
   private constructor() {
     super();
   }
-  
-  /**
-   * Iniciar nova conversa
-   */
+
   static start(params: {
     conversationId: string;
     patientId: string;
     clinicId: string;
     tenantId: string;
-    channel: 'whatsapp' | 'web' | 'sms';
-    startedBy: 'patient' | 'agent' | 'system';
+    channel: "whatsapp" | "web" | "sms";
+    startedBy: "patient" | "agent" | "system";
     correlationId: string;
     userId?: string;
   }): Conversation {
     const conversation = new Conversation();
-    
-    const event = new ConversationStarted({
-      aggregate_id: params.conversationId,
-      aggregate_version: 1,
-      tenant_id: params.tenantId,
-      clinic_id: params.clinicId,
-      correlation_id: params.correlationId,
-      user_id: params.userId,
-      event_data: {
+
+    const event = createConversationStartedEvent({
+      aggregateId: params.conversationId,
+      aggregateVersion: 1,
+      tenantId: params.tenantId,
+      clinicId: params.clinicId,
+      correlationId: params.correlationId,
+      userId: params.userId,
+      data: {
         conversation_id: params.conversationId,
         patient_id: params.patientId,
         clinic_id: params.clinicId,
@@ -178,97 +304,85 @@ export class Conversation extends AggregateRoot {
         started_by: params.startedBy,
       },
     });
-    
+
     conversation.addEvent(event);
     return conversation;
   }
-  
-  /**
-   * Receber mensagem do paciente
-   */
+
   receiveMessage(params: {
     messageId: string;
     fromPhone: string;
     content: string;
-    messageType?: 'text' | 'image' | 'document';
+    messageType?: "text" | "image" | "document";
     mediaUrl?: string;
     correlationId: string;
     causationId?: string;
   }): void {
-    // Validações
-    if (this.status === 'resolved') {
-      throw new Error('Cannot receive message on resolved conversation');
+    if (this.status === "resolved") {
+      throw new Error("Cannot receive message on resolved conversation");
     }
-    
-    const event = new MessageReceived({
-      aggregate_id: this.conversationId,
-      aggregate_version: this.version + 1,
-      tenant_id: this.tenantId,
-      clinic_id: this.clinicId,
-      correlation_id: params.correlationId,
-      causation_id: params.causationId,
-      event_data: {
+
+    const event = createMessageReceivedEvent({
+      aggregateId: this.conversationId,
+      aggregateVersion: this.version + 1,
+      tenantId: this.tenantId,
+      clinicId: this.clinicId,
+      correlationId: params.correlationId,
+      causationId: params.causationId,
+      data: {
         conversation_id: this.conversationId,
         message_id: params.messageId,
         from_phone: params.fromPhone,
         content: params.content,
-        message_type: params.messageType || 'text',
+        message_type: params.messageType || "text",
         media_url: params.mediaUrl,
         received_at: new Date().toISOString(),
       },
     });
-    
+
     this.addEvent(event);
   }
-  
-  /**
-   * Enviar mensagem para o paciente
-   */
+
   sendMessage(params: {
     messageId: string;
     toPhone: string;
     content: string;
-    messageType?: 'text' | 'image' | 'document';
+    messageType?: "text" | "image" | "document";
     mediaUrl?: string;
-    sentBy: 'bot' | 'agent' | 'system';
+    sentBy: "bot" | "agent" | "system";
     correlationId: string;
     causationId?: string;
   }): void {
-    // Validações
-    if (this.status === 'resolved') {
-      throw new Error('Cannot send message on resolved conversation');
+    if (this.status === "resolved") {
+      throw new Error("Cannot send message on resolved conversation");
     }
-    
-    // Regra: Não enviar mais de 3 mensagens consecutivas do bot
-    if (params.sentBy === 'bot' && this.consecutiveBotMessages >= 3) {
-      throw new Error('Cannot send more than 3 consecutive bot messages');
+
+    if (params.sentBy === "bot" && this.consecutiveBotMessages >= 3) {
+      throw new Error("Cannot send more than 3 consecutive bot messages");
     }
-    
-    const event = new MessageSent({
-      aggregate_id: this.conversationId,
-      aggregate_version: this.version + 1,
-      tenant_id: this.tenantId,
-      clinic_id: this.clinicId,
-      correlation_id: params.correlationId,
-      causation_id: params.causationId,
-      event_data: {
+
+    const event = createMessageSentEvent({
+      aggregateId: this.conversationId,
+      aggregateVersion: this.version + 1,
+      tenantId: this.tenantId,
+      clinicId: this.clinicId,
+      correlationId: params.correlationId,
+      causationId: params.causationId,
+      data: {
         conversation_id: this.conversationId,
         message_id: params.messageId,
         to_phone: params.toPhone,
         content: params.content,
-        message_type: params.messageType || 'text',
+        message_type: params.messageType || "text",
         media_url: params.mediaUrl,
         sent_by: params.sentBy,
         sent_at: new Date().toISOString(),
       },
     });
-    
+
     this.addEvent(event);
   }
-  
-  /**
-   * Detectar intenção da mensagem
-   */
+
   detectIntent(params: {
     messageId: string;
     intent: string;
@@ -277,14 +391,14 @@ export class Conversation extends AggregateRoot {
     correlationId: string;
     causationId?: string;
   }): void {
-    const event = new IntentDetected({
-      aggregate_id: this.conversationId,
-      aggregate_version: this.version + 1,
-      tenant_id: this.tenantId,
-      clinic_id: this.clinicId,
-      correlation_id: params.correlationId,
-      causation_id: params.causationId,
-      event_data: {
+    const event = createIntentDetectedEvent({
+      aggregateId: this.conversationId,
+      aggregateVersion: this.version + 1,
+      tenantId: this.tenantId,
+      clinicId: this.clinicId,
+      correlationId: params.correlationId,
+      causationId: params.causationId,
+      data: {
         conversation_id: this.conversationId,
         message_id: params.messageId,
         intent: params.intent,
@@ -293,207 +407,277 @@ export class Conversation extends AggregateRoot {
         detected_at: new Date().toISOString(),
       },
     });
-    
+
     this.addEvent(event);
   }
-  
-  /**
-   * Escalar para atendimento humano
-   */
+
   escalate(params: {
-    reason: 'manual_request' | 'low_confidence' | 'sensitive_topic' | 'error';
+    reason: "manual_request" | "low_confidence" | "sensitive_topic" | "error";
     escalatedToUserId?: string;
     correlationId: string;
     causationId?: string;
   }): void {
     if (this.isEscalated) {
-      throw new Error('Conversation already escalated');
+      throw new Error("Conversation already escalated");
     }
-    
-    const event = new ConversationEscalated({
-      aggregate_id: this.conversationId,
-      aggregate_version: this.version + 1,
-      tenant_id: this.tenantId,
-      clinic_id: this.clinicId,
-      correlation_id: params.correlationId,
-      causation_id: params.causationId,
-      event_data: {
+
+    const event = createConversationEscalatedEvent({
+      aggregateId: this.conversationId,
+      aggregateVersion: this.version + 1,
+      tenantId: this.tenantId,
+      clinicId: this.clinicId,
+      correlationId: params.correlationId,
+      causationId: params.causationId,
+      data: {
         conversation_id: this.conversationId,
         reason: params.reason,
         escalated_to_user_id: params.escalatedToUserId,
         escalated_at: new Date().toISOString(),
       },
     });
-    
+
     this.addEvent(event);
   }
-  
-  protected apply(event: DomainEvent): void {
+
+  // applyEvent - metodo padrao do AggregateRoot
+  protected applyEvent(event: DomainEvent): void {
     switch (event.event_type) {
-      case 'ConversationStarted':
-        this.applyConversationStarted(event as ConversationStarted);
+      case "ConversationStarted":
+        this.applyConversationStarted(event.event_data as ConversationStartedData);
         break;
-      case 'MessageReceived':
-        this.applyMessageReceived(event as MessageReceived);
+      case "MessageReceived":
+        this.applyMessageReceived(event.event_data as MessageReceivedData);
         break;
-      case 'MessageSent':
-        this.applyMessageSent(event as MessageSent);
+      case "MessageSent":
+        this.applyMessageSent(event.event_data as MessageSentData);
         break;
-      case 'IntentDetected':
-        this.applyIntentDetected(event as IntentDetected);
+      case "IntentDetected":
+        // State nao muda, apenas registra
         break;
-      case 'ConversationEscalated':
-        this.applyConversationEscalated(event as ConversationEscalated);
+      case "ConversationEscalated":
+        this.applyConversationEscalated(event.event_data as ConversationEscalatedData);
         break;
     }
   }
-  
-  private applyConversationStarted(event: ConversationStarted): void {
-    this.id = event.aggregate_id;
-    this.conversationId = event.event_data.conversation_id;
-    this.patientId = event.event_data.patient_id;
-    this.clinicId = event.event_data.clinic_id;
-    this.tenantId = event.event_data.tenant_id;
-    this.channel = event.event_data.channel;
-    this.status = 'active';
+
+  private applyConversationStarted(data: ConversationStartedData): void {
+    this.id = data.conversation_id;
+    this.conversationId = data.conversation_id;
+    this.patientId = data.patient_id;
+    this.clinicId = data.clinic_id;
+    this.tenantId = data.tenant_id;
+    this.channel = data.channel;
+    this.status = "active";
     this.isEscalated = false;
     this.consecutiveBotMessages = 0;
   }
-  
-  private applyMessageReceived(event: MessageReceived): void {
-    this.consecutiveBotMessages = 0; // Reset contador
-    this.lastMessageAt = new Date(event.event_data.received_at);
+
+  private applyMessageReceived(data: MessageReceivedData): void {
+    this.consecutiveBotMessages = 0;
+    this.lastMessageAt = new Date(data.received_at);
   }
-  
-  private applyMessageSent(event: MessageSent): void {
-    if (event.event_data.sent_by === 'bot') {
+
+  private applyMessageSent(data: MessageSentData): void {
+    if (data.sent_by === "bot") {
       this.consecutiveBotMessages++;
     } else {
       this.consecutiveBotMessages = 0;
     }
-    this.lastMessageAt = new Date(event.event_data.sent_at);
+    this.lastMessageAt = new Date(data.sent_at);
   }
-  
-  private applyIntentDetected(event: IntentDetected): void {
-    // State não muda, apenas registra
-  }
-  
-  private applyConversationEscalated(event: ConversationEscalated): void {
+
+  private applyConversationEscalated(data: ConversationEscalatedData): void {
     this.isEscalated = true;
-    this.status = 'escalated';
-    this.escalatedToUserId = event.event_data.escalated_to_user_id;
+    this.status = "escalated";
+    this.escalatedToUserId = data.escalated_to_user_id;
   }
-  
+
   // Getters
   getConversationId(): string { return this.conversationId; }
   getPatientId(): string { return this.patientId; }
+  getTenantId(): string { return this.tenantId; }
+  getClinicId(): string { return this.clinicId; }
   getStatus(): ConversationStatus { return this.status; }
   isEscalatedToHuman(): boolean { return this.isEscalated; }
 }
 ```
 
-## Projections
-
-### conversation_view Table
-
-```sql
-CREATE TABLE conversation_view (
-  id UUID PRIMARY KEY,
-  patient_id UUID NOT NULL,
-  tenant_id UUID NOT NULL,
-  clinic_id UUID NOT NULL,
-  
-  status VARCHAR(20) NOT NULL DEFAULT 'active',
-  channel VARCHAR(20) NOT NULL,
-  
-  is_escalated BOOLEAN DEFAULT FALSE,
-  escalated_to_user_id UUID,
-  escalated_at TIMESTAMP WITH TIME ZONE,
-  
-  last_message_at TIMESTAMP WITH TIME ZONE,
-  message_count INTEGER DEFAULT 0,
-  
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  
-  FOREIGN KEY (patient_id) REFERENCES patient_view(id)
-);
-
-CREATE INDEX idx_conversation_view_patient ON conversation_view (patient_id);
-CREATE INDEX idx_conversation_view_status ON conversation_view (status);
-CREATE INDEX idx_conversation_view_escalated ON conversation_view (is_escalated);
-```
-
-### message_view Table
-
-```sql
-CREATE TABLE message_view (
-  id UUID PRIMARY KEY,
-  conversation_id UUID NOT NULL,
-  
-  direction VARCHAR(10) NOT NULL, -- 'incoming' | 'outgoing'
-  from_phone VARCHAR(20),
-  to_phone VARCHAR(20),
-  
-  content TEXT NOT NULL,
-  message_type VARCHAR(20) DEFAULT 'text',
-  media_url TEXT,
-  
-  sent_by VARCHAR(20), -- 'bot' | 'agent' | 'system' | 'patient'
-  
-  intent VARCHAR(50),
-  intent_confidence DECIMAL(3,2),
-  
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  
-  FOREIGN KEY (conversation_id) REFERENCES conversation_view(id)
-);
-
-CREATE INDEX idx_message_view_conversation ON message_view (conversation_id);
-CREATE INDEX idx_message_view_created_at ON message_view (created_at DESC);
-CREATE INDEX idx_message_view_intent ON message_view (intent);
-```
-
-## Command Handlers
-
-### ReceiveMessageHandler
+## Projection Handler
 
 ```typescript
+// application/event-handlers/conversation-projection.handler.ts
+
+import { Injectable, Inject, Logger, OnModuleInit } from "@nestjs/common";
+import { eq } from "drizzle-orm";
+import { db } from "../../../db";
+import { conversationView, messageView } from "../../../db/schema/conversation-view.schema";
+import { IEventBus } from "../../../event-sourcing/event-bus/event-bus.interface";
+import { DomainEvent } from "../../../event-sourcing/domain/domain-event.interface";
+
+@Injectable()
+export class ConversationProjectionHandler implements OnModuleInit {
+  private readonly logger = new Logger(ConversationProjectionHandler.name);
+
+  constructor(@Inject("IEventBus") private readonly eventBus: IEventBus) {}
+
+  onModuleInit() {
+    this.eventBus.subscribe("ConversationStarted", (event) => this.onConversationStarted(event));
+    this.eventBus.subscribe("MessageReceived", (event) => this.onMessageReceived(event));
+    this.eventBus.subscribe("MessageSent", (event) => this.onMessageSent(event));
+    this.eventBus.subscribe("IntentDetected", (event) => this.onIntentDetected(event));
+    this.eventBus.subscribe("ConversationEscalated", (event) => this.onConversationEscalated(event));
+  }
+
+  private async onConversationStarted(event: DomainEvent): Promise<void> {
+    const data = event.event_data;
+    await db.insert(conversationView).values({
+      id: data.conversation_id,
+      patientId: data.patient_id,
+      tenantId: data.tenant_id,
+      clinicId: data.clinic_id,
+      status: "active",
+      channel: data.channel,
+      isEscalated: false,
+      messageCount: 0,
+      createdAt: event.created_at,
+      updatedAt: event.created_at,
+    });
+  }
+
+  private async onMessageReceived(event: DomainEvent): Promise<void> {
+    const data = event.event_data;
+
+    // Inserir na message_view
+    await db.insert(messageView).values({
+      id: data.message_id,
+      conversationId: data.conversation_id,
+      direction: "incoming",
+      fromPhone: data.from_phone,
+      content: data.content,
+      messageType: data.message_type,
+      mediaUrl: data.media_url,
+      sentBy: "patient",
+      createdAt: new Date(data.received_at),
+    });
+
+    // Atualizar conversation_view
+    await db.update(conversationView)
+      .set({
+        lastMessageAt: new Date(data.received_at),
+        messageCount: sql`${conversationView.messageCount} + 1`,
+        updatedAt: new Date(),
+      })
+      .where(eq(conversationView.id, data.conversation_id));
+  }
+
+  private async onMessageSent(event: DomainEvent): Promise<void> {
+    const data = event.event_data;
+
+    await db.insert(messageView).values({
+      id: data.message_id,
+      conversationId: data.conversation_id,
+      direction: "outgoing",
+      toPhone: data.to_phone,
+      content: data.content,
+      messageType: data.message_type,
+      mediaUrl: data.media_url,
+      sentBy: data.sent_by,
+      createdAt: new Date(data.sent_at),
+    });
+
+    await db.update(conversationView)
+      .set({
+        lastMessageAt: new Date(data.sent_at),
+        messageCount: sql`${conversationView.messageCount} + 1`,
+        updatedAt: new Date(),
+      })
+      .where(eq(conversationView.id, data.conversation_id));
+  }
+
+  private async onIntentDetected(event: DomainEvent): Promise<void> {
+    const data = event.event_data;
+
+    // Atualizar a mensagem com o intent detectado
+    await db.update(messageView)
+      .set({
+        intent: data.intent,
+        intentConfidence: data.confidence.toString(),
+      })
+      .where(eq(messageView.id, data.message_id));
+  }
+
+  private async onConversationEscalated(event: DomainEvent): Promise<void> {
+    const data = event.event_data;
+
+    await db.update(conversationView)
+      .set({
+        status: "escalated",
+        isEscalated: true,
+        escalatedToUserId: data.escalated_to_user_id,
+        escalatedAt: new Date(data.escalated_at),
+        updatedAt: new Date(),
+      })
+      .where(eq(conversationView.id, data.conversation_id));
+  }
+}
+```
+
+**Nota:** Importar `sql` de `drizzle-orm` para expressoes SQL inline.
+
+## Command Handler
+
+```typescript
+// application/commands/receive-message.handler.ts
+
+import { Injectable, Inject } from "@nestjs/common";
+import { randomUUID } from "crypto";
+import { IEventStore } from "../../../event-sourcing/event-store/event-store.interface";
+import { IEventBus } from "../../../event-sourcing/event-bus/event-bus.interface";
+import { IIntentDetector } from "../../../carol/domain/intent-detector.interface";
+import { Conversation } from "../../domain/conversation.aggregate";
+import { CorrelationUtil } from "../../../event-sourcing/utils/correlation.util";
+
 @Injectable()
 export class ReceiveMessageHandler {
   constructor(
-    @Inject('IEventStore') private readonly eventStore: IEventStore,
-    @Inject('IEventBus') private readonly eventBus: IEventBus,
-    @Inject('IIntentDetector') private readonly intentDetector: IIntentDetector,
+    @Inject("IEventStore") private readonly eventStore: IEventStore,
+    @Inject("IEventBus") private readonly eventBus: IEventBus,
+    @Inject("IIntentDetector") private readonly intentDetector: IIntentDetector,
   ) {}
-  
-  async execute(command: ReceiveMessageCommand): Promise<void> {
-    const correlationId = CorrelationUtil.generate('receive-message');
-    
+
+  async execute(command: {
+    conversationId: string;
+    patientId: string;
+    clinicId: string;
+    tenantId: string;
+    fromPhone: string;
+    content: string;
+    messageType?: "text" | "image" | "document";
+  }): Promise<void> {
+    const correlationId = CorrelationUtil.generate("receive-message");
+
     // Carregar ou criar conversa
     let conversation: Conversation;
     const existingEvents = await this.eventStore.getByAggregateId(
-      'Conversation',
+      "Conversation",
       command.conversationId,
     );
-    
+
     if (existingEvents.length === 0) {
-      // Nova conversa
       conversation = Conversation.start({
         conversationId: command.conversationId,
         patientId: command.patientId,
         clinicId: command.clinicId,
         tenantId: command.tenantId,
-        channel: 'whatsapp',
-        startedBy: 'patient',
+        channel: "whatsapp",
+        startedBy: "patient",
         correlationId,
       });
     } else {
-      // Conversa existente
-      conversation = new Conversation();
+      conversation = new (Conversation as any)();
       conversation.loadFromHistory(existingEvents);
     }
-    
+
     // Receber mensagem
     const messageId = randomUUID();
     conversation.receiveMessage({
@@ -503,11 +687,11 @@ export class ReceiveMessageHandler {
       messageType: command.messageType,
       correlationId,
     });
-    
-    // Detectar intenção (usando mock por enquanto)
+
+    // Detectar intencao (mock por enquanto)
     const detection = await this.intentDetector.detectIntent(command.content);
-    
-    if (detection.intent !== 'unknown') {
+
+    if (detection.intent !== "unknown") {
       conversation.detectIntent({
         messageId,
         intent: detection.intent,
@@ -517,7 +701,7 @@ export class ReceiveMessageHandler {
         causationId: messageId,
       });
     }
-    
+
     // Salvar e publicar eventos
     const events = conversation.getUncommittedEvents();
     await this.eventStore.appendMany(events);
@@ -526,80 +710,202 @@ export class ReceiveMessageHandler {
 }
 ```
 
+## API REST (Temporaria)
+
+```typescript
+// api/conversation.controller.ts
+
+import { Controller, Get, Post, Body, Param, Query, Inject } from "@nestjs/common";
+import { eq, and, desc } from "drizzle-orm";
+import { db } from "../../../db";
+import { conversationView, messageView } from "../../../db/schema/conversation-view.schema";
+import { ReceiveMessageHandler } from "../application/commands/receive-message.handler";
+
+@Controller("conversations")
+export class ConversationController {
+  constructor(
+    private readonly receiveMessageHandler: ReceiveMessageHandler,
+  ) {}
+
+  @Post("receive")
+  async receiveMessage(@Body() dto: ReceiveMessageDto) {
+    await this.receiveMessageHandler.execute({
+      conversationId: dto.conversationId || randomUUID(),
+      patientId: dto.patientId,
+      clinicId: dto.clinicId,
+      tenantId: dto.tenantId,
+      fromPhone: dto.fromPhone,
+      content: dto.content,
+      messageType: dto.messageType,
+    });
+    return { success: true };
+  }
+
+  @Get(":id")
+  async findOne(@Param("id") id: string) {
+    const [result] = await db.select()
+      .from(conversationView)
+      .where(eq(conversationView.id, id));
+
+    if (!result) throw new NotFoundException("Conversation not found");
+    return result;
+  }
+
+  @Get(":id/messages")
+  async getMessages(@Param("id") id: string) {
+    const messages = await db.select()
+      .from(messageView)
+      .where(eq(messageView.conversationId, id))
+      .orderBy(desc(messageView.createdAt));
+
+    return messages;
+  }
+
+  @Get()
+  async findAll(@Query("patientId") patientId?: string) {
+    const conditions = [];
+    if (patientId) conditions.push(eq(conversationView.patientId, patientId));
+
+    const conversations = await db.select()
+      .from(conversationView)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(conversationView.updatedAt));
+
+    return conversations;
+  }
+}
+```
+
+## Module Configuration
+
+```typescript
+// conversation.module.ts
+
+import { Module } from "@nestjs/common";
+import { ConversationController } from "./api/conversation.controller";
+import { ReceiveMessageHandler } from "./application/commands/receive-message.handler";
+import { ConversationProjectionHandler } from "./application/event-handlers/conversation-projection.handler";
+
+@Module({
+  controllers: [ConversationController],
+  providers: [
+    ReceiveMessageHandler,
+    ConversationProjectionHandler,
+  ],
+  exports: [ReceiveMessageHandler],
+})
+export class ConversationModule {}
+```
+
+**Nota:** Adicionar `ConversationModule` nos imports do `AppModule`. Depende de `EventSourcingModule` (global) e `CarolModule` para `IIntentDetector`.
+
 ## Testes
 
 ### Testes do Agregado
 
 ```typescript
-describe('Conversation Aggregate', () => {
-  it('should start new conversation', () => {
+describe("Conversation Aggregate", () => {
+  it("should start new conversation", () => {
     const conversation = Conversation.start({
-      conversationId: 'conv-123',
-      patientId: 'patient-123',
-      clinicId: 'clinic-1',
-      tenantId: 'tenant-1',
-      channel: 'whatsapp',
-      startedBy: 'patient',
-      correlationId: 'corr-1',
+      conversationId: "conv-123",
+      patientId: "patient-123",
+      clinicId: "clinic-1",
+      tenantId: "tenant-1",
+      channel: "whatsapp",
+      startedBy: "patient",
+      correlationId: "corr-1",
     });
-    
+
     const events = conversation.getUncommittedEvents();
     expect(events).toHaveLength(1);
-    expect(events[0].event_type).toBe('ConversationStarted');
+    expect(events[0].event_type).toBe("ConversationStarted");
   });
-  
-  it('should receive message', () => {
-    const conversation = Conversation.start({...});
+
+  it("should receive message", () => {
+    const conversation = createTestConversation();
     conversation.clearUncommittedEvents();
-    
+
     conversation.receiveMessage({
-      messageId: 'msg-1',
-      fromPhone: '+5511999999999',
-      content: 'Olá',
-      correlationId: 'corr-2',
+      messageId: "msg-1",
+      fromPhone: "+5511999999999",
+      content: "Ola",
+      correlationId: "corr-2",
     });
-    
+
     const events = conversation.getUncommittedEvents();
-    expect(events[0].event_type).toBe('MessageReceived');
+    expect(events[0].event_type).toBe("MessageReceived");
   });
-  
-  it('should not allow more than 3 consecutive bot messages', () => {
-    const conversation = Conversation.start({...});
-    
-    conversation.sendMessage({ sentBy: 'bot', ... });
-    conversation.sendMessage({ sentBy: 'bot', ... });
-    conversation.sendMessage({ sentBy: 'bot', ... });
-    
+
+  it("should not allow more than 3 consecutive bot messages", () => {
+    const conversation = createTestConversation();
+
+    for (let i = 0; i < 3; i++) {
+      conversation.sendMessage({
+        messageId: randomUUID(),
+        toPhone: "+5511999999999",
+        content: `Bot msg ${i}`,
+        sentBy: "bot",
+        correlationId: "corr-1",
+      });
+    }
+
     expect(() => {
-      conversation.sendMessage({ sentBy: 'bot', ... });
-    }).toThrow('Cannot send more than 3 consecutive bot messages');
+      conversation.sendMessage({
+        messageId: randomUUID(),
+        toPhone: "+5511999999999",
+        content: "Bot msg 4",
+        sentBy: "bot",
+        correlationId: "corr-1",
+      });
+    }).toThrow("Cannot send more than 3 consecutive bot messages");
+  });
+
+  it("should escalate conversation", () => {
+    const conversation = createTestConversation();
+    conversation.clearUncommittedEvents();
+
+    conversation.escalate({
+      reason: "manual_request",
+      correlationId: "corr-3",
+    });
+
+    expect(conversation.getStatus()).toBe("escalated");
+    expect(conversation.isEscalatedToHuman()).toBe(true);
+  });
+
+  it("should not escalate already escalated conversation", () => {
+    const conversation = createTestConversation();
+    conversation.escalate({ reason: "manual_request", correlationId: "corr-1" });
+
+    expect(() => {
+      conversation.escalate({ reason: "error", correlationId: "corr-2" });
+    }).toThrow("Conversation already escalated");
   });
 });
 ```
 
-## Checklist de Implementação
+## Checklist de Implementacao
 
-- [ ] Criar eventos (ConversationStarted, MessageReceived, MessageSent, IntentDetected, ConversationEscalated)
+- [ ] Criar Drizzle schema para conversation_view e message_view
+- [ ] Criar factory functions para todos os eventos
 - [ ] Implementar agregado Conversation
-- [ ] Criar migrations (conversation_view, message_view)
-- [ ] Implementar entities (ConversationViewEntity, MessageViewEntity)
-- [ ] Implementar event handlers (projections)
-- [ ] Implementar command handlers
-- [ ] Criar DTOs
-- [ ] Implementar controller REST
+- [ ] Implementar ConversationProjectionHandler com eventBus.subscribe()
+- [ ] Implementar ReceiveMessageHandler
+- [ ] Criar DTOs de validacao
+- [ ] Implementar ConversationController
+- [ ] Configurar ConversationModule
+- [ ] Registrar no AppModule
+- [ ] Rodar migration (drizzle-kit generate + migrate)
 - [ ] Integrar com IIntentDetector (mock da Fase 5)
-- [ ] Criar testes unitários
-- [ ] Criar testes de integração
+- [ ] Criar testes unitarios
+- [ ] Criar testes de integracao
 - [ ] Criar testes E2E
-- [ ] Validar fluxo completo
 
 ## Resultado Esperado
 
-Ao final desta fase, você deve ter:
-
-1. ✅ Agregado Conversation funcionando
-2. ✅ Fluxo de recebimento de mensagens completo
-3. ✅ Detecção de intenção (mock)
-4. ✅ Projections atualizadas
-5. ✅ API REST para testes
-6. ✅ Testes passando
+1. Agregado Conversation funcionando
+2. Fluxo de recebimento de mensagens completo
+3. Deteccao de intencao (mock)
+4. Projections atualizadas via Drizzle
+5. API REST para testes
+6. Testes passando

@@ -2,124 +2,123 @@
 
 ## Objetivo
 
-Implementar a infraestrutura base de Event Sourcing, incluindo Event Store (PostgreSQL), Event Bus (RabbitMQ), tipos base e abstrações que serão usadas por todos os agregados.
+Implementar a infraestrutura base de Event Sourcing, incluindo Event Store (PostgreSQL via Drizzle), Event Bus (RabbitMQ), tipos base e abstracoes que serao usadas por todos os agregados.
 
 ## Escopo
 
-### O que será implementado
+### O que sera implementado
 
-1. **Event Store** - Armazenamento de eventos no PostgreSQL
+1. **Event Store** - Armazenamento de eventos no PostgreSQL via Drizzle ORM
 2. **Event Bus** - Sistema de pub/sub com RabbitMQ
-3. **Tipos Base** - Interfaces e classes abstratas
-4. **Infraestrutura NestJS** - Módulos e providers
+3. **Tipos Base** - Interfaces e classes abstratas (DomainEvent, AggregateRoot)
+4. **Infraestrutura NestJS** - Modulos e providers
 
-### O que NÃO será implementado
+### O que NAO sera implementado
 
-- ❌ Agregados específicos (vem nas próximas fases)
-- ❌ Projections/Read Models (cada agregado cria a sua)
-- ❌ APIs REST (cada agregado cria a sua)
+- Agregados especificos (vem nas proximas fases)
+- Projections/Read Models (cada agregado cria a sua)
+- APIs REST (cada agregado cria a sua)
 
 ## Estrutura do Banco de Dados
 
-### Tabela: events
+### Schema Drizzle: events
 
-```sql
-CREATE TABLE events (
-  -- Identificação
-  id BIGSERIAL PRIMARY KEY,
-  event_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-  event_type VARCHAR(100) NOT NULL,
-  
-  -- Agregado
-  aggregate_type VARCHAR(50) NOT NULL,
-  aggregate_id UUID NOT NULL,
-  aggregate_version INTEGER NOT NULL,
-  
-  -- Multi-tenant
-  tenant_id UUID NOT NULL,
-  clinic_id UUID,
-  
-  -- Rastreabilidade
-  causation_id UUID,
-  correlation_id UUID NOT NULL,
-  user_id UUID,
-  
-  -- Timestamp
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  
-  -- Dados
-  event_data JSONB NOT NULL,
-  metadata JSONB DEFAULT '{}'::jsonb,
-  
-  -- Índices compostos são criados separadamente
-  CONSTRAINT events_aggregate_version_unique UNIQUE (aggregate_id, aggregate_version)
-);
+```typescript
+// src/db/schema/events.schema.ts
 
--- Índices
-CREATE INDEX idx_events_aggregate ON events (aggregate_type, aggregate_id);
-CREATE INDEX idx_events_correlation ON events (correlation_id);
-CREATE INDEX idx_events_causation ON events (causation_id);
-CREATE INDEX idx_events_tenant ON events (tenant_id);
-CREATE INDEX idx_events_type ON events (event_type);
-CREATE INDEX idx_events_created_at ON events (created_at DESC);
-CREATE INDEX idx_events_event_data ON events USING gin (event_data);
+import {
+  pgTable, bigserial, uuid, varchar, integer,
+  timestamp, jsonb, uniqueIndex, index,
+} from "drizzle-orm/pg-core";
+
+export const events = pgTable("events", {
+  // Identificacao
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  eventId: uuid("event_id").notNull().unique().defaultRandom(),
+  eventType: varchar("event_type", { length: 100 }).notNull(),
+
+  // Agregado
+  aggregateType: varchar("aggregate_type", { length: 50 }).notNull(),
+  aggregateId: uuid("aggregate_id").notNull(),
+  aggregateVersion: integer("aggregate_version").notNull(),
+
+  // Multi-tenant
+  tenantId: uuid("tenant_id").notNull(),
+  clinicId: uuid("clinic_id"),
+
+  // Rastreabilidade
+  causationId: uuid("causation_id"),
+  correlationId: uuid("correlation_id").notNull(),
+  userId: uuid("user_id"),
+
+  // Timestamp
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+
+  // Dados
+  eventData: jsonb("event_data").notNull(),
+  metadata: jsonb("metadata").default({}),
+}, (table) => [
+  // Optimistic locking: aggregate_id + version deve ser unico
+  uniqueIndex("events_aggregate_version_unique")
+    .on(table.aggregateId, table.aggregateVersion),
+
+  // Indices para queries comuns
+  index("idx_events_aggregate").on(table.aggregateType, table.aggregateId),
+  index("idx_events_correlation").on(table.correlationId),
+  index("idx_events_causation").on(table.causationId),
+  index("idx_events_tenant").on(table.tenantId),
+  index("idx_events_type").on(table.eventType),
+  index("idx_events_created_at").on(table.createdAt),
+]);
 ```
+
+**Nota:** Adicionar `export * from "./events.schema"` no `src/db/schema/index.ts` e rodar `pnpm db:generate && pnpm db:migrate`.
 
 ## Estrutura de Arquivos
 
 ```
 apps/api/src/
-├── modules/
-│   └── event-sourcing/
-│       ├── event-sourcing.module.ts
-│       ├── domain/
-│       │   ├── domain-event.interface.ts
-│       │   ├── aggregate-root.abstract.ts
-│       │   └── event-handler.interface.ts
-│       ├── infrastructure/
-│       │   ├── event-store/
-│       │   │   ├── event-store.service.ts
-│       │   │   ├── event-store.interface.ts
-│       │   │   └── event-store.entity.ts
-│       │   └── event-bus/
-│       │       ├── event-bus.service.ts
-│       │       ├── event-bus.interface.ts
-│       │       ├── rabbitmq-event-bus.service.ts
-│       │       └── event-subscriber.decorator.ts
-│       └── utils/
-│           └── correlation.util.ts
++-- db/
+|   +-- schema/
+|   |   +-- events.schema.ts          # NOVO - Schema da tabela events
+|   |   +-- index.ts                  # Atualizar com export
+|   +-- index.ts                      # Ja existe - pool + schema exports
++-- event-sourcing/
+|   +-- event-sourcing.module.ts
+|   +-- domain/
+|   |   +-- domain-event.interface.ts
+|   |   +-- aggregate-root.ts
+|   |   +-- event-handler.interface.ts
+|   +-- event-store/
+|   |   +-- event-store.service.ts
+|   |   +-- event-store.interface.ts
+|   +-- event-bus/
+|   |   +-- event-bus.service.ts
+|   |   +-- event-bus.interface.ts
+|   |   +-- rabbitmq-event-bus.service.ts
+|   +-- utils/
+|       +-- correlation.util.ts
 ```
 
-## Implementação Detalhada
+## Implementacao Detalhada
 
 ### 1. Domain Event Interface
 
 ```typescript
-// domain/domain-event.interface.ts
+// event-sourcing/domain/domain-event.interface.ts
 
 export interface DomainEvent<T = any> {
-  // Identificação
   readonly event_id: string;
   readonly event_type: string;
-  
-  // Agregado
   readonly aggregate_type: string;
   readonly aggregate_id: string;
   readonly aggregate_version: number;
-  
-  // Multi-tenant
   readonly tenant_id: string;
   readonly clinic_id?: string;
-  
-  // Rastreabilidade
   readonly correlation_id: string;
   readonly causation_id?: string;
   readonly user_id?: string;
-  
-  // Timestamp
   readonly created_at: Date;
-  
-  // Dados
   readonly event_data: T;
   readonly metadata?: Record<string, any>;
 }
@@ -128,418 +127,381 @@ export interface DomainEvent<T = any> {
 ### 2. Aggregate Root Base Class
 
 ```typescript
-// domain/aggregate-root.abstract.ts
+// event-sourcing/domain/aggregate-root.ts
+
+import { DomainEvent } from "./domain-event.interface";
 
 export abstract class AggregateRoot {
   protected id: string;
   protected version: number = 0;
   protected uncommittedEvents: DomainEvent[] = [];
-  
+
   protected constructor() {}
-  
+
   /**
-   * Aplica um evento ao agregado
+   * Cada agregado implementa como aplicar cada tipo de evento ao seu estado
    */
-  protected abstract apply(event: DomainEvent): void;
-  
+  protected abstract applyEvent(event: DomainEvent): void;
+
   /**
-   * Adiciona evento à lista de uncommitted
+   * Gera evento: aplica ao estado e adiciona na lista de uncommitted
    */
   protected addEvent(event: DomainEvent): void {
-    this.apply(event);
+    this.applyEvent(event);
     this.uncommittedEvents.push(event);
     this.version++;
   }
-  
+
   /**
-   * Reconstrói agregado a partir do histórico
+   * Reconstroi agregado a partir do historico de eventos
    */
   public loadFromHistory(events: DomainEvent[]): void {
     for (const event of events) {
-      this.apply(event);
+      this.applyEvent(event);
       this.version = event.aggregate_version;
     }
   }
-  
-  /**
-   * Retorna eventos não commitados
-   */
+
   public getUncommittedEvents(): DomainEvent[] {
     return [...this.uncommittedEvents];
   }
-  
-  /**
-   * Limpa eventos uncommitted (após salvar)
-   */
+
   public clearUncommittedEvents(): void {
     this.uncommittedEvents = [];
   }
-  
+
   public getId(): string {
     return this.id;
   }
-  
+
   public getVersion(): number {
     return this.version;
   }
 }
 ```
 
-### 3. Event Store Interface
+### 3. Event Handler Interface
 
 ```typescript
-// infrastructure/event-store/event-store.interface.ts
+// event-sourcing/domain/event-handler.interface.ts
 
-export interface IEventStore {
-  /**
-   * Adiciona um evento ao store
-   */
-  append(event: DomainEvent): Promise<void>;
-  
-  /**
-   * Adiciona múltiplos eventos (transação)
-   */
-  appendMany(events: DomainEvent[]): Promise<void>;
-  
-  /**
-   * Busca eventos por agregado
-   */
-  getByAggregateId(
-    aggregateType: string,
-    aggregateId: string
-  ): Promise<DomainEvent[]>;
-  
-  /**
-   * Busca eventos por correlation_id
-   */
-  getByCorrelationId(correlationId: string): Promise<DomainEvent[]>;
-  
-  /**
-   * Busca eventos por tipo
-   */
-  getByEventType(
-    eventType: string,
-    options?: { limit?: number; offset?: number }
-  ): Promise<DomainEvent[]>;
-  
-  /**
-   * Busca eventos por tenant
-   */
-  getByTenant(
-    tenantId: string,
-    options?: { limit?: number; offset?: number }
-  ): Promise<DomainEvent[]>;
+import { DomainEvent } from "./domain-event.interface";
+
+export interface IEventHandler {
+  handle(event: DomainEvent): Promise<void>;
 }
 ```
 
-### 4. Event Store Service
+### 4. Event Store Interface
 
 ```typescript
-// infrastructure/event-store/event-store.service.ts
+// event-sourcing/event-store/event-store.interface.ts
+
+import { DomainEvent } from "../domain/domain-event.interface";
+
+export interface IEventStore {
+  append(event: DomainEvent): Promise<void>;
+  appendMany(events: DomainEvent[]): Promise<void>;
+  getByAggregateId(aggregateType: string, aggregateId: string): Promise<DomainEvent[]>;
+  getByCorrelationId(correlationId: string): Promise<DomainEvent[]>;
+  getByEventType(eventType: string, options?: { limit?: number; offset?: number }): Promise<DomainEvent[]>;
+  getByTenant(tenantId: string, options?: { limit?: number; offset?: number }): Promise<DomainEvent[]>;
+}
+```
+
+### 5. Event Store Service (Drizzle)
+
+```typescript
+// event-sourcing/event-store/event-store.service.ts
+
+import { Injectable } from "@nestjs/common";
+import { eq, and, asc, desc } from "drizzle-orm";
+import { db, events } from "../../db";
+import { DomainEvent } from "../domain/domain-event.interface";
+import { IEventStore } from "./event-store.interface";
 
 @Injectable()
 export class EventStoreService implements IEventStore {
-  constructor(
-    @InjectRepository(EventEntity)
-    private readonly eventRepository: Repository<EventEntity>,
-  ) {}
-  
+
   async append(event: DomainEvent): Promise<void> {
-    const entity = this.toEntity(event);
-    await this.eventRepository.save(entity);
-  }
-  
-  async appendMany(events: DomainEvent[]): Promise<void> {
-    if (events.length === 0) return;
-    
-    const entities = events.map(e => this.toEntity(e));
-    
-    await this.eventRepository.manager.transaction(async (manager) => {
-      await manager.save(EventEntity, entities);
+    await db.insert(events).values({
+      eventId: event.event_id,
+      eventType: event.event_type,
+      aggregateType: event.aggregate_type,
+      aggregateId: event.aggregate_id,
+      aggregateVersion: event.aggregate_version,
+      tenantId: event.tenant_id,
+      clinicId: event.clinic_id,
+      correlationId: event.correlation_id,
+      causationId: event.causation_id,
+      userId: event.user_id,
+      createdAt: event.created_at,
+      eventData: event.event_data,
+      metadata: event.metadata || {},
     });
   }
-  
+
+  async appendMany(eventsToSave: DomainEvent[]): Promise<void> {
+    if (eventsToSave.length === 0) return;
+
+    // Drizzle suporta insert de multiplos registros em uma transacao
+    await db.transaction(async (tx) => {
+      for (const event of eventsToSave) {
+        await tx.insert(events).values({
+          eventId: event.event_id,
+          eventType: event.event_type,
+          aggregateType: event.aggregate_type,
+          aggregateId: event.aggregate_id,
+          aggregateVersion: event.aggregate_version,
+          tenantId: event.tenant_id,
+          clinicId: event.clinic_id,
+          correlationId: event.correlation_id,
+          causationId: event.causation_id,
+          userId: event.user_id,
+          createdAt: event.created_at,
+          eventData: event.event_data,
+          metadata: event.metadata || {},
+        });
+      }
+    });
+  }
+
   async getByAggregateId(
     aggregateType: string,
-    aggregateId: string
+    aggregateId: string,
   ): Promise<DomainEvent[]> {
-    const entities = await this.eventRepository.find({
-      where: { aggregate_type: aggregateType, aggregate_id: aggregateId },
-      order: { aggregate_version: 'ASC' },
-    });
-    
-    return entities.map(e => this.toDomainEvent(e));
+    const rows = await db
+      .select()
+      .from(events)
+      .where(
+        and(
+          eq(events.aggregateType, aggregateType),
+          eq(events.aggregateId, aggregateId),
+        ),
+      )
+      .orderBy(asc(events.aggregateVersion));
+
+    return rows.map(this.toDomainEvent);
   }
-  
+
   async getByCorrelationId(correlationId: string): Promise<DomainEvent[]> {
-    const entities = await this.eventRepository.find({
-      where: { correlation_id: correlationId },
-      order: { created_at: 'ASC' },
-    });
-    
-    return entities.map(e => this.toDomainEvent(e));
+    const rows = await db
+      .select()
+      .from(events)
+      .where(eq(events.correlationId, correlationId))
+      .orderBy(asc(events.createdAt));
+
+    return rows.map(this.toDomainEvent);
   }
-  
+
   async getByEventType(
     eventType: string,
-    options?: { limit?: number; offset?: number }
+    options?: { limit?: number; offset?: number },
   ): Promise<DomainEvent[]> {
-    const entities = await this.eventRepository.find({
-      where: { event_type: eventType },
-      order: { created_at: 'DESC' },
-      take: options?.limit,
-      skip: options?.offset,
-    });
-    
-    return entities.map(e => this.toDomainEvent(e));
+    let query = db
+      .select()
+      .from(events)
+      .where(eq(events.eventType, eventType))
+      .orderBy(desc(events.createdAt));
+
+    if (options?.limit) query = query.limit(options.limit) as any;
+    if (options?.offset) query = query.offset(options.offset) as any;
+
+    const rows = await query;
+    return rows.map(this.toDomainEvent);
   }
-  
+
   async getByTenant(
     tenantId: string,
-    options?: { limit?: number; offset?: number }
+    options?: { limit?: number; offset?: number },
   ): Promise<DomainEvent[]> {
-    const entities = await this.eventRepository.find({
-      where: { tenant_id: tenantId },
-      order: { created_at: 'DESC' },
-      take: options?.limit,
-      skip: options?.offset,
-    });
-    
-    return entities.map(e => this.toDomainEvent(e));
+    let query = db
+      .select()
+      .from(events)
+      .where(eq(events.tenantId, tenantId))
+      .orderBy(desc(events.createdAt));
+
+    if (options?.limit) query = query.limit(options.limit) as any;
+    if (options?.offset) query = query.offset(options.offset) as any;
+
+    const rows = await query;
+    return rows.map(this.toDomainEvent);
   }
-  
-  private toEntity(event: DomainEvent): EventEntity {
-    const entity = new EventEntity();
-    entity.event_id = event.event_id;
-    entity.event_type = event.event_type;
-    entity.aggregate_type = event.aggregate_type;
-    entity.aggregate_id = event.aggregate_id;
-    entity.aggregate_version = event.aggregate_version;
-    entity.tenant_id = event.tenant_id;
-    entity.clinic_id = event.clinic_id;
-    entity.correlation_id = event.correlation_id;
-    entity.causation_id = event.causation_id;
-    entity.user_id = event.user_id;
-    entity.created_at = event.created_at;
-    entity.event_data = event.event_data;
-    entity.metadata = event.metadata || {};
-    return entity;
-  }
-  
-  private toDomainEvent(entity: EventEntity): DomainEvent {
+
+  private toDomainEvent(row: typeof events.$inferSelect): DomainEvent {
     return {
-      event_id: entity.event_id,
-      event_type: entity.event_type,
-      aggregate_type: entity.aggregate_type,
-      aggregate_id: entity.aggregate_id,
-      aggregate_version: entity.aggregate_version,
-      tenant_id: entity.tenant_id,
-      clinic_id: entity.clinic_id,
-      correlation_id: entity.correlation_id,
-      causation_id: entity.causation_id,
-      user_id: entity.user_id,
-      created_at: entity.created_at,
-      event_data: entity.event_data,
-      metadata: entity.metadata,
+      event_id: row.eventId,
+      event_type: row.eventType,
+      aggregate_type: row.aggregateType,
+      aggregate_id: row.aggregateId,
+      aggregate_version: row.aggregateVersion,
+      tenant_id: row.tenantId,
+      clinic_id: row.clinicId ?? undefined,
+      correlation_id: row.correlationId,
+      causation_id: row.causationId ?? undefined,
+      user_id: row.userId ?? undefined,
+      created_at: row.createdAt,
+      event_data: row.eventData,
+      metadata: (row.metadata as Record<string, any>) ?? undefined,
     };
   }
 }
 ```
 
-### 5. Event Bus Interface
+### 6. Event Bus Interface
 
 ```typescript
-// infrastructure/event-bus/event-bus.interface.ts
+// event-sourcing/event-bus/event-bus.interface.ts
+
+import { DomainEvent } from "../domain/domain-event.interface";
+import { IEventHandler } from "../domain/event-handler.interface";
 
 export interface IEventBus {
-  /**
-   * Publica um evento
-   */
   publish(event: DomainEvent): Promise<void>;
-  
-  /**
-   * Publica múltiplos eventos
-   */
   publishMany(events: DomainEvent[]): Promise<void>;
-  
-  /**
-   * Subscreve a um tipo de evento
-   */
-  subscribe(eventType: string, handler: EventHandler): void;
-}
-
-export interface EventHandler {
-  handle(event: DomainEvent): Promise<void>;
+  subscribe(eventType: string, handler: IEventHandler): void;
 }
 ```
 
-### 6. RabbitMQ Event Bus Service
+### 7. RabbitMQ Event Bus Service
 
 ```typescript
-// infrastructure/event-bus/rabbitmq-event-bus.service.ts
+// event-sourcing/event-bus/rabbitmq-event-bus.service.ts
+
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import * as amqp from "amqp-connection-manager";
+import { ChannelWrapper } from "amqp-connection-manager";
+import { Channel } from "amqplib";
+import { DomainEvent } from "../domain/domain-event.interface";
+import { IEventHandler } from "../domain/event-handler.interface";
+import { IEventBus } from "./event-bus.interface";
 
 @Injectable()
-export class RabbitMQEventBus implements IEventBus {
-  private connection: AmqpConnectionManager;
+export class RabbitMQEventBus implements IEventBus, OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(RabbitMQEventBus.name);
+  private connection: amqp.AmqpConnectionManager;
   private channelWrapper: ChannelWrapper;
-  private handlers: Map<string, EventHandler[]> = new Map();
-  
+  private handlers: Map<string, IEventHandler[]> = new Map();
+
   constructor(private readonly configService: ConfigService) {}
-  
+
   async onModuleInit() {
-    await this.connect();
-    await this.setupExchange();
-    await this.setupConsumer();
-  }
-  
-  private async connect(): Promise<void> {
-    const url = this.configService.get<string>('RABBITMQ_URL');
-    
+    const url = this.configService.get<string>("RABBITMQ_URL");
+
     this.connection = amqp.connect([url], {
       heartbeatIntervalInSeconds: 60,
     });
-    
+
+    this.connection.on("connect", () => {
+      this.logger.log("Connected to RabbitMQ");
+    });
+
+    this.connection.on("disconnect", (err) => {
+      this.logger.warn("Disconnected from RabbitMQ", err?.message);
+    });
+
     this.channelWrapper = this.connection.createChannel({
       json: true,
       setup: async (channel: Channel) => {
-        // Exchange para eventos
-        await channel.assertExchange('healz.events', 'topic', {
+        // Exchange principal para eventos
+        await channel.assertExchange("healz.events", "topic", { durable: true });
+
+        // Dead Letter Exchange para eventos com falha
+        await channel.assertExchange("healz.events.dlx", "topic", { durable: true });
+
+        // Queue principal
+        const queueName = "healz.events.consumer";
+        await channel.assertQueue(queueName, {
           durable: true,
+          arguments: {
+            "x-dead-letter-exchange": "healz.events.dlx",
+            "x-dead-letter-routing-key": "failed",
+          },
         });
-        
-        // Dead Letter Exchange
-        await channel.assertExchange('healz.events.dlx', 'topic', {
-          durable: true,
+
+        // Bind: recebe todos os eventos
+        await channel.bindQueue(queueName, "healz.events", "#");
+
+        // Dead Letter Queue
+        await channel.assertQueue("healz.events.failed", { durable: true });
+        await channel.bindQueue("healz.events.failed", "healz.events.dlx", "failed");
+
+        // Consumer
+        await channel.consume(queueName, async (msg) => {
+          if (!msg) return;
+
+          try {
+            const event: DomainEvent = JSON.parse(msg.content.toString());
+            await this.handleEvent(event);
+            channel.ack(msg);
+          } catch (error) {
+            this.logger.error(`Error handling event: ${error.message}`, error.stack);
+            channel.nack(msg, false, false); // Envia para DLQ
+          }
         });
       },
     });
   }
-  
-  private async setupExchange(): Promise<void> {
-    // Já configurado no setup do channel
-  }
-  
-  private async setupConsumer(): Promise<void> {
-    await this.channelWrapper.addSetup(async (channel: Channel) => {
-      // Queue para processar eventos
-      const queueName = 'healz.events.consumer';
-      
-      await channel.assertQueue(queueName, {
-        durable: true,
-        arguments: {
-          'x-dead-letter-exchange': 'healz.events.dlx',
-          'x-dead-letter-routing-key': 'failed',
-        },
-      });
-      
-      // Bind queue ao exchange (recebe todos os eventos)
-      await channel.bindQueue(queueName, 'healz.events', '#');
-      
-      // Consume
-      await channel.consume(queueName, async (msg) => {
-        if (!msg) return;
-        
-        try {
-          const event: DomainEvent = JSON.parse(msg.content.toString());
-          await this.handleEvent(event);
-          channel.ack(msg);
-        } catch (error) {
-          console.error('Error handling event:', error);
-          // Rejeita e envia para DLQ
-          channel.nack(msg, false, false);
-        }
-      });
-    });
-  }
-  
+
   async publish(event: DomainEvent): Promise<void> {
     await this.channelWrapper.publish(
-      'healz.events',
+      "healz.events",
       event.event_type,
       event,
-      {
-        persistent: true,
-        contentType: 'application/json',
-      }
+      { persistent: true, contentType: "application/json" },
     );
   }
-  
+
   async publishMany(events: DomainEvent[]): Promise<void> {
     for (const event of events) {
       await this.publish(event);
     }
   }
-  
-  subscribe(eventType: string, handler: EventHandler): void {
+
+  subscribe(eventType: string, handler: IEventHandler): void {
     if (!this.handlers.has(eventType)) {
       this.handlers.set(eventType, []);
     }
-    
     this.handlers.get(eventType)!.push(handler);
   }
-  
+
   private async handleEvent(event: DomainEvent): Promise<void> {
     const handlers = this.handlers.get(event.event_type) || [];
-    
+
     for (const handler of handlers) {
       try {
         await handler.handle(event);
       } catch (error) {
-        console.error(`Error in handler for ${event.event_type}:`, error);
-        throw error; // Re-throw para triggerar retry
+        this.logger.error(
+          `Handler error for ${event.event_type}: ${error.message}`,
+          error.stack,
+        );
+        throw error; // Re-throw para triggerar retry/DLQ
       }
     }
   }
-  
+
   async onModuleDestroy() {
-    await this.channelWrapper.close();
-    await this.connection.close();
+    if (this.channelWrapper) await this.channelWrapper.close();
+    if (this.connection) await this.connection.close();
   }
-}
-```
-
-### 7. Event Subscriber Decorator
-
-```typescript
-// infrastructure/event-bus/event-subscriber.decorator.ts
-
-export const EVENT_HANDLER_METADATA = 'EVENT_HANDLER_METADATA';
-
-export interface EventHandlerMetadata {
-  eventTypes: string[];
-}
-
-export function EventSubscriber(...eventTypes: string[]): ClassDecorator {
-  return (target: any) => {
-    Reflect.defineMetadata(EVENT_HANDLER_METADATA, { eventTypes }, target);
-  };
-}
-
-// Helper para extrair metadata
-export function getEventHandlerMetadata(target: any): EventHandlerMetadata | undefined {
-  return Reflect.getMetadata(EVENT_HANDLER_METADATA, target);
 }
 ```
 
 ### 8. Correlation Util
 
 ```typescript
-// utils/correlation.util.ts
+// event-sourcing/utils/correlation.util.ts
 
-import { randomUUID } from 'crypto';
+import { randomUUID } from "crypto";
 
 export class CorrelationUtil {
-  /**
-   * Gera novo correlation_id com prefixo
-   */
   static generate(prefix?: string): string {
     const uuid = randomUUID();
     return prefix ? `${prefix}-${uuid}` : uuid;
   }
-  
-  /**
-   * Propaga correlation_id existente ou gera novo
-   */
+
   static propagateOrGenerate(existing?: string, prefix?: string): string {
     return existing || this.generate(prefix);
   }
@@ -549,58 +511,59 @@ export class CorrelationUtil {
 ### 9. Event Sourcing Module
 
 ```typescript
-// event-sourcing.module.ts
+// event-sourcing/event-sourcing.module.ts
 
+import { Global, Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { EventStoreService } from "./event-store/event-store.service";
+import { RabbitMQEventBus } from "./event-bus/rabbitmq-event-bus.service";
+
+@Global()
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([EventEntity]),
-    ConfigModule,
-  ],
+  imports: [ConfigModule],
   providers: [
     EventStoreService,
     {
-      provide: 'IEventStore',
-      useClass: EventStoreService,
+      provide: "IEventStore",
+      useExisting: EventStoreService,
     },
     RabbitMQEventBus,
     {
-      provide: 'IEventBus',
-      useClass: RabbitMQEventBus,
+      provide: "IEventBus",
+      useExisting: RabbitMQEventBus,
     },
   ],
-  exports: [
-    'IEventStore',
-    'IEventBus',
-    EventStoreService,
-    RabbitMQEventBus,
-  ],
+  exports: ["IEventStore", "IEventBus", EventStoreService, RabbitMQEventBus],
 })
 export class EventSourcingModule {}
 ```
 
-## Configuração RabbitMQ
+**Nota:** O modulo e `@Global()` para que todos os modulos de agregados possam injetar `IEventStore` e `IEventBus` sem precisar importar explicitamente.
 
-### docker-compose.yml
+## Configuracao Docker
+
+### Adicionar ao docker/docker-compose.yml
 
 ```yaml
-services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: healz-rabbitmq
     ports:
-      - "5672:5672"   # AMQP
-      - "15672:15672" # Management UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: healz
       RABBITMQ_DEFAULT_PASS: healz123
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - healz-network
-
-volumes:
-  rabbitmq_data:
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 ```
+
+E adicionar `rabbitmq_data:` ao bloco `volumes:`.
 
 ### .env
 
@@ -609,70 +572,100 @@ volumes:
 RABBITMQ_URL=amqp://healz:healz123@localhost:5672
 ```
 
+## Dependencias a Instalar
+
+```bash
+cd apps/api && pnpm add amqplib amqp-connection-manager
+cd apps/api && pnpm add -D @types/amqplib
+```
+
+## Registro no AppModule
+
+Adicionar `EventSourcingModule` ao array de imports do `AppModule`:
+
+```typescript
+// app.module.ts
+import { EventSourcingModule } from "./event-sourcing/event-sourcing.module";
+
+@Module({
+  imports: [
+    // ... imports existentes
+    EventSourcingModule,
+  ],
+  // ...
+})
+```
+
 ## Testes
 
-### Testes Unitários
+### Testes Unitarios
 
 ```typescript
-// event-store.service.spec.ts
-describe('EventStoreService', () => {
-  it('should append event', async () => {
-    // Test implementation
+// event-sourcing/event-store/event-store.service.spec.ts
+describe("EventStoreService", () => {
+  it("should append event", async () => {
+    // Testar insert no banco
   });
-  
-  it('should get events by aggregate id', async () => {
-    // Test implementation
+
+  it("should get events by aggregate id ordered by version", async () => {
+    // Inserir 3 eventos e verificar ordem
   });
-  
-  it('should get events by correlation id', async () => {
-    // Test implementation
+
+  it("should get events by correlation id", async () => {
+    // Inserir eventos com mesmo correlation_id
   });
-  
-  it('should handle optimistic locking', async () => {
-    // Test duplicate version
+
+  it("should reject duplicate aggregate_version (optimistic locking)", async () => {
+    // Tentar inserir dois eventos com mesma version para o mesmo aggregate_id
+    // Deve lancar erro de unique constraint
   });
 });
 ```
 
-### Testes de Integração
+### Testes de Integracao
 
 ```typescript
-// rabbitmq-event-bus.integration.spec.ts
-describe('RabbitMQEventBus (Integration)', () => {
-  it('should publish and consume event', async () => {
-    // Test pub/sub
+// event-sourcing/event-bus/rabbitmq-event-bus.integration.spec.ts
+describe("RabbitMQEventBus (Integration)", () => {
+  it("should publish and consume event", async () => {
+    // Publicar evento e verificar que handler foi chamado
   });
-  
-  it('should send failed events to DLQ', async () => {
-    // Test error handling
+
+  it("should send failed events to DLQ", async () => {
+    // Registrar handler que falha e verificar DLQ
   });
 });
 ```
 
-## Checklist de Implementação
+## Checklist de Implementacao
 
-- [ ] Criar migration da tabela `events`
-- [ ] Implementar EventEntity (TypeORM)
-- [ ] Implementar DomainEvent interface
-- [ ] Implementar AggregateRoot base class
-- [ ] Implementar EventStore service
-- [ ] Implementar RabbitMQ Event Bus
-- [ ] Implementar Event Subscriber decorator
-- [ ] Configurar docker-compose com RabbitMQ
-- [ ] Criar testes unitários do EventStore
-- [ ] Criar testes de integração do Event Bus
-- [ ] Validar funcionamento end-to-end com evento de teste
-- [ ] Documentar uso básico
+- [ ] Criar schema Drizzle `events.schema.ts`
+- [ ] Exportar no `schema/index.ts`
+- [ ] Gerar e rodar migration (`pnpm db:generate && pnpm db:migrate`)
+- [ ] Implementar `DomainEvent` interface
+- [ ] Implementar `AggregateRoot` base class
+- [ ] Implementar `IEventHandler` interface
+- [ ] Implementar `IEventStore` interface
+- [ ] Implementar `EventStoreService` (Drizzle queries)
+- [ ] Implementar `IEventBus` interface
+- [ ] Implementar `RabbitMQEventBus`
+- [ ] Implementar `CorrelationUtil`
+- [ ] Criar `EventSourcingModule` (global)
+- [ ] Instalar dependencias (amqplib, amqp-connection-manager)
+- [ ] Adicionar RabbitMQ ao docker-compose
+- [ ] Adicionar RABBITMQ_URL ao .env
+- [ ] Registrar no AppModule
+- [ ] Criar testes unitarios do EventStore
+- [ ] Criar testes de integracao do Event Bus
+- [ ] Validar end-to-end com evento de teste
 
 ## Resultado Esperado
 
-Ao final desta fase, você deve ter:
+Ao final desta fase:
 
-1. ✅ Tabela `events` criada e funcional
-2. ✅ EventStore salvando eventos no PostgreSQL
-3. ✅ RabbitMQ publicando e consumindo eventos
-4. ✅ Tipos base prontos para uso
-5. ✅ Testes passando
-6. ✅ Infraestrutura pronta para implementar agregados
-
-**Validação:** Criar um evento de teste manualmente, salvá-lo no EventStore e verificar que ele é publicado e consumido via RabbitMQ.
+1. Tabela `events` criada via Drizzle migration
+2. EventStore salvando/consultando eventos via Drizzle queries
+3. RabbitMQ publicando e consumindo eventos
+4. Tipos base prontos para uso por todos os agregados
+5. Testes passando
+6. Infraestrutura pronta para implementar agregados

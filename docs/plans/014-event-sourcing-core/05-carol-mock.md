@@ -2,28 +2,43 @@
 
 ## Objetivo
 
-Criar uma implementação simulada de detecção de intenções e geração de respostas que permita testar o fluxo conversacional sem depender de APIs de IA reais (OpenAI/Claude).
+Criar uma implementacao simulada de deteccao de intencoes e geracao de respostas que permita testar o fluxo conversacional sem depender de APIs de IA reais (OpenAI/Claude).
 
-## Pré-requisitos
+## Pre-requisitos
 
-- ✅ Fase 1 concluída (Event Store Foundation)
+- Fase 1 concluida (Event Store Foundation)
 
 ## Escopo
 
-### O que será implementado
+### O que sera implementado
 
-1. **Interface IIntentDetector** - Contrato para detecção de intenções
-2. **MockIntentDetector** - Implementação com regex/keywords
-3. **Interface IResponseGenerator** - Contrato para geração de respostas
-4. **MockResponseGenerator** - Respostas pré-definidas
-5. **Mapeamento de intenções** - Patterns básicos
+1. **Interface IIntentDetector** - Contrato para deteccao de intencoes
+2. **MockIntentDetector** - Implementacao com regex/keywords
+3. **Interface IResponseGenerator** - Contrato para geracao de respostas
+4. **MockResponseGenerator** - Respostas pre-definidas
+5. **Mapeamento de intencoes** - Patterns basicos
 
-### O que NÃO será implementado
+### O que NAO sera implementado
 
-- ❌ IA real com LLM (Fase 9)
-- ❌ Aprendizado de máquina
-- ❌ Contexto conversacional avançado
-- ❌ Personalização por clínica
+- IA real com LLM (Fase 9)
+- Aprendizado de maquina
+- Contexto conversacional avancado
+- Personalizacao por clinica
+
+## Estrutura de Arquivos
+
+```
+apps/api/src/
++-- carol/
+|   +-- carol.module.ts
+|   +-- domain/
+|   |   +-- intent-detector.interface.ts
+|   |   +-- response-generator.interface.ts
+|   +-- infrastructure/
+|   |   +-- mock-intent-detector.service.ts
+|   |   +-- mock-response-generator.service.ts
+|   |   +-- intent-patterns.ts
+```
 
 ## Interfaces
 
@@ -38,23 +53,16 @@ export interface IntentDetection {
   entities?: Record<string, any>;
 }
 
-export interface IIntentDetector {
-  /**
-   * Detecta a intenção de uma mensagem
-   */
-  detectIntent(message: string, context?: ConversationContext): Promise<IntentDetection>;
-  
-  /**
-   * Extrai entidades de uma mensagem
-   */
-  extractEntities(message: string, intent: string): Promise<Record<string, any>>;
-}
-
 export interface ConversationContext {
   conversationId: string;
   patientId: string;
   lastIntent?: string;
   messageHistory?: string[];
+}
+
+export interface IIntentDetector {
+  detectIntent(message: string, context?: ConversationContext): Promise<IntentDetection>;
+  extractEntities(message: string, intent: string): Promise<Record<string, any>>;
 }
 ```
 
@@ -67,23 +75,12 @@ export interface ResponseOptions {
   intent: string;
   entities?: Record<string, any>;
   context?: ConversationContext;
-  tone?: 'formal' | 'casual' | 'empathetic';
+  tone?: "formal" | "casual" | "empathetic";
 }
 
 export interface IResponseGenerator {
-  /**
-   * Gera resposta baseada em intenção
-   */
   generateResponse(options: ResponseOptions): Promise<string>;
-  
-  /**
-   * Gera mensagem de confirmação
-   */
   generateConfirmation(action: string, details: Record<string, any>): Promise<string>;
-  
-  /**
-   * Gera mensagem de erro
-   */
   generateErrorMessage(error: string): Promise<string>;
 }
 ```
@@ -91,105 +88,90 @@ export interface IResponseGenerator {
 ## Intent Patterns
 
 ```typescript
-// infrastructure/mock-intent-detector/intent-patterns.ts
+// infrastructure/intent-patterns.ts
 
 export interface IntentPattern {
   intent: string;
   patterns: RegExp[];
   keywords: string[];
-  confidence: number; // Base confidence
+  confidence: number;
   entityExtractors?: Record<string, RegExp>;
 }
 
 export const INTENT_PATTERNS: IntentPattern[] = [
-  // Agendamento
   {
-    intent: 'schedule_appointment',
+    intent: "schedule_appointment",
     patterns: [
       /\b(agendar|marcar|consulta|atendimento)\b/i,
       /\b(quero|preciso|gostaria).*(consulta|atendimento)\b/i,
-      /\b(horário|disponível|vaga)\b.*\b(consulta|atendimento)\b/i,
+      /\b(horario|disponivel|vaga)\b.*\b(consulta|atendimento)\b/i,
     ],
-    keywords: ['agendar', 'marcar', 'consulta', 'horário', 'disponível'],
+    keywords: ["agendar", "marcar", "consulta", "horario", "disponivel"],
     confidence: 0.85,
     entityExtractors: {
-      date: /\b(amanhã|hoje|segunda|terça|quarta|quinta|sexta|sábado|domingo|\d{1,2}\/\d{1,2})\b/i,
+      date: /\b(amanha|hoje|segunda|terca|quarta|quinta|sexta|sabado|domingo|\d{1,2}\/\d{1,2})\b/i,
       time: /\b(\d{1,2}[h:]?\d{0,2})\b/i,
     },
   },
-  
-  // Confirmação
   {
-    intent: 'confirm_appointment',
+    intent: "confirm_appointment",
     patterns: [
-      /\b(confirmar|confirmação|confirmo)\b/i,
+      /\b(confirmar|confirmacao|confirmo)\b/i,
       /\b(sim|ok|tudo bem|pode ser)\b.*\b(consulta|agendamento)\b/i,
     ],
-    keywords: ['confirmar', 'confirmação', 'sim', 'ok'],
+    keywords: ["confirmar", "confirmacao", "sim", "ok"],
     confidence: 0.90,
   },
-  
-  // Cancelamento
   {
-    intent: 'cancel_appointment',
+    intent: "cancel_appointment",
     patterns: [
       /\b(cancelar|desmarcar)\b.*\b(consulta|agendamento)\b/i,
-      /\b(não|nao).*(poder|consigo|vou conseguir)\b.*\b(consulta|ir)\b/i,
+      /\b(nao).*(poder|consigo|vou conseguir)\b.*\b(consulta|ir)\b/i,
     ],
-    keywords: ['cancelar', 'desmarcar', 'não posso'],
+    keywords: ["cancelar", "desmarcar", "nao posso"],
     confidence: 0.85,
   },
-  
-  // Reagendamento
   {
-    intent: 'reschedule_appointment',
+    intent: "reschedule_appointment",
     patterns: [
-      /\b(remarcar|reagendar|mudar).*(consulta|horário|data)\b/i,
-      /\b(outro|outra).*(horário|data|dia)\b/i,
+      /\b(remarcar|reagendar|mudar).*(consulta|horario|data)\b/i,
+      /\b(outro|outra).*(horario|data|dia)\b/i,
     ],
-    keywords: ['remarcar', 'reagendar', 'mudar', 'outro horário'],
+    keywords: ["remarcar", "reagendar", "mudar", "outro horario"],
     confidence: 0.80,
   },
-  
-  // Informação
   {
-    intent: 'request_info',
+    intent: "request_info",
     patterns: [
-      /\b(informação|info|saber|onde|como|quando|qual)\b/i,
-      /\b(endereço|localização|telefone|contato)\b/i,
+      /\b(informacao|info|saber|onde|como|quando|qual)\b/i,
+      /\b(endereco|localizacao|telefone|contato)\b/i,
     ],
-    keywords: ['informação', 'onde', 'como', 'endereço'],
+    keywords: ["informacao", "onde", "como", "endereco"],
     confidence: 0.70,
   },
-  
-  // Atendimento humano
   {
-    intent: 'request_human',
+    intent: "request_human",
     patterns: [
       /\b(falar|atendente|pessoa|humano)\b/i,
-      /\b(preciso|quero).*(falar|conversar).*(alguém|pessoa)\b/i,
+      /\b(preciso|quero).*(falar|conversar).*(alguem|pessoa)\b/i,
     ],
-    keywords: ['atendente', 'pessoa', 'humano', 'falar'],
+    keywords: ["atendente", "pessoa", "humano", "falar"],
     confidence: 0.95,
   },
-  
-  // Saudação
   {
-    intent: 'greeting',
+    intent: "greeting",
     patterns: [
-      /\b(oi|olá|ola|bom dia|boa tarde|boa noite|hey|alô)\b/i,
+      /\b(oi|ola|bom dia|boa tarde|boa noite|hey|alo)\b/i,
     ],
-    keywords: ['oi', 'olá', 'bom dia', 'boa tarde'],
+    keywords: ["oi", "ola", "bom dia", "boa tarde"],
     confidence: 0.95,
   },
-  
-  // Despedida
   {
-    intent: 'goodbye',
+    intent: "goodbye",
     patterns: [
-      /\b(tchau|até logo|até|obrigado|valeu|bye)\b/i,
+      /\b(tchau|ate logo|ate|obrigado|valeu|bye)\b/i,
     ],
-    keywords: ['tchau', 'até', 'obrigado'],
+    keywords: ["tchau", "ate", "obrigado"],
     confidence: 0.90,
   },
 ];
@@ -198,27 +180,30 @@ export const INTENT_PATTERNS: IntentPattern[] = [
 ## Mock Intent Detector
 
 ```typescript
-// infrastructure/mock-intent-detector/mock-intent-detector.service.ts
+// infrastructure/mock-intent-detector.service.ts
+
+import { Injectable, Logger } from "@nestjs/common";
+import { IIntentDetector, IntentDetection, ConversationContext } from "../domain/intent-detector.interface";
+import { INTENT_PATTERNS, IntentPattern } from "./intent-patterns";
 
 @Injectable()
 export class MockIntentDetector implements IIntentDetector {
   private readonly logger = new Logger(MockIntentDetector.name);
-  
+
   async detectIntent(
     message: string,
     context?: ConversationContext,
   ): Promise<IntentDetection> {
     const normalized = this.normalizeMessage(message);
-    
-    // Tentar match com patterns
+
     let bestMatch: IntentDetection = {
-      intent: 'unknown',
+      intent: "unknown",
       confidence: 0.0,
     };
-    
+
     for (const pattern of INTENT_PATTERNS) {
       const confidence = this.calculateConfidence(normalized, pattern);
-      
+
       if (confidence > bestMatch.confidence) {
         bestMatch = {
           intent: pattern.intent,
@@ -227,60 +212,55 @@ export class MockIntentDetector implements IIntentDetector {
         };
       }
     }
-    
-    // Log para debug
-    this.logger.log(`Intent detected (MOCK): ${bestMatch.intent} (${bestMatch.confidence.toFixed(2)})`);
-    
+
+    this.logger.log(`[MOCK] Intent: ${bestMatch.intent} (${bestMatch.confidence.toFixed(2)})`);
     return bestMatch;
   }
-  
+
   async extractEntities(message: string, intent: string): Promise<Record<string, any>> {
     const pattern = INTENT_PATTERNS.find(p => p.intent === intent);
     if (!pattern?.entityExtractors) return {};
-    
+
     const entities: Record<string, any> = {};
-    
+
     for (const [key, regex] of Object.entries(pattern.entityExtractors)) {
       const match = message.match(regex);
       if (match) {
         entities[key] = match[1];
       }
     }
-    
+
     return entities;
   }
-  
+
   private normalizeMessage(message: string): string {
     return message
       .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
       .trim();
   }
-  
+
   private calculateConfidence(message: string, pattern: IntentPattern): number {
     let score = 0;
     let matches = 0;
-    
-    // Check regex patterns
+
     for (const regex of pattern.patterns) {
       if (regex.test(message)) {
         matches++;
         score += pattern.confidence;
       }
     }
-    
-    // Check keywords
+
     const keywordMatches = pattern.keywords.filter(keyword =>
-      message.includes(keyword.toLowerCase())
+      message.includes(keyword.toLowerCase()),
     );
-    
+
     if (keywordMatches.length > 0) {
       matches++;
       score += pattern.confidence * 0.5;
     }
-    
-    // Normalize score
+
     if (matches === 0) return 0;
     return Math.min(score / matches, 1.0);
   }
@@ -290,123 +270,100 @@ export class MockIntentDetector implements IIntentDetector {
 ## Mock Response Generator
 
 ```typescript
-// infrastructure/mock-response-generator/mock-response-generator.service.ts
+// infrastructure/mock-response-generator.service.ts
+
+import { Injectable, Logger } from "@nestjs/common";
+import { IResponseGenerator, ResponseOptions } from "../domain/response-generator.interface";
 
 @Injectable()
 export class MockResponseGenerator implements IResponseGenerator {
   private readonly logger = new Logger(MockResponseGenerator.name);
-  
+
   private readonly responses: Record<string, string[]> = {
     greeting: [
-      'Olá! 👋 Como posso ajudar você hoje?',
-      'Oi! Bem-vindo à nossa clínica. Em que posso ajudar?',
-      'Olá! Estou aqui para ajudar. O que você precisa?',
+      "Ola! Como posso ajudar voce hoje?",
+      "Oi! Bem-vindo a nossa clinica. Em que posso ajudar?",
     ],
-    
     schedule_appointment: [
-      'Ótimo! Vou te ajudar a agendar uma consulta. Qual dia e horário você prefere?',
-      'Perfeito! Para qual dia você gostaria de agendar?',
-      'Vamos agendar sua consulta! Você tem preferência de dia e horário?',
+      "Otimo! Vou te ajudar a agendar uma consulta. Qual dia e horario voce prefere?",
+      "Perfeito! Para qual dia voce gostaria de agendar?",
     ],
-    
     confirm_appointment: [
-      '✅ Consulta confirmada com sucesso!',
-      'Perfeito! Sua consulta está confirmada.',
-      'Confirmado! Te esperamos no dia e horário agendados.',
+      "Consulta confirmada com sucesso!",
+      "Perfeito! Sua consulta esta confirmada.",
     ],
-    
     cancel_appointment: [
-      'Entendi. Vou cancelar sua consulta. Confirma?',
-      'Sem problemas! Quer cancelar a consulta?',
-      'Tudo bem! Confirma o cancelamento da consulta?',
+      "Entendi. Vou cancelar sua consulta. Confirma?",
+      "Sem problemas! Quer cancelar a consulta?",
     ],
-    
     reschedule_appointment: [
-      'Vou te ajudar a remarcar. Qual o novo dia e horário?',
-      'Sem problemas! Para quando você gostaria de reagendar?',
-      'Ok! Qual seria o melhor dia e horário para você?',
+      "Vou te ajudar a remarcar. Qual o novo dia e horario?",
+      "Sem problemas! Para quando voce gostaria de reagendar?",
     ],
-    
     request_info: [
-      'Sobre o que você gostaria de saber?',
-      'Claro! Qual informação você precisa?',
-      'Posso te ajudar com isso! O que você quer saber?',
+      "Sobre o que voce gostaria de saber?",
+      "Claro! Qual informacao voce precisa?",
     ],
-    
     request_human: [
-      'Vou transferir você para um atendente. Um momento, por favor! 👨‍⚕️',
-      'Claro! Vou conectar você com nossa equipe.',
-      'Entendo. Transferindo para atendimento humano...',
+      "Vou transferir voce para um atendente. Um momento, por favor!",
+      "Claro! Vou conectar voce com nossa equipe.",
     ],
-    
     goodbye: [
-      'Até logo! Se precisar, estou aqui. 👋',
-      'Tchau! Qualquer coisa é só chamar.',
-      'Até mais! Tenha um ótimo dia! ☀️',
+      "Ate logo! Se precisar, estou aqui.",
+      "Tchau! Qualquer coisa e so chamar.",
     ],
-    
     unknown: [
-      'Desculpe, não entendi. Pode reformular?',
-      'Não compreendi. Pode explicar de outra forma?',
-      'Hmm, não entendi bem. Você pode ser mais específico?',
+      "Desculpe, nao entendi. Pode reformular?",
+      "Nao compreendi. Pode explicar de outra forma?",
     ],
   };
-  
+
   async generateResponse(options: ResponseOptions): Promise<string> {
     const responses = this.responses[options.intent] || this.responses.unknown;
-    
-    // Seleciona resposta aleatória
     const response = responses[Math.floor(Math.random() * responses.length)];
-    
-    // Substitui entidades se houver
+
     let finalResponse = response;
     if (options.entities) {
       finalResponse = this.injectEntities(response, options.entities);
     }
-    
-    this.logger.log(`Response generated (MOCK) for intent: ${options.intent}`);
-    
+
+    this.logger.log(`[MOCK] Response for intent: ${options.intent}`);
     return finalResponse;
   }
-  
+
   async generateConfirmation(
     action: string,
     details: Record<string, any>,
   ): Promise<string> {
     switch (action) {
-      case 'appointment_scheduled':
-        return `✅ Consulta agendada para ${details.date} às ${details.time} com ${details.doctor}!`;
-      
-      case 'appointment_cancelled':
-        return `❌ Consulta do dia ${details.date} cancelada com sucesso.`;
-      
-      case 'appointment_rescheduled':
-        return `🔄 Consulta reagendada para ${details.newDate} às ${details.newTime}!`;
-      
+      case "appointment_scheduled":
+        return `Consulta agendada para ${details.date} as ${details.time} com ${details.doctor}!`;
+      case "appointment_cancelled":
+        return `Consulta do dia ${details.date} cancelada com sucesso.`;
+      case "appointment_rescheduled":
+        return `Consulta reagendada para ${details.newDate} as ${details.newTime}!`;
       default:
-        return '✅ Ação realizada com sucesso!';
+        return "Acao realizada com sucesso!";
     }
   }
-  
+
   async generateErrorMessage(error: string): Promise<string> {
     const errorMessages: Record<string, string> = {
-      slot_not_available: '😕 Desculpe, este horário não está disponível. Temos outras opções?',
-      invalid_date: '📅 Esta data não é válida. Pode escolher outra?',
-      past_date: '⏰ Não é possível agendar para datas passadas. Escolha uma data futura.',
-      appointment_not_found: '🔍 Não encontrei nenhuma consulta agendada.',
-      generic: 'Ops! Algo deu errado. Pode tentar novamente?',
+      slot_not_available: "Desculpe, este horario nao esta disponivel. Temos outras opcoes?",
+      invalid_date: "Esta data nao e valida. Pode escolher outra?",
+      past_date: "Nao e possivel agendar para datas passadas. Escolha uma data futura.",
+      appointment_not_found: "Nao encontrei nenhuma consulta agendada.",
+      generic: "Ops! Algo deu errado. Pode tentar novamente?",
     };
-    
+
     return errorMessages[error] || errorMessages.generic;
   }
-  
+
   private injectEntities(template: string, entities: Record<string, any>): string {
     let result = template;
-    
     for (const [key, value] of Object.entries(entities)) {
-      result = result.replace(new RegExp(`{${key}}`, 'g'), String(value));
+      result = result.replace(new RegExp(`{${key}}`, "g"), String(value));
     }
-    
     return result;
   }
 }
@@ -417,58 +374,60 @@ export class MockResponseGenerator implements IResponseGenerator {
 ```typescript
 // carol.module.ts
 
+import { Module } from "@nestjs/common";
+import { MockIntentDetector } from "./infrastructure/mock-intent-detector.service";
+import { MockResponseGenerator } from "./infrastructure/mock-response-generator.service";
+
 @Module({
   providers: [
     {
-      provide: 'IIntentDetector',
+      provide: "IIntentDetector",
       useClass: MockIntentDetector,
     },
     {
-      provide: 'IResponseGenerator',
+      provide: "IResponseGenerator",
       useClass: MockResponseGenerator,
     },
   ],
-  exports: ['IIntentDetector', 'IResponseGenerator'],
+  exports: ["IIntentDetector", "IResponseGenerator"],
 })
 export class CarolModule {}
 ```
+
+**Nota:** Adicionar `CarolModule` nos imports do `AppModule`.
 
 ## Testes
 
 ### Testes do Intent Detector
 
 ```typescript
-describe('MockIntentDetector', () => {
+describe("MockIntentDetector", () => {
   let detector: MockIntentDetector;
-  
+
   beforeEach(() => {
     detector = new MockIntentDetector();
   });
-  
-  it('should detect schedule_appointment intent', async () => {
-    const result = await detector.detectIntent('Quero marcar uma consulta');
-    
-    expect(result.intent).toBe('schedule_appointment');
+
+  it("should detect schedule_appointment intent", async () => {
+    const result = await detector.detectIntent("Quero marcar uma consulta");
+    expect(result.intent).toBe("schedule_appointment");
     expect(result.confidence).toBeGreaterThan(0.7);
   });
-  
-  it('should detect greeting intent', async () => {
-    const result = await detector.detectIntent('Oi, tudo bem?');
-    
-    expect(result.intent).toBe('greeting');
+
+  it("should detect greeting intent", async () => {
+    const result = await detector.detectIntent("Oi, tudo bem?");
+    expect(result.intent).toBe("greeting");
     expect(result.confidence).toBeGreaterThan(0.9);
   });
-  
-  it('should extract date entity', async () => {
-    const result = await detector.detectIntent('Quero marcar para amanhã');
-    
-    expect(result.entities?.date).toBe('amanhã');
+
+  it("should extract date entity", async () => {
+    const result = await detector.detectIntent("Quero marcar para amanha");
+    expect(result.entities?.date).toBe("amanha");
   });
-  
-  it('should return unknown for unrecognized message', async () => {
-    const result = await detector.detectIntent('xpto abc 123');
-    
-    expect(result.intent).toBe('unknown');
+
+  it("should return unknown for unrecognized message", async () => {
+    const result = await detector.detectIntent("xpto abc 123");
+    expect(result.intent).toBe("unknown");
     expect(result.confidence).toBe(0);
   });
 });
@@ -477,66 +436,53 @@ describe('MockIntentDetector', () => {
 ### Testes do Response Generator
 
 ```typescript
-describe('MockResponseGenerator', () => {
+describe("MockResponseGenerator", () => {
   let generator: MockResponseGenerator;
-  
+
   beforeEach(() => {
     generator = new MockResponseGenerator();
   });
-  
-  it('should generate response for intent', async () => {
-    const response = await generator.generateResponse({
-      intent: 'greeting',
-    });
-    
-    expect(response).toContain('Olá');
+
+  it("should generate response for intent", async () => {
+    const response = await generator.generateResponse({ intent: "greeting" });
+    expect(response.length).toBeGreaterThan(0);
   });
-  
-  it('should generate confirmation message', async () => {
-    const response = await generator.generateConfirmation('appointment_scheduled', {
-      date: '15/02',
-      time: '14h',
-      doctor: 'Dr. João',
+
+  it("should generate confirmation message", async () => {
+    const response = await generator.generateConfirmation("appointment_scheduled", {
+      date: "15/02",
+      time: "14h",
+      doctor: "Dr. Joao",
     });
-    
-    expect(response).toContain('15/02');
-    expect(response).toContain('14h');
-    expect(response).toContain('Dr. João');
+    expect(response).toContain("15/02");
+    expect(response).toContain("14h");
+    expect(response).toContain("Dr. Joao");
   });
-  
-  it('should generate error message', async () => {
-    const response = await generator.generateErrorMessage('slot_not_available');
-    
-    expect(response).toContain('não está disponível');
+
+  it("should generate error message", async () => {
+    const response = await generator.generateErrorMessage("slot_not_available");
+    expect(response).toContain("disponivel");
   });
 });
 ```
 
-## Checklist de Implementação
+## Checklist de Implementacao
 
 - [ ] Criar interfaces (IIntentDetector, IResponseGenerator)
 - [ ] Definir intent patterns
 - [ ] Implementar MockIntentDetector
 - [ ] Implementar MockResponseGenerator
 - [ ] Configurar CarolModule
-- [ ] Criar testes unitários
+- [ ] Registrar CarolModule no AppModule
+- [ ] Criar testes unitarios
 - [ ] Integrar com Conversation Aggregate (Fase 4)
-- [ ] Validar detecção de intenções com mensagens reais
-- [ ] Documentar intenções suportadas
+- [ ] Validar deteccao de intencoes com mensagens reais
 
 ## Resultado Esperado
 
-Ao final desta fase, você deve ter:
-
-1. ✅ Detecção de intenções funcionando com regex/keywords
-2. ✅ Geração de respostas pré-definidas
-3. ✅ Extração básica de entidades (data, hora)
-4. ✅ Suporte para 8+ intenções principais
-5. ✅ Testes passando
-6. ✅ Interface pronta para substituir por IA real (Fase 9)
-
-**Validação:**
-1. Enviar mensagem "Quero marcar consulta" → detecta schedule_appointment
-2. Enviar mensagem "Oi" → detecta greeting
-3. Enviar mensagem "Quero falar com atendente" → detecta request_human
-4. Verificar extração de entidades (data, hora)
+1. Deteccao de intencoes funcionando com regex/keywords
+2. Geracao de respostas pre-definidas
+3. Extracao basica de entidades (data, hora)
+4. Suporte para 8+ intencoes principais
+5. Testes passando
+6. Interface pronta para substituir por IA real (Fase 9)
