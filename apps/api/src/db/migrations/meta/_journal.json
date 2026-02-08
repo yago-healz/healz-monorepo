@@ -36,6 +36,13 @@
       "when": 1770485090256,
       "tag": "0004_misty_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770558419216,
+      "tag": "0005_high_echo",
+      "breakpoints": true
     }
   ]
 }
