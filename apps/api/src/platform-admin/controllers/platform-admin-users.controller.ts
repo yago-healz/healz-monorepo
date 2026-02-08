@@ -24,7 +24,7 @@ import { UpdateUserDto } from "../dto/users/update-user.dto";
 import { UpdateUserStatusDto } from "../dto/users/update-user-status.dto";
 import { AddUserClinicDto } from "../dto/users/add-user-clinic.dto";
 import { UpdateUserClinicDto } from "../dto/users/update-user-clinic.dto";
-import { ResetPasswordDto } from "../dto/users/reset-password.dto";
+import { AdminResetPasswordDto } from "../dto/users/reset-password.dto";
 
 @ApiTags("Platform Admin - Users")
 @Controller("platform-admin/users")
@@ -77,7 +77,7 @@ export class PlatformAdminUsersController {
   @ApiOperation({ summary: "Resetar senha do usuário" })
   async resetPassword(
     @Param("id") id: string,
-    @Body() dto: ResetPasswordDto,
+    @Body() dto: AdminResetPasswordDto,
     @CurrentUser() user: JwtPayload,
     @Request() request: any,
   ) {

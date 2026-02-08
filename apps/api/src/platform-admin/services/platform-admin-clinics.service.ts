@@ -8,7 +8,7 @@ import { db } from "../../db";
 import { clinics, organizations, userClinicRoles, users } from "../../db/schema";
 import { AuditService } from "../../audit/audit.service";
 import { ListClinicsQueryDto } from "../dto/clinics/list-clinics-query.dto";
-import { CreateClinicDto } from "../dto/clinics/create-clinic.dto";
+import { PlatformAdminCreateClinicDto } from "../dto/clinics/create-clinic.dto";
 import { UpdateClinicDto } from "../dto/clinics/update-clinic.dto";
 import { TransferClinicDto } from "../dto/clinics/transfer-clinic.dto";
 import { UpdateClinicStatusDto } from "../dto/clinics/update-clinic-status.dto";
@@ -161,7 +161,7 @@ export class PlatformAdminClinicsService {
     };
   }
 
-  async create(dto: CreateClinicDto, adminUserId: string, ip?: string) {
+  async create(dto: PlatformAdminCreateClinicDto, adminUserId: string, ip?: string) {
     // Verificar org existe e está ativa
     const [org] = await db
       .select()

@@ -22,7 +22,7 @@ import { UpdateUserDto } from "../dto/users/update-user.dto";
 import { UpdateUserStatusDto } from "../dto/users/update-user-status.dto";
 import { AddUserClinicDto } from "../dto/users/add-user-clinic.dto";
 import { UpdateUserClinicDto } from "../dto/users/update-user-clinic.dto";
-import { ResetPasswordDto } from "../dto/users/reset-password.dto";
+import { AdminResetPasswordDto } from "../dto/users/reset-password.dto";
 import {
   calculatePagination,
   buildPaginatedResponse,
@@ -420,7 +420,7 @@ export class PlatformAdminUsersService {
 
   async resetPassword(
     id: string,
-    dto: ResetPasswordDto,
+    dto: AdminResetPasswordDto,
     adminUserId: string,
     ip?: string,
   ) {

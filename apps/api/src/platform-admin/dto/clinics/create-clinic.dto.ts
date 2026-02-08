@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional, IsString, IsUUID, Length } from "class-validator";
 
-export class CreateClinicDto {
+export class PlatformAdminCreateClinicDto {
   @ApiProperty({
     description: "ID da organização",
     example: "550e8400-e29b-41d4-a716-446655440000",

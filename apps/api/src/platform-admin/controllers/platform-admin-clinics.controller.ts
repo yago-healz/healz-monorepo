@@ -23,7 +23,7 @@ import { JwtPayload } from "../../auth/interfaces/jwt-payload.interface";
 import { PlatformAdminGuard } from "../guards/platform-admin.guard";
 import { PlatformAdminClinicsService } from "../services/platform-admin-clinics.service";
 import { ListClinicsQueryDto } from "../dto/clinics/list-clinics-query.dto";
-import { CreateClinicDto } from "../dto/clinics/create-clinic.dto";
+import { PlatformAdminCreateClinicDto } from "../dto/clinics/create-clinic.dto";
 import { UpdateClinicDto } from "../dto/clinics/update-clinic.dto";
 import { TransferClinicDto } from "../dto/clinics/transfer-clinic.dto";
 import { UpdateClinicStatusDto } from "../dto/clinics/update-clinic-status.dto";
@@ -83,7 +83,7 @@ export class PlatformAdminClinicsController {
     description: "Clínica criada",
   })
   async create(
-    @Body() dto: CreateClinicDto,
+    @Body() dto: PlatformAdminCreateClinicDto,
     @CurrentUser() user: JwtPayload,
     @Request() request: any,
   ) {
