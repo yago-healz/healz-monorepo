@@ -67,7 +67,7 @@ export class AppModule implements NestModule {
     // This ensures the organization context is set before any database queries
     consumer
       .apply(RlsMiddleware)
-      .exclude("api/v1/auth/(.*)", "api/v1/signup(.*)", "api/v1/invites/accept")
+      .exclude("api/v1/auth/*path", "api/v1/signup/*path", "api/v1/invites/accept")
       .forRoutes("*");
   }
 }

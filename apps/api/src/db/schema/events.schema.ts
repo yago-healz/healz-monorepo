@@ -28,9 +28,9 @@ export const events = pgTable(
     clinicId: uuid("clinic_id"),
 
     // Rastreabilidade
-    causationId: uuid("causation_id"),
-    correlationId: uuid("correlation_id").notNull(),
-    userId: uuid("user_id"),
+    causationId: varchar("causation_id", { length: 255 }),
+    correlationId: varchar("correlation_id", { length: 255 }).notNull(),
+    userId: varchar("user_id", { length: 255 }),
 
     // Timestamp
     createdAt: timestamp("created_at", { withTimezone: true })

@@ -17,12 +17,17 @@ export class PatientProjectionHandler implements IEventHandler, OnModuleInit {
   }
 
   async handle(event: DomainEvent): Promise<void> {
+    // Convert created_at from string to Date if needed (JSON deserialization converts Dates to strings)
+    const createdAt = typeof event.created_at === 'string'
+      ? new Date(event.created_at)
+      : event.created_at;
+
     switch (event.event_type) {
       case "PatientRegistered":
-        await this.onPatientRegistered(event.event_data as PatientRegisteredData, event.created_at);
+        await this.onPatientRegistered(event.event_data as PatientRegisteredData, createdAt);
         break;
       case "PatientUpdated":
-        await this.onPatientUpdated(event.event_data as PatientUpdatedData, event.created_at);
+        await this.onPatientUpdated(event.event_data as PatientUpdatedData, createdAt);
         break;
     }
   }

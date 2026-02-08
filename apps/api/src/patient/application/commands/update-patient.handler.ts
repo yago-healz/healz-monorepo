@@ -19,7 +19,7 @@ export class UpdatePatientHandler {
     userId?: string;
   }): Promise<void> {
     // Reconstruct patient from event history
-    const events = await this.eventStore.getEvents(command.patientId, "Patient");
+    const events = await this.eventStore.getByAggregateId("Patient", command.patientId);
 
     if (events.length === 0) {
       throw new NotFoundException(`Patient ${command.patientId} not found`);

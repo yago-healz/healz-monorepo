@@ -40,7 +40,7 @@ export class RabbitMQEventBus
     });
 
     this.channelWrapper = this.connection.createChannel({
-      json: true,
+      json: false,  // Disable auto JSON serialization - we handle it manually
       setup: async (channel: Channel) => {
         // Exchange principal para eventos
         await channel.assertExchange("healz.events", "topic", {
@@ -78,7 +78,9 @@ export class RabbitMQEventBus
           if (!msg) return;
 
           try {
-            const event: DomainEvent = JSON.parse(msg.content.toString());
+            // Parse the event from the Buffer
+            const eventStr = msg.content.toString('utf-8');
+            const event: DomainEvent = JSON.parse(eventStr);
             await this.handleEvent(event);
             channel.ack(msg);
           } catch (error) {
