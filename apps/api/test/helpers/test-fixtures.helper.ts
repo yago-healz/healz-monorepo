@@ -1,6 +1,29 @@
-import { DataSource } from 'typeorm';
+import { randomBytes, randomUUID } from 'crypto';
+import { Pool } from 'pg';
 import * as bcrypt from 'bcrypt';
-import { nanoid } from 'nanoid';
+
+interface CreateUserOptions {
+  email: string;
+  password: string;
+  name?: string;
+  emailVerified?: boolean;
+  status?: string;
+  emailVerificationToken?: string | null;
+  emailVerificationExpiry?: Date | null;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiry?: Date | null;
+}
+
+interface OrganizationFixture {
+  name?: string;
+  slug?: string;
+  status?: 'active' | 'inactive';
+}
+
+interface ClinicFixture {
+  name?: string;
+  status?: 'active' | 'inactive';
+}
 
 export class TestFixtures {
   // Default fixtures
@@ -35,67 +58,139 @@ export class TestFixtures {
 
   static readonly CLINIC = {
     name: 'Test Clinic',
-    address: '123 Test St',
-    city: 'Test City',
   };
 
-  constructor(private dataSource: DataSource) {}
+  constructor(private readonly pool: Pool) {}
 
   /**
    * Cria uma organização de teste
    */
-  async createOrganization(data?: Partial<typeof TestFixtures.ORGANIZATION>) {
-    const orgData = { ...TestFixtures.ORGANIZATION, ...data };
-    const [org] = await this.dataSource.query(
-      `INSERT INTO organizations (id, name, slug, status, "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, NOW(), NOW())
-       RETURNING *`,
-      [nanoid(), orgData.name, orgData.slug, 'active'],
+  async createOrganization(data?: OrganizationFixture) {
+    const base = { ...TestFixtures.ORGANIZATION, ...data };
+    const id = randomUUID();
+    const slug =
+      data?.slug ?? `${TestFixtures.ORGANIZATION.slug ?? 'test-org'}-${randomBytes(3).toString('hex')}`;
+    const status = base.status ?? 'active';
+
+    const result = await this.pool.query(
+      `INSERT INTO organizations (id, name, slug, status)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, name, slug, status`,
+      [id, base.name ?? TestFixtures.ORGANIZATION.name, slug, status],
     );
-    return org;
+
+    const row = result.rows[0];
+    return {
+      id: row.id as string,
+      name: row.name as string,
+      slug: row.slug as string,
+      status: row.status as string,
+    };
   }
 
   /**
    * Cria uma clínica de teste
    */
-  async createClinic(organizationId: string, data?: Partial<typeof TestFixtures.CLINIC>) {
-    const clinicData = { ...TestFixtures.CLINIC, ...data };
-    const [clinic] = await this.dataSource.query(
-      `INSERT INTO clinics (id, name, "organizationId", status, "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, NOW(), NOW())
-       RETURNING *`,
-      [nanoid(), clinicData.name, organizationId, 'active'],
+  async createClinic(organizationId: string, data?: ClinicFixture) {
+    const base = { ...TestFixtures.CLINIC, ...data };
+    const id = randomUUID();
+    const status = base.status ?? 'active';
+
+    const result = await this.pool.query(
+      `INSERT INTO clinics (id, organization_id, name, status)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, organization_id, name, status`,
+      [id, organizationId, base.name ?? TestFixtures.CLINIC.name, status],
     );
-    return clinic;
+
+    const row = result.rows[0];
+    return {
+      id: row.id as string,
+      organizationId: row.organization_id as string,
+      name: row.name as string,
+      status: row.status as string,
+    };
   }
 
   /**
    * Cria um usuário de teste
    */
-  async createUser(
-    data: Partial<typeof TestFixtures.DOCTOR> & { email: string; password: string },
-  ) {
+  async createUser(data: CreateUserOptions) {
+    const id = randomUUID();
     const passwordHash = await bcrypt.hash(data.password, 10);
-    const [user] = await this.dataSource.query(
-      `INSERT INTO users (id, email, "passwordHash", name, "emailVerified", status, "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-       RETURNING *`,
-      [nanoid(), data.email, passwordHash, data.name || 'Test User', true, 'active'],
+
+    const result = await this.pool.query(
+      `INSERT INTO users (
+         id,
+         email,
+         password_hash,
+         name,
+         email_verified,
+         status,
+         email_verification_token,
+         email_verification_expiry,
+         reset_password_token,
+         reset_password_expiry
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       RETURNING
+         id,
+         email,
+         name,
+         email_verified,
+         status,
+         password_hash,
+         email_verification_token,
+         email_verification_expiry,
+         reset_password_token,
+         reset_password_expiry`,
+      [
+        id,
+        data.email,
+        passwordHash,
+        data.name ?? 'Test User',
+        data.emailVerified ?? true,
+        data.status ?? 'active',
+        data.emailVerificationToken ?? null,
+        data.emailVerificationExpiry ?? null,
+        data.resetPasswordToken ?? null,
+        data.resetPasswordExpiry ?? null,
+      ],
     );
-    return user;
+
+    const row = result.rows[0];
+    return {
+      id: row.id as string,
+      email: row.email as string,
+      name: row.name as string,
+      passwordHash: row.password_hash as string,
+      emailVerified: row.email_verified as boolean,
+      status: row.status as string,
+      emailVerificationToken: row.email_verification_token as string | null,
+      emailVerificationExpiry: row.email_verification_expiry as Date | null,
+      resetPasswordToken: row.reset_password_token as string | null,
+      resetPasswordExpiry: row.reset_password_expiry as Date | null,
+    };
   }
 
   /**
    * Cria uma relação usuário-clínica
    */
   async createUserClinic(userId: string, clinicId: string, role: string = 'admin') {
-    const [userClinic] = await this.dataSource.query(
-      `INSERT INTO user_clinics ("userId", "clinicId", role, "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, NOW(), NOW())
-       RETURNING *`,
-      [userId, clinicId, role],
+    const id = randomUUID();
+    const result = await this.pool.query(
+      `INSERT INTO user_clinic_roles (id, user_id, clinic_id, role)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, user_id, clinic_id, role`,
+      [id, userId, clinicId, role],
     );
-    return userClinic;
+
+    const row = result.rows[0];
+    return {
+      id: row.id as string,
+      userId: row.user_id as string,
+      clinicId: row.clinic_id as string,
+      role: row.role as string,
+    };
   }
 
   /**
@@ -104,12 +199,19 @@ export class TestFixtures {
   async createPlatformAdmin(
     data: Partial<typeof TestFixtures.PLATFORM_ADMIN> = TestFixtures.PLATFORM_ADMIN,
   ) {
-    const user = await this.createUser(data as any);
-    await this.dataSource.query(
-      `INSERT INTO platform_admins ("userId", "createdAt", "updatedAt")
-       VALUES ($1, NOW(), NOW())`,
-      [user.id],
+    const user = await this.createUser({
+      email: data.email ?? TestFixtures.PLATFORM_ADMIN.email,
+      password: data.password ?? TestFixtures.PLATFORM_ADMIN.password,
+      name: data.name ?? TestFixtures.PLATFORM_ADMIN.name,
+      emailVerified: true,
+    });
+
+    await this.pool.query(
+      `INSERT INTO platform_admins (id, user_id, created_at)
+       VALUES ($1, $2, NOW())`,
+      [randomUUID(), user.id],
     );
+
     return user;
   }
 
@@ -119,7 +221,11 @@ export class TestFixtures {
   async createCompleteSetup() {
     const org = await this.createOrganization();
     const clinic = await this.createClinic(org.id);
-    const admin = await this.createUser(TestFixtures.ORG_ADMIN);
+    const admin = await this.createUser({
+      email: TestFixtures.ORG_ADMIN.email,
+      password: TestFixtures.ORG_ADMIN.password,
+      name: TestFixtures.ORG_ADMIN.name,
+    });
     await this.createUserClinic(admin.id, clinic.id, 'admin');
 
     return { org, clinic, admin };

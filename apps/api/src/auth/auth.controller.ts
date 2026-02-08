@@ -122,6 +122,7 @@ export class AuthController {
   }
 
   @Post("switch-context")
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth("bearer")
   @ApiOperation({

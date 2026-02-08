@@ -14,7 +14,7 @@
   ],
   "coverageDirectory": "../../coverage/e2e",
   "testTimeout": 30000,
-  "setupFilesAfterEnv": ["<rootDir>/test/setup/global-setup.ts"],
+  "globalSetup": "<rootDir>/test/setup/global-setup.ts",
   "moduleNameMapper": {
     "^src/(.*)$": "<rootDir>/src/$1"
   },
