@@ -5,11 +5,12 @@ export class TestAssertions {
   static assertPaginatedResponse(body: any) {
     expect(body).toHaveProperty('data');
     expect(Array.isArray(body.data)).toBe(true);
-    expect(body).toHaveProperty('pagination');
-    expect(body.pagination).toHaveProperty('page');
-    expect(body.pagination).toHaveProperty('limit');
-    expect(body.pagination).toHaveProperty('total');
-    expect(body.pagination).toHaveProperty('totalPages');
+    const paginationKey = body.pagination ? 'pagination' : 'meta';
+    expect(body).toHaveProperty(paginationKey);
+    expect(body[paginationKey]).toHaveProperty('page');
+    expect(body[paginationKey]).toHaveProperty('limit');
+    expect(body[paginationKey]).toHaveProperty('total');
+    expect(body[paginationKey]).toHaveProperty('totalPages');
   }
 
   /**
