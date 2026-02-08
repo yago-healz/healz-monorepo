@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { Toaster } from "@/components/ui/sonner";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -14,7 +15,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootComponent() {
   return (
-    <>
+    <ErrorBoundary>
       <div className="min-h-screen">
         <Outlet />
       </div>
@@ -29,6 +30,6 @@ function RootComponent() {
           <TanStackRouterDevtools position="bottom-right" />
         </>
       )}
-    </>
+    </ErrorBoundary>
   );
 }

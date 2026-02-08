@@ -28,6 +28,12 @@ import { Route as PublicOnboardingCompleteRouteImport } from './routes/_public/o
 import { Route as AuthenticatedPlatformAdminUsersIndexRouteImport } from './routes/_authenticated/platform-admin/users/index'
 import { Route as AuthenticatedPlatformAdminOrganizationsIndexRouteImport } from './routes/_authenticated/platform-admin/organizations/index'
 import { Route as AuthenticatedPlatformAdminClinicsIndexRouteImport } from './routes/_authenticated/platform-admin/clinics/index'
+import { Route as AuthenticatedPlatformAdminUsersNewRouteImport } from './routes/_authenticated/platform-admin/users/new'
+import { Route as AuthenticatedPlatformAdminUsersIdRouteImport } from './routes/_authenticated/platform-admin/users/$id'
+import { Route as AuthenticatedPlatformAdminOrganizationsNewRouteImport } from './routes/_authenticated/platform-admin/organizations/new'
+import { Route as AuthenticatedPlatformAdminOrganizationsIdRouteImport } from './routes/_authenticated/platform-admin/organizations/$id'
+import { Route as AuthenticatedPlatformAdminClinicsNewRouteImport } from './routes/_authenticated/platform-admin/clinics/new'
+import { Route as AuthenticatedPlatformAdminClinicsIdRouteImport } from './routes/_authenticated/platform-admin/clinics/$id'
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
@@ -127,6 +133,42 @@ const AuthenticatedPlatformAdminClinicsIndexRoute =
     path: '/platform-admin/clinics/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPlatformAdminUsersNewRoute =
+  AuthenticatedPlatformAdminUsersNewRouteImport.update({
+    id: '/platform-admin/users/new',
+    path: '/platform-admin/users/new',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPlatformAdminUsersIdRoute =
+  AuthenticatedPlatformAdminUsersIdRouteImport.update({
+    id: '/platform-admin/users/$id',
+    path: '/platform-admin/users/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPlatformAdminOrganizationsNewRoute =
+  AuthenticatedPlatformAdminOrganizationsNewRouteImport.update({
+    id: '/platform-admin/organizations/new',
+    path: '/platform-admin/organizations/new',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPlatformAdminOrganizationsIdRoute =
+  AuthenticatedPlatformAdminOrganizationsIdRouteImport.update({
+    id: '/platform-admin/organizations/$id',
+    path: '/platform-admin/organizations/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPlatformAdminClinicsNewRoute =
+  AuthenticatedPlatformAdminClinicsNewRouteImport.update({
+    id: '/platform-admin/clinics/new',
+    path: '/platform-admin/clinics/new',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPlatformAdminClinicsIdRoute =
+  AuthenticatedPlatformAdminClinicsIdRouteImport.update({
+    id: '/platform-admin/clinics/$id',
+    path: '/platform-admin/clinics/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -143,6 +185,12 @@ export interface FileRoutesByFullPath {
   '/onboarding/step-5': typeof PublicOnboardingStep5Route
   '/platform-admin/': typeof AuthenticatedPlatformAdminIndexRoute
   '/onboarding/': typeof PublicOnboardingIndexRoute
+  '/platform-admin/clinics/$id': typeof AuthenticatedPlatformAdminClinicsIdRoute
+  '/platform-admin/clinics/new': typeof AuthenticatedPlatformAdminClinicsNewRoute
+  '/platform-admin/organizations/$id': typeof AuthenticatedPlatformAdminOrganizationsIdRoute
+  '/platform-admin/organizations/new': typeof AuthenticatedPlatformAdminOrganizationsNewRoute
+  '/platform-admin/users/$id': typeof AuthenticatedPlatformAdminUsersIdRoute
+  '/platform-admin/users/new': typeof AuthenticatedPlatformAdminUsersNewRoute
   '/platform-admin/clinics/': typeof AuthenticatedPlatformAdminClinicsIndexRoute
   '/platform-admin/organizations/': typeof AuthenticatedPlatformAdminOrganizationsIndexRoute
   '/platform-admin/users/': typeof AuthenticatedPlatformAdminUsersIndexRoute
@@ -162,6 +210,12 @@ export interface FileRoutesByTo {
   '/onboarding/step-5': typeof PublicOnboardingStep5Route
   '/platform-admin': typeof AuthenticatedPlatformAdminIndexRoute
   '/onboarding': typeof PublicOnboardingIndexRoute
+  '/platform-admin/clinics/$id': typeof AuthenticatedPlatformAdminClinicsIdRoute
+  '/platform-admin/clinics/new': typeof AuthenticatedPlatformAdminClinicsNewRoute
+  '/platform-admin/organizations/$id': typeof AuthenticatedPlatformAdminOrganizationsIdRoute
+  '/platform-admin/organizations/new': typeof AuthenticatedPlatformAdminOrganizationsNewRoute
+  '/platform-admin/users/$id': typeof AuthenticatedPlatformAdminUsersIdRoute
+  '/platform-admin/users/new': typeof AuthenticatedPlatformAdminUsersNewRoute
   '/platform-admin/clinics': typeof AuthenticatedPlatformAdminClinicsIndexRoute
   '/platform-admin/organizations': typeof AuthenticatedPlatformAdminOrganizationsIndexRoute
   '/platform-admin/users': typeof AuthenticatedPlatformAdminUsersIndexRoute
@@ -184,6 +238,12 @@ export interface FileRoutesById {
   '/_public/onboarding/step-5': typeof PublicOnboardingStep5Route
   '/_authenticated/platform-admin/': typeof AuthenticatedPlatformAdminIndexRoute
   '/_public/onboarding/': typeof PublicOnboardingIndexRoute
+  '/_authenticated/platform-admin/clinics/$id': typeof AuthenticatedPlatformAdminClinicsIdRoute
+  '/_authenticated/platform-admin/clinics/new': typeof AuthenticatedPlatformAdminClinicsNewRoute
+  '/_authenticated/platform-admin/organizations/$id': typeof AuthenticatedPlatformAdminOrganizationsIdRoute
+  '/_authenticated/platform-admin/organizations/new': typeof AuthenticatedPlatformAdminOrganizationsNewRoute
+  '/_authenticated/platform-admin/users/$id': typeof AuthenticatedPlatformAdminUsersIdRoute
+  '/_authenticated/platform-admin/users/new': typeof AuthenticatedPlatformAdminUsersNewRoute
   '/_authenticated/platform-admin/clinics/': typeof AuthenticatedPlatformAdminClinicsIndexRoute
   '/_authenticated/platform-admin/organizations/': typeof AuthenticatedPlatformAdminOrganizationsIndexRoute
   '/_authenticated/platform-admin/users/': typeof AuthenticatedPlatformAdminUsersIndexRoute
@@ -205,6 +265,12 @@ export interface FileRouteTypes {
     | '/onboarding/step-5'
     | '/platform-admin/'
     | '/onboarding/'
+    | '/platform-admin/clinics/$id'
+    | '/platform-admin/clinics/new'
+    | '/platform-admin/organizations/$id'
+    | '/platform-admin/organizations/new'
+    | '/platform-admin/users/$id'
+    | '/platform-admin/users/new'
     | '/platform-admin/clinics/'
     | '/platform-admin/organizations/'
     | '/platform-admin/users/'
@@ -224,6 +290,12 @@ export interface FileRouteTypes {
     | '/onboarding/step-5'
     | '/platform-admin'
     | '/onboarding'
+    | '/platform-admin/clinics/$id'
+    | '/platform-admin/clinics/new'
+    | '/platform-admin/organizations/$id'
+    | '/platform-admin/organizations/new'
+    | '/platform-admin/users/$id'
+    | '/platform-admin/users/new'
     | '/platform-admin/clinics'
     | '/platform-admin/organizations'
     | '/platform-admin/users'
@@ -245,6 +317,12 @@ export interface FileRouteTypes {
     | '/_public/onboarding/step-5'
     | '/_authenticated/platform-admin/'
     | '/_public/onboarding/'
+    | '/_authenticated/platform-admin/clinics/$id'
+    | '/_authenticated/platform-admin/clinics/new'
+    | '/_authenticated/platform-admin/organizations/$id'
+    | '/_authenticated/platform-admin/organizations/new'
+    | '/_authenticated/platform-admin/users/$id'
+    | '/_authenticated/platform-admin/users/new'
     | '/_authenticated/platform-admin/clinics/'
     | '/_authenticated/platform-admin/organizations/'
     | '/_authenticated/platform-admin/users/'
@@ -391,11 +469,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPlatformAdminClinicsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/platform-admin/users/new': {
+      id: '/_authenticated/platform-admin/users/new'
+      path: '/platform-admin/users/new'
+      fullPath: '/platform-admin/users/new'
+      preLoaderRoute: typeof AuthenticatedPlatformAdminUsersNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/platform-admin/users/$id': {
+      id: '/_authenticated/platform-admin/users/$id'
+      path: '/platform-admin/users/$id'
+      fullPath: '/platform-admin/users/$id'
+      preLoaderRoute: typeof AuthenticatedPlatformAdminUsersIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/platform-admin/organizations/new': {
+      id: '/_authenticated/platform-admin/organizations/new'
+      path: '/platform-admin/organizations/new'
+      fullPath: '/platform-admin/organizations/new'
+      preLoaderRoute: typeof AuthenticatedPlatformAdminOrganizationsNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/platform-admin/organizations/$id': {
+      id: '/_authenticated/platform-admin/organizations/$id'
+      path: '/platform-admin/organizations/$id'
+      fullPath: '/platform-admin/organizations/$id'
+      preLoaderRoute: typeof AuthenticatedPlatformAdminOrganizationsIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/platform-admin/clinics/new': {
+      id: '/_authenticated/platform-admin/clinics/new'
+      path: '/platform-admin/clinics/new'
+      fullPath: '/platform-admin/clinics/new'
+      preLoaderRoute: typeof AuthenticatedPlatformAdminClinicsNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/platform-admin/clinics/$id': {
+      id: '/_authenticated/platform-admin/clinics/$id'
+      path: '/platform-admin/clinics/$id'
+      fullPath: '/platform-admin/clinics/$id'
+      preLoaderRoute: typeof AuthenticatedPlatformAdminClinicsIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedPlatformAdminIndexRoute: typeof AuthenticatedPlatformAdminIndexRoute
+  AuthenticatedPlatformAdminClinicsIdRoute: typeof AuthenticatedPlatformAdminClinicsIdRoute
+  AuthenticatedPlatformAdminClinicsNewRoute: typeof AuthenticatedPlatformAdminClinicsNewRoute
+  AuthenticatedPlatformAdminOrganizationsIdRoute: typeof AuthenticatedPlatformAdminOrganizationsIdRoute
+  AuthenticatedPlatformAdminOrganizationsNewRoute: typeof AuthenticatedPlatformAdminOrganizationsNewRoute
+  AuthenticatedPlatformAdminUsersIdRoute: typeof AuthenticatedPlatformAdminUsersIdRoute
+  AuthenticatedPlatformAdminUsersNewRoute: typeof AuthenticatedPlatformAdminUsersNewRoute
   AuthenticatedPlatformAdminClinicsIndexRoute: typeof AuthenticatedPlatformAdminClinicsIndexRoute
   AuthenticatedPlatformAdminOrganizationsIndexRoute: typeof AuthenticatedPlatformAdminOrganizationsIndexRoute
   AuthenticatedPlatformAdminUsersIndexRoute: typeof AuthenticatedPlatformAdminUsersIndexRoute
@@ -403,6 +529,18 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPlatformAdminIndexRoute: AuthenticatedPlatformAdminIndexRoute,
+  AuthenticatedPlatformAdminClinicsIdRoute:
+    AuthenticatedPlatformAdminClinicsIdRoute,
+  AuthenticatedPlatformAdminClinicsNewRoute:
+    AuthenticatedPlatformAdminClinicsNewRoute,
+  AuthenticatedPlatformAdminOrganizationsIdRoute:
+    AuthenticatedPlatformAdminOrganizationsIdRoute,
+  AuthenticatedPlatformAdminOrganizationsNewRoute:
+    AuthenticatedPlatformAdminOrganizationsNewRoute,
+  AuthenticatedPlatformAdminUsersIdRoute:
+    AuthenticatedPlatformAdminUsersIdRoute,
+  AuthenticatedPlatformAdminUsersNewRoute:
+    AuthenticatedPlatformAdminUsersNewRoute,
   AuthenticatedPlatformAdminClinicsIndexRoute:
     AuthenticatedPlatformAdminClinicsIndexRoute,
   AuthenticatedPlatformAdminOrganizationsIndexRoute:
