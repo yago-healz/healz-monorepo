@@ -113,7 +113,7 @@ describe('Platform Admin - List Users (e2e)', () => {
         password: 'User123!@#',
         name: 'Inactive User',
       });
-      await context.dataSource.query(
+      await context.pool.query(
         `UPDATE users SET status = 'inactive' WHERE id = $1`,
         [inactiveUser.id]
       );

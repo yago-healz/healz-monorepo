@@ -35,7 +35,7 @@ describe('Platform Admin - Verify Email (e2e)', () => {
   describe('POST /platform-admin/users/:id/verify-email', () => {
     it('should return 200 and verify user email', async () => {
       // Create user with unverified email
-      const [user] = await context.dataSource.query(
+      const { rows: [user] } = await context.pool.query(
         `INSERT INTO users (id, email, "passwordHash", name, "emailVerified", status, "createdAt", "updatedAt")
          VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
          RETURNING *`,

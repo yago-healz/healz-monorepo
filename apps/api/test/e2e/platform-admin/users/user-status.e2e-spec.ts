@@ -64,7 +64,7 @@ describe('Platform Admin - User Status (e2e)', () => {
       });
       
       // First deactivate the user
-      await context.dataSource.query(
+      await context.pool.query(
         `UPDATE users SET status = 'inactive' WHERE id = $1`,
         [user.id]
       );
