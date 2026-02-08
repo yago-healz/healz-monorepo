@@ -1,8 +1,8 @@
 import {
   Injectable,
   Logger,
-  OnModuleInit,
   OnModuleDestroy,
+  OnModuleInit,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import * as amqp from "amqp-connection-manager";
@@ -24,7 +24,8 @@ export class RabbitMQEventBus
   constructor(private readonly configService: ConfigService) {}
 
   async onModuleInit() {
-    const url = this.configService.get<string>("RABBITMQ_URL") || "amqp://localhost";
+    const url =
+      this.configService.get<string>("RABBITMQ_URL") || "amqp://localhost";
 
     this.connection = amqp.connect([url], {
       heartbeatIntervalInSeconds: 60,
@@ -93,15 +94,39 @@ export class RabbitMQEventBus
   }
 
   async publish(event: DomainEvent): Promise<void> {
-    await this.channelWrapper.publish(
+    await this.channelWrapper.waitForConnect();
+
+    const content = Buffer.from(JSON.stringify(event));
+
+    /**
+     * Type assertion needed due to incompatibility between @types/amqplib@0.10.8
+     * and amqp-connection-manager@5.0.0 PublishOptions interface.
+     * The persistent property exists in amqplib's Options.Publish but TypeScript
+     * fails to recognize it through the inheritance chain.
+     */
+    const published = await this.channelWrapper.publish(
       "healz.events",
       event.event_type,
-      Buffer.from(JSON.stringify(event)),
+      content,
       {
         persistent: true,
         contentType: "application/json",
-      },
+        timestamp: Date.now(),
+        headers: {
+          eventId: event.event_id,
+          eventType: event.event_type,
+        },
+      } as any,
     );
+
+    if (!published) {
+      this.logger.error(
+        `Failed to publish event ${event.event_type} to exchange healz.events`,
+      );
+      throw new Error(
+        `Failed to publish event ${event.event_type} to RabbitMQ`,
+      );
+    }
   }
 
   async publishMany(events: DomainEvent[]): Promise<void> {
