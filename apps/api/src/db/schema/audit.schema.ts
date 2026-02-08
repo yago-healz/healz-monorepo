@@ -3,7 +3,9 @@ import { users } from "./auth.schema";
 
 export const auditLogs = pgTable("audit_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").references(() => users.id),
+  // No FK constraint - audit logs preserve historical data even for deleted users
+  // This prevents FK violations during async logging when users might be in transient states
+  userId: uuid("user_id"),
   organizationId: uuid("organization_id"),
   clinicId: uuid("clinic_id"),
   action: varchar("action", { length: 50 }).notNull(), // LOGIN, LOGIN_FAILED, LOGOUT, READ, CREATE, UPDATE, DELETE
