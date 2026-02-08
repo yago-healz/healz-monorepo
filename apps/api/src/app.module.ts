@@ -16,6 +16,7 @@ import { PatientModule } from "./patient/patient.module";
 import { MessagingModule } from "./messaging/messaging.module";
 import { CarolModule } from "./carol/carol.module";
 import { ConversationModule } from "./conversation/conversation.module";
+import { AppointmentModule } from "./appointment/appointment.module";
 import { RlsMiddleware } from "./db/middleware";
 import { HealthController } from "./health.controller";
 
@@ -46,6 +47,7 @@ import { HealthController } from "./health.controller";
     MessagingModule,
     CarolModule,
     ConversationModule,
+    AppointmentModule,
     MailModule,
     SignupModule,
     InvitesModule,

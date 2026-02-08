@@ -71,6 +71,13 @@
       "when": 1770592066736,
       "tag": "0009_amused_purple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1770593323699,
+      "tag": "0010_smart_leopardon",
+      "breakpoints": true
     }
   ]
 }
