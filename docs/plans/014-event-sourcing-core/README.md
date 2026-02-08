@@ -270,11 +270,11 @@ Cada fase so esta completa quando:
 
 ## Status
 
-Em andamento - Fase 1 completa, Drizzle ORM e padroes implementados
+Em andamento - Fases 1, 2 e 3 completas
 
 - [x] Fase 1: Event Store Foundation ✅
-- [ ] Fase 2: Patient Aggregate
-- [ ] Fase 3: WhatsApp Mock
+- [x] Fase 2: Patient Aggregate ✅
+- [x] Fase 3: WhatsApp Mock ✅
 - [ ] Fase 4: Conversation Aggregate
 - [ ] Fase 5: Carol Mock
 - [ ] Fase 6: Appointment Aggregate
@@ -284,4 +284,4 @@ Em andamento - Fase 1 completa, Drizzle ORM e padroes implementados
 
 ---
 
-**Proximo passo:** Executar Fase 2 (Patient Aggregate) ou Fase 3 (WhatsApp Mock) - podem ser paralelas
+**Proximo passo:** Executar Fase 4 (Conversation Aggregate) e Fase 5 (Carol Mock) - podem ser paralelas

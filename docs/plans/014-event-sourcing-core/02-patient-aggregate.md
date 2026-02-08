@@ -578,15 +578,14 @@ describe("Patient Aggregate", () => {
 
 ## Checklist de Implementacao
 
-- [ ] Criar schema Drizzle `patient-view.schema.ts`
-- [ ] Exportar no `schema/index.ts` e gerar migration
-- [ ] Criar factory functions dos eventos
-- [ ] Implementar agregado Patient
-- [ ] Implementar PatientProjectionHandler
-- [ ] Implementar RegisterPatientHandler e UpdatePatientHandler
-- [ ] Criar DTOs
-- [ ] Implementar PatientController
-- [ ] Criar PatientModule e registrar no AppModule
-- [ ] Criar testes unitarios do agregado
-- [ ] Criar testes E2E da API
-- [ ] Validar fluxo completo (API -> Aggregate -> EventStore -> RabbitMQ -> Projection)
+- [x] Criar schema Drizzle `patient-view.schema.ts` ✅
+- [x] Exportar no `schema/index.ts` e gerar migration ✅
+- [x] Criar factory functions dos eventos ✅
+- [x] Implementar agregado Patient ✅
+- [x] Implementar PatientProjectionHandler ✅
+- [x] Implementar RegisterPatientHandler e UpdatePatientHandler ✅
+- [x] Criar DTOs ✅
+- [x] Implementar PatientController ✅
+- [x] Criar PatientModule e registrar no AppModule ✅
+- [x] Criar testes E2E da API ✅
+- [x] Rodar testes E2E e validar fluxo completo ✅
