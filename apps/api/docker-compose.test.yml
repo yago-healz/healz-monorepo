@@ -18,5 +18,23 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq-test:
+    image: rabbitmq:3-management-alpine
+    container_name: healz-test-rabbitmq
+    ports:
+      - '5673:5672'
+      - '15673:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: healz_test
+      RABBITMQ_DEFAULT_PASS: healz_test
+    volumes:
+      - rabbitmq-test-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres-test-data:
+  rabbitmq-test-data:
