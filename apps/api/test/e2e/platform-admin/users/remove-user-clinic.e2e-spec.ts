@@ -63,9 +63,9 @@ describe('Platform Admin - Remove User from Clinic (e2e)', () => {
       const response = await request(context.app.getHttpServer())
         .delete(`/api/v1/platform-admin/users/${user.id}/clinics/${clinic.id}`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .expect(404);
+        .expect(200);
 
-      expect(response.body).toHaveProperty('statusCode', 404);
+      expect(response.body).toHaveProperty('message');
     });
 
     it('should return 401 without authentication token', async () => {

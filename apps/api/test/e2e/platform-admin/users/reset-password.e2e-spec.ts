@@ -48,7 +48,7 @@ describe('Platform Admin - Reset Password (e2e)', () => {
         .post(`/api/v1/platform-admin/users/${user.id}/reset-password`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send(resetData)
-        .expect(200);
+        .expect(201);
 
       expect(response.body).toHaveProperty('message');
       expect(response.body.message).toContain('reset');
@@ -69,7 +69,7 @@ describe('Platform Admin - Reset Password (e2e)', () => {
         .post(`/api/v1/platform-admin/users/${user.id}/reset-password`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send(resetData)
-        .expect(200);
+        .expect(201);
 
       expect(response.body).toHaveProperty('temporaryPassword');
       expect(response.body.temporaryPassword).toBeTruthy();

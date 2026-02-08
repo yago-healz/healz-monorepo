@@ -11,6 +11,7 @@ import { InvitesModule } from "./invites/invites.module";
 import { OrganizationsModule } from "./organizations/organizations.module";
 import { ClinicsModule } from "./clinics/clinics.module";
 import { PlatformAdminModule } from "./platform-admin/platform-admin.module";
+import { EventSourcingModule } from "./event-sourcing/event-sourcing.module";
 import { RlsMiddleware } from "./db/middleware";
 import { HealthController } from "./health.controller";
 
@@ -36,6 +37,7 @@ import { HealthController } from "./health.controller";
     }),
     AuthModule,
     AuditModule,
+    EventSourcingModule,
     MailModule,
     SignupModule,
     InvitesModule,

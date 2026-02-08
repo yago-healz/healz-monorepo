@@ -639,24 +639,24 @@ describe("RabbitMQEventBus (Integration)", () => {
 
 ## Checklist de Implementacao
 
-- [ ] Criar schema Drizzle `events.schema.ts`
-- [ ] Exportar no `schema/index.ts`
-- [ ] Gerar e rodar migration (`pnpm db:generate && pnpm db:migrate`)
-- [ ] Implementar `DomainEvent` interface
-- [ ] Implementar `AggregateRoot` base class
-- [ ] Implementar `IEventHandler` interface
-- [ ] Implementar `IEventStore` interface
-- [ ] Implementar `EventStoreService` (Drizzle queries)
-- [ ] Implementar `IEventBus` interface
-- [ ] Implementar `RabbitMQEventBus`
-- [ ] Implementar `CorrelationUtil`
-- [ ] Criar `EventSourcingModule` (global)
-- [ ] Instalar dependencias (amqplib, amqp-connection-manager)
-- [ ] Adicionar RabbitMQ ao docker-compose
-- [ ] Adicionar RABBITMQ_URL ao .env
-- [ ] Registrar no AppModule
-- [ ] Criar testes unitarios do EventStore
-- [ ] Criar testes de integracao do Event Bus
+- [x] Criar schema Drizzle `events.schema.ts`
+- [x] Exportar no `schema/index.ts`
+- [x] Gerar e rodar migration (`pnpm db:generate && pnpm db:migrate`)
+- [x] Implementar `DomainEvent` interface
+- [x] Implementar `AggregateRoot` base class
+- [x] Implementar `IEventHandler` interface
+- [x] Implementar `IEventStore` interface
+- [x] Implementar `EventStoreService` (Drizzle queries)
+- [x] Implementar `IEventBus` interface
+- [x] Implementar `RabbitMQEventBus`
+- [x] Implementar `CorrelationUtil`
+- [x] Criar `EventSourcingModule` (global)
+- [x] Instalar dependencias (amqplib, amqp-connection-manager)
+- [x] Adicionar RabbitMQ ao docker-compose
+- [x] Adicionar RABBITMQ_URL ao .env
+- [x] Registrar no AppModule
+- [x] Criar testes unitarios do EventStore
+- [x] Criar testes de integracao do Event Bus
 - [ ] Validar end-to-end com evento de teste
 
 ## Resultado Esperado

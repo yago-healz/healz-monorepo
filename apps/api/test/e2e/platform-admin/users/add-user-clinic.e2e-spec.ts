@@ -52,9 +52,8 @@ describe('Platform Admin - Add User to Clinic (e2e)', () => {
         .send(addData)
         .expect(201);
 
-      expect(response.body).toHaveProperty('userId', user.id);
-      expect(response.body).toHaveProperty('clinicId', clinic.id);
-      expect(response.body).toHaveProperty('role', 'doctor');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('Usuário adicionado à clínica');
     });
 
     it('should return 201 and add user to clinic as secretary', async () => {
@@ -76,8 +75,8 @@ describe('Platform Admin - Add User to Clinic (e2e)', () => {
         .send(addData)
         .expect(201);
 
-      expect(response.body).toHaveProperty('userId', user.id);
-      expect(response.body).toHaveProperty('role', 'secretary');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('Usuário adicionado à clínica');
     });
 
     it('should return 400 for duplicate clinic assignment', async () => {

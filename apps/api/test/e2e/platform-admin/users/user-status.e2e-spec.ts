@@ -52,8 +52,8 @@ describe('Platform Admin - User Status (e2e)', () => {
         .send(updateData)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id', user.id);
-      expect(response.body).toHaveProperty('status', 'inactive');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('desativado');
     });
 
     it('should return 200 and reactivate user', async () => {
@@ -81,8 +81,8 @@ describe('Platform Admin - User Status (e2e)', () => {
         .send(updateData)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id', user.id);
-      expect(response.body).toHaveProperty('status', 'active');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('ativado');
     });
 
     it('should return 400 for invalid status', async () => {

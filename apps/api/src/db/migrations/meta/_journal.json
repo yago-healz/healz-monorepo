@@ -43,6 +43,13 @@
       "when": 1770558419216,
       "tag": "0005_high_echo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770587153119,
+      "tag": "0006_hard_true_believers",
+      "breakpoints": true
     }
   ]
 }

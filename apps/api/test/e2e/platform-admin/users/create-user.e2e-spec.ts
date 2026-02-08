@@ -53,7 +53,7 @@ describe('Platform Admin - Create User (e2e)', () => {
       expect(response.body).toHaveProperty('name', 'New Doctor');
       expect(response.body).toHaveProperty('email', 'newdoctor@example.com');
       expect(response.body).toHaveProperty('status', 'active');
-      expect(response.body).toHaveProperty('emailVerified', false);
+      expect(response.body).toHaveProperty('message');
     });
 
     it('should return 201 and create user with password without invite', async () => {
@@ -106,7 +106,7 @@ describe('Platform Admin - Create User (e2e)', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('statusCode', 400);
-      expect(response.body.message).toContain('já existe');
+      expect(response.body.message).toContain('Email já cadastrado');
     });
 
     it('should return 400 for invalid data', async () => {

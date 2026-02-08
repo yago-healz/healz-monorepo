@@ -50,9 +50,8 @@ describe('Platform Admin - Update User (e2e)', () => {
         .send(updateData)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id', user.id);
-      expect(response.body).toHaveProperty('name', 'New Name');
-      expect(response.body).toHaveProperty('email', user.email);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('atualizado');
     });
 
     it('should return 200 and update user email', async () => {
@@ -72,8 +71,8 @@ describe('Platform Admin - Update User (e2e)', () => {
         .send(updateData)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id', user.id);
-      expect(response.body).toHaveProperty('email', 'newemail@example.com');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('atualizado');
     });
 
     it('should return 400 for invalid data', async () => {

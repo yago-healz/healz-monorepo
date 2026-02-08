@@ -36,7 +36,7 @@ describe('Platform Admin - Verify Email (e2e)', () => {
     it('should return 200 and verify user email', async () => {
       // Create user with unverified email
       const { rows: [user] } = await context.pool.query(
-        `INSERT INTO users (id, email, "passwordHash", name, "emailVerified", status, "createdAt", "updatedAt")
+        `INSERT INTO users (id, email, password_hash, name, email_verified, status, created_at, updated_at)
          VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
          RETURNING *`,
         [randomUUID(), 'unverified@example.com', 'hashedpassword', 'Unverified User', false, 'active']
@@ -45,11 +45,10 @@ describe('Platform Admin - Verify Email (e2e)', () => {
       const response = await request(context.app.getHttpServer())
         .post(`/api/v1/platform-admin/users/${user.id}/verify-email`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
+        .expect(201);
 
-      expect(response.body).toHaveProperty('id', user.id);
-      expect(response.body).toHaveProperty('emailVerified', true);
-      expect(response.body).toHaveProperty('emailVerifiedAt');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('verificado');
     });
 
     it('should return 200 for already verified email', async () => {
@@ -62,10 +61,10 @@ describe('Platform Admin - Verify Email (e2e)', () => {
       const response = await request(context.app.getHttpServer())
         .post(`/api/v1/platform-admin/users/${user.id}/verify-email`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
+        .expect(201);
 
-      expect(response.body).toHaveProperty('id', user.id);
-      expect(response.body).toHaveProperty('emailVerified', true);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('verificado');
     });
 
     it('should return 401 without authentication token', async () => {

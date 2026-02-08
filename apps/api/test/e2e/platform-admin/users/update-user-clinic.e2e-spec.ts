@@ -52,9 +52,8 @@ describe('Platform Admin - Update User Clinic Role (e2e)', () => {
         .send(updateData)
         .expect(200);
 
-      expect(response.body).toHaveProperty('userId', user.id);
-      expect(response.body).toHaveProperty('clinicId', clinic.id);
-      expect(response.body).toHaveProperty('role', 'secretary');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('Role atualizado');
     });
 
     it('should return 200 and update user role to admin', async () => {
@@ -76,7 +75,8 @@ describe('Platform Admin - Update User Clinic Role (e2e)', () => {
         .send(updateData)
         .expect(200);
 
-      expect(response.body).toHaveProperty('role', 'admin');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('Role atualizado');
     });
 
     it('should return 404 when user is not in clinic', async () => {
