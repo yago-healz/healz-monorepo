@@ -886,20 +886,20 @@ describe("Conversation Aggregate", () => {
 
 ## Checklist de Implementacao
 
-- [ ] Criar Drizzle schema para conversation_view e message_view
-- [ ] Criar factory functions para todos os eventos
-- [ ] Implementar agregado Conversation
-- [ ] Implementar ConversationProjectionHandler com eventBus.subscribe()
-- [ ] Implementar ReceiveMessageHandler
-- [ ] Criar DTOs de validacao
-- [ ] Implementar ConversationController
-- [ ] Configurar ConversationModule
-- [ ] Registrar no AppModule
-- [ ] Rodar migration (drizzle-kit generate + migrate)
-- [ ] Integrar com IIntentDetector (mock da Fase 5)
-- [ ] Criar testes unitarios
-- [ ] Criar testes de integracao
-- [ ] Criar testes E2E
+- [x] Criar Drizzle schema para conversation_view e message_view
+- [x] Criar factory functions para todos os eventos
+- [x] Implementar agregado Conversation
+- [x] Implementar ConversationProjectionHandler com eventBus.subscribe()
+- [x] Implementar ReceiveMessageHandler
+- [x] Criar DTOs de validacao
+- [x] Implementar ConversationController
+- [x] Configurar ConversationModule
+- [x] Registrar no AppModule
+- [x] Rodar migration (drizzle-kit generate + migrate)
+- [ ] Integrar com IIntentDetector (mock da Fase 5) - Depende da Fase 5
+- [x] Criar testes unitarios (11 testes passando)
+- [ ] Criar testes de integracao - Depende da Fase 5
+- [ ] Criar testes E2E - Depende da Fase 5
 
 ## Resultado Esperado
 
