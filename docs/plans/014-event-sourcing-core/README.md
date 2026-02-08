@@ -270,18 +270,18 @@ Cada fase so esta completa quando:
 
 ## Status
 
-Em andamento - Fases 1, 2, 3, 4 e 5 completas
+Em andamento - Fases 1, 2, 3, 4, 5 e 6 completas
 
 - [x] Fase 1: Event Store Foundation ✅
 - [x] Fase 2: Patient Aggregate ✅
 - [x] Fase 3: WhatsApp Mock ✅
 - [x] Fase 4: Conversation Aggregate ✅ (testes completos: 11/11 passando)
 - [x] Fase 5: Carol Mock ✅ (testes completos: 41/41 passando - 19 MockIntentDetector + 22 MockResponseGenerator)
-- [ ] Fase 6: Appointment Aggregate
+- [x] Fase 6: Appointment Aggregate ✅ (testes unitários: 20/20 passando)
 - [ ] Fase 7: PatientJourney Aggregate
 - [ ] Fase 8: WhatsApp Integration
 - [ ] Fase 9: Carol Integration
 
 ---
 
-**Proximo passo:** Executar Fase 6 (Appointment Aggregate)
+**Proximo passo:** Executar Fase 7 (PatientJourney Aggregate)
