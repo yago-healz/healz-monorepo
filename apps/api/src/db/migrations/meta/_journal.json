@@ -64,6 +64,13 @@
       "when": 1770589520739,
       "tag": "0008_vengeful_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1770592066736,
+      "tag": "0009_amused_purple_man",
+      "breakpoints": true
     }
   ]
 }
