@@ -15,6 +15,12 @@ export class IsOrgAdminGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user: JwtPayload = request.user;
 
+    if (!user.organizationId) {
+      throw new ForbiddenException(
+        "Usuário não está vinculado a nenhuma organização",
+      );
+    }
+
     // Verificar se o usuário autenticado é admin da organização atual
     const adminAccess = await db
       .select()

@@ -8,7 +8,7 @@ import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import * as crypto from "crypto";
 import { randomBytes, randomUUID } from "crypto";
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, isNull, lt } from "drizzle-orm";
 import { db } from "../db";
 import { clinics, refreshTokens, userClinicRoles, users } from "../db/schema";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
@@ -73,6 +73,21 @@ export class AuthService {
       );
     }
 
+    // 1.7 Verificar se é Platform Admin
+    const { platformAdmins } = await import("../db/schema");
+    const platformAdmin = await db
+      .select()
+      .from(platformAdmins)
+      .where(
+        and(
+          eq(platformAdmins.userId, user[0].id),
+          isNull(platformAdmins.revokedAt),
+        ),
+      )
+      .limit(1);
+
+    const isPlatformAdmin = platformAdmin.length > 0;
+
     // 2. Buscar todas as clínicas que o usuário tem acesso
     const userClinics = await db
       .select({
@@ -85,7 +100,8 @@ export class AuthService {
       .innerJoin(clinics, eq(userClinicRoles.clinicId, clinics.id))
       .where(eq(userClinicRoles.userId, user[0].id));
 
-    if (userClinics.length === 0) {
+    // Platform Admins podem logar sem clínicas
+    if (userClinics.length === 0 && !isPlatformAdmin) {
       throw new UnauthorizedException("User has no clinic access");
     }
 
@@ -112,7 +128,8 @@ export class AuthService {
       }
     }
 
-    if (activeUserClinics.length === 0) {
+    // Platform Admins podem não ter clínicas ativas
+    if (activeUserClinics.length === 0 && !isPlatformAdmin) {
       this.auditService.log({
         action: "LOGIN_FAILED",
         resource: "/api/auth/login",
@@ -123,9 +140,9 @@ export class AuthService {
       throw new UnauthorizedException("Nenhuma clínica ativa disponível");
     }
 
-    // 3. Determinar clínica ativa
-    let activeClinic = activeUserClinics[0];
-    if (preferredClinicId) {
+    // 3. Determinar clínica ativa (se houver)
+    let activeClinic = activeUserClinics.length > 0 ? activeUserClinics[0] : null;
+    if (preferredClinicId && activeUserClinics.length > 0) {
       const preferred = activeUserClinics.find(
         (c) => c.clinicId === preferredClinicId,
       );
@@ -138,8 +155,8 @@ export class AuthService {
     const payload: JwtPayload = {
       userId: user[0].id,
       email: user[0].email,
-      organizationId: activeClinic.organizationId,
-      activeClinicId: activeClinic.clinicId,
+      organizationId: activeClinic?.organizationId,
+      activeClinicId: activeClinic?.clinicId,
       clinicAccess: activeUserClinics.map((c) => ({
         clinicId: c.clinicId,
         clinicName: c.clinicName,
@@ -153,8 +170,8 @@ export class AuthService {
     // Log successful login
     this.auditService.log({
       userId: user[0].id,
-      organizationId: activeClinic.organizationId,
-      clinicId: activeClinic.clinicId,
+      organizationId: activeClinic?.organizationId,
+      clinicId: activeClinic?.clinicId,
       action: "LOGIN",
       resource: "/api/auth/login",
       method: "POST",
@@ -176,12 +193,14 @@ export class AuthService {
         email: user[0].email,
         name: user[0].name,
         emailVerified: user[0].emailVerified,
-        activeClinic: {
-          id: activeClinic.clinicId,
-          name: activeClinic.clinicName,
-          organizationId: activeClinic.organizationId,
-          role: activeClinic.role,
-        },
+        activeClinic: activeClinic
+          ? {
+              id: activeClinic.clinicId,
+              name: activeClinic.clinicName,
+              organizationId: activeClinic.organizationId,
+              role: activeClinic.role,
+            }
+          : null,
         availableClinics: payload.clinicAccess,
       },
     };
@@ -294,6 +313,21 @@ export class AuthService {
       .where(eq(users.id, tokenRecord[0].userId))
       .limit(1);
 
+    // 6.5 Verificar se é Platform Admin
+    const { platformAdmins } = await import("../db/schema");
+    const platformAdmin = await db
+      .select()
+      .from(platformAdmins)
+      .where(
+        and(
+          eq(platformAdmins.userId, user[0].id),
+          isNull(platformAdmins.revokedAt),
+        ),
+      )
+      .limit(1);
+
+    const isPlatformAdmin = platformAdmin.length > 0;
+
     const userClinics = await db
       .select({
         clinicId: userClinicRoles.clinicId,
@@ -309,8 +343,8 @@ export class AuthService {
     const payload: JwtPayload = {
       userId: user[0].id,
       email: user[0].email,
-      organizationId: userClinics[0].organizationId,
-      activeClinicId: userClinics[0].clinicId,
+      organizationId: userClinics.length > 0 ? userClinics[0].organizationId : undefined,
+      activeClinicId: userClinics.length > 0 ? userClinics[0].clinicId : undefined,
       clinicAccess: userClinics.map((c) => ({
         clinicId: c.clinicId,
         clinicName: c.clinicName,

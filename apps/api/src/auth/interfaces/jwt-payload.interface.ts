@@ -1,8 +1,8 @@
 export interface JwtPayload {
   userId: string;
   email: string;
-  organizationId: string;
-  activeClinicId: string;
+  organizationId?: string; // undefined para Platform Admins sem clínica
+  activeClinicId?: string; // undefined para Platform Admins sem clínica
   clinicAccess: ClinicAccess[]; // todas as clínicas que o usuário tem acesso
 }
 

@@ -81,9 +81,10 @@ export class InvitesController {
     @CurrentUser() user: JwtPayload,
     @Req() request: Request,
   ) {
+    // IsOrgAdminGuard garante que organizationId existe
     return this.invitesService.sendInvite(
       user.userId,
-      user.organizationId,
+      user.organizationId!,
       dto,
       request.ip,
     );
