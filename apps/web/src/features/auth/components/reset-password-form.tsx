@@ -24,6 +24,10 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: '',
+      confirmPassword: '',
+    },
   })
 
   const onSubmit = async (data: ResetPasswordFormData) => {
