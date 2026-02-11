@@ -1114,21 +1114,21 @@ function createTestJourney(): PatientJourney {
 
 ## Checklist de Implementacao
 
-- [ ] Criar Drizzle schema `patient-journey-view.schema.ts`
-- [ ] Exportar no `schema/index.ts` e gerar migration
-- [ ] Definir JourneyStage enum e transicoes validas
-- [ ] Implementar funcoes de risk score (calculateRiskScore, getRiskLevel)
-- [ ] Criar factory functions para todos os 5 eventos
-- [ ] Implementar PatientJourney Aggregate com state machine
-- [ ] Implementar JourneyProjectionHandler com eventBus.subscribe()
-- [ ] Implementar PatientJourneyProcessManager com eventBus.subscribe()
-- [ ] Criar PatientJourneyService
-- [ ] Criar PatientJourneyController (API read-only)
-- [ ] Configurar PatientJourneyModule
-- [ ] Registrar no AppModule
-- [ ] Rodar migration
-- [ ] Criar testes unitarios do agregado
-- [ ] Criar testes das funcoes de risk score
+- [x] Criar Drizzle schema `patient-journey-view.schema.ts` ✅
+- [x] Exportar no `schema/index.ts` e gerar migration ✅
+- [x] Definir JourneyStage enum e transicoes validas ✅
+- [x] Implementar funcoes de risk score (calculateRiskScore, getRiskLevel) ✅
+- [x] Criar factory functions para todos os 5 eventos ✅
+- [x] Implementar PatientJourney Aggregate com state machine ✅
+- [x] Implementar JourneyProjectionHandler com eventBus.subscribe() ✅
+- [x] Implementar PatientJourneyProcessManager com eventBus.subscribe() ✅
+- [x] Criar PatientJourneyService ✅
+- [x] Criar PatientJourneyController (API read-only) ✅
+- [x] Configurar PatientJourneyModule ✅
+- [x] Registrar no AppModule ✅
+- [x] Rodar migration ✅
+- [x] Criar testes unitarios do agregado ✅ (15 testes passando)
+- [x] Criar testes das funcoes de risk score ✅ (15 testes passando)
 - [ ] Criar testes do process manager (com mocks)
 - [ ] Validar orquestracao entre agregados
 

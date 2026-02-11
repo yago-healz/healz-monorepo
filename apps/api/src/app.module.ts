@@ -2,23 +2,24 @@ import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { AppointmentModule } from "./appointment/appointment.module";
 import { AuditInterceptor } from "./audit/audit.interceptor";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
-import { MailModule } from "./mail/mail.module";
-import { SignupModule } from "./signup/signup.module";
-import { InvitesModule } from "./invites/invites.module";
-import { OrganizationsModule } from "./organizations/organizations.module";
-import { ClinicsModule } from "./clinics/clinics.module";
-import { PlatformAdminModule } from "./platform-admin/platform-admin.module";
-import { EventSourcingModule } from "./event-sourcing/event-sourcing.module";
-import { PatientModule } from "./patient/patient.module";
-import { MessagingModule } from "./messaging/messaging.module";
 import { CarolModule } from "./carol/carol.module";
+import { ClinicsModule } from "./clinics/clinics.module";
 import { ConversationModule } from "./conversation/conversation.module";
-import { AppointmentModule } from "./appointment/appointment.module";
 import { RlsMiddleware } from "./db/middleware";
+import { EventSourcingModule } from "./event-sourcing/event-sourcing.module";
 import { HealthController } from "./health.controller";
+import { InvitesModule } from "./invites/invites.module";
+import { MailModule } from "./mail/mail.module";
+import { MessagingModule } from "./messaging/messaging.module";
+import { OrganizationsModule } from "./organizations/organizations.module";
+import { PatientJourneyModule } from "./patient-journey/patient-journey.module";
+import { PatientModule } from "./patient/patient.module";
+import { PlatformAdminModule } from "./platform-admin/platform-admin.module";
+import { SignupModule } from "./signup/signup.module";
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { HealthController } from "./health.controller";
     CarolModule,
     ConversationModule,
     AppointmentModule,
+    PatientJourneyModule,
     MailModule,
     SignupModule,
     InvitesModule,
@@ -73,7 +75,11 @@ export class AppModule implements NestModule {
     // This ensures the organization context is set before any database queries
     consumer
       .apply(RlsMiddleware)
-      .exclude("api/v1/auth/*path", "api/v1/signup/*path", "api/v1/invites/accept")
+      .exclude(
+        "api/v1/auth/*path",
+        "api/v1/signup/*path",
+        "api/v1/invites/accept",
+      )
       .forRoutes("*");
   }
 }

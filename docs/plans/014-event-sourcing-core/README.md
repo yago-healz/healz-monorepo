@@ -278,10 +278,10 @@ Em andamento - Fases 1, 2, 3, 4, 5 e 6 completas
 - [x] Fase 4: Conversation Aggregate ✅ (testes completos: 11/11 passando)
 - [x] Fase 5: Carol Mock ✅ (testes completos: 41/41 passando - 19 MockIntentDetector + 22 MockResponseGenerator)
 - [x] Fase 6: Appointment Aggregate ✅ (testes unitários: 20/20 passando)
-- [ ] Fase 7: PatientJourney Aggregate
+- [x] Fase 7: PatientJourney Aggregate ✅ (testes unitários: 30/30 passando - 15 aggregate + 15 risk score)
 - [ ] Fase 8: WhatsApp Integration
 - [ ] Fase 9: Carol Integration
 
 ---
 
-**Proximo passo:** Executar Fase 7 (PatientJourney Aggregate)
+**Proximo passo:** Executar Fase 8 (WhatsApp Integration) ou Fase 9 (Carol Integration) - podem ser paralelas
