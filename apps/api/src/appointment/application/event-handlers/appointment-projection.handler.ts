@@ -32,22 +32,42 @@ export class AppointmentProjectionHandler implements OnModuleInit {
     });
   }
 
+  async handle(event: DomainEvent): Promise<void> {
+    switch (event.event_type) {
+      case "AppointmentScheduled":
+        return this.onScheduled(event);
+      case "AppointmentConfirmed":
+        return this.onConfirmed(event);
+      case "AppointmentCancelled":
+        return this.onCancelled(event);
+      case "AppointmentRescheduled":
+        return this.onRescheduled(event);
+      case "AppointmentCompleted":
+        return this.onCompleted(event);
+      case "AppointmentNoShow":
+        return this.onNoShow(event);
+    }
+  }
+
   private async onScheduled(event: DomainEvent): Promise<void> {
     const data = event.event_data;
-    await db.insert(appointmentView).values({
-      id: data.appointment_id,
-      patientId: data.patient_id,
-      tenantId: data.tenant_id,
-      clinicId: data.clinic_id,
-      doctorId: data.doctor_id,
-      scheduledAt: new Date(data.scheduled_at),
-      duration: data.duration,
-      status: "scheduled",
-      reason: data.reason,
-      notes: data.notes,
-      createdAt: event.created_at,
-      updatedAt: event.created_at,
-    });
+    await db
+      .insert(appointmentView)
+      .values({
+        id: data.appointment_id,
+        patientId: data.patient_id,
+        tenantId: data.tenant_id,
+        clinicId: data.clinic_id,
+        doctorId: data.doctor_id,
+        scheduledAt: new Date(data.scheduled_at),
+        duration: data.duration,
+        status: "scheduled",
+        reason: data.reason,
+        notes: data.notes,
+        createdAt: event.created_at,
+        updatedAt: event.created_at,
+      })
+      .onConflictDoNothing();
   }
 
   private async onConfirmed(event: DomainEvent): Promise<void> {

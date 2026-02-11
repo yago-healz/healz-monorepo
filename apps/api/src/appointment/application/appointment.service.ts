@@ -7,12 +7,14 @@ import { IEventStore } from "../../event-sourcing/event-store/event-store.interf
 import { IEventBus } from "../../event-sourcing/event-bus/event-bus.interface";
 import { Appointment } from "../domain/appointment.aggregate";
 import { CorrelationUtil } from "../../event-sourcing/utils/correlation.util";
+import { AppointmentProjectionHandler } from "./event-handlers/appointment-projection.handler";
 
 @Injectable()
 export class AppointmentService {
   constructor(
     @Inject("IEventStore") private readonly eventStore: IEventStore,
     @Inject("IEventBus") private readonly eventBus: IEventBus,
+    private readonly projectionHandler: AppointmentProjectionHandler,
   ) {}
 
   async schedule(params: {
@@ -58,6 +60,9 @@ export class AppointmentService {
 
     const events = appointment.getUncommittedEvents();
     await this.eventStore.appendMany(events);
+    for (const event of events) {
+      await this.projectionHandler.handle(event);
+    }
     await this.eventBus.publishMany(events);
 
     return appointmentId;
@@ -161,6 +166,9 @@ export class AppointmentService {
   private async saveAndPublish(appointment: Appointment): Promise<void> {
     const events = appointment.getUncommittedEvents();
     await this.eventStore.appendMany(events);
+    for (const event of events) {
+      await this.projectionHandler.handle(event);
+    }
     await this.eventBus.publishMany(events);
   }
 
