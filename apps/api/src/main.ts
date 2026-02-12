@@ -28,7 +28,9 @@ async function bootstrap() {
     allowedHeaders: ["Content-Type", "Authorization"],
   });
 
-  app.setGlobalPrefix("api/v1");
+  app.setGlobalPrefix("api/v1", {
+    exclude: ['health'],
+  });
 
   // Swagger Configuration
   const config = new DocumentBuilder()
