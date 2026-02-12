@@ -34,7 +34,7 @@ import { Loader2, ArrowRightLeft } from 'lucide-react'
 
 const transferSchema = z.object({
   targetOrganizationId: z.string().uuid('Selecione uma organização'),
-  keepUsers: z.boolean().default(true),
+  keepUsers: z.boolean(),
 })
 
 type TransferFormValues = z.infer<typeof transferSchema>

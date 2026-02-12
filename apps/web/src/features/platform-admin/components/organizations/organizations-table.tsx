@@ -24,7 +24,7 @@ import { useOrganizations } from '../../api/organizations-api'
 import type { Organization } from '@/types/api.types'
 
 export function OrganizationsTable() {
-  const [page, setPage] = useState(1)
+  const [page] = useState(1)
   const [search, setSearch] = useState('')
 
   const { data, isLoading } = useOrganizations({
@@ -94,7 +94,7 @@ export function OrganizationsTable() {
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link to={`/platform-admin/organizations/${org.id}`}>
+                        <Link to="/platform-admin/organizations/$id" params={{ id: org.id }}>
                           <Eye className="mr-2 h-4 w-4" />
                           Ver detalhes
                         </Link>

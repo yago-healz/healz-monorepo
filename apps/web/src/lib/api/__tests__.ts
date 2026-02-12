@@ -55,7 +55,7 @@ console.log('Platform Admin Users Update:', ENDPOINTS.PLATFORM_ADMIN.USERS.UPDAT
 // ============================================
 // Teste 4: Verificar types (apenas compilação)
 // ============================================
-import type { LoginDto, LoginResponse, Organization, PlatformUser } from '@/types'
+import type { LoginDto, LoginResponse } from '@/types'
 
 const loginDto: LoginDto = {
   email: 'test@example.com',

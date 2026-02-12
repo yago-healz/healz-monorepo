@@ -1,17 +1,5 @@
-import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Eye, Edit, MoreHorizontal, ArrowRightLeft } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,11 +8,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useClinics } from '../../api/clinics-api'
+import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import type { Clinic } from '@/types/api.types'
+import { Link } from '@tanstack/react-router'
+import { ArrowRightLeft, Edit, Eye, MoreHorizontal } from 'lucide-react'
+import { useState } from 'react'
+import { useClinics } from '../../api/clinics-api'
 
 export function ClinicsTable() {
-  const [page, setPage] = useState(1)
+  const [page] = useState(1)
   const [search, setSearch] = useState('')
 
   const { data, isLoading } = useClinics({
@@ -73,10 +73,10 @@ export function ClinicsTable() {
             {data?.data.map((clinic: Clinic) => (
               <TableRow key={clinic.id}>
                 <TableCell className="font-medium">{clinic.name}</TableCell>
-                <TableCell>{clinic.organization?.name || '-'}</TableCell>
-                <TableCell>{clinic.city}</TableCell>
-                <TableCell>{clinic.state}</TableCell>
-                <TableCell>{clinic.usersCount || 0}</TableCell>
+                <TableCell>{clinic.organizationName || '-'}</TableCell>
+                <TableCell>-</TableCell>
+                <TableCell>-</TableCell>
+                <TableCell>-</TableCell>
                 <TableCell>
                   <Badge variant={clinic.status === 'active' ? 'default' : 'secondary'}>
                     {clinic.status}
@@ -96,7 +96,7 @@ export function ClinicsTable() {
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link to={`/platform-admin/clinics/${clinic.id}`}>
+                        <Link to="/platform-admin/clinics/$id" params={{ id: clinic.id }}>
                           <Eye className="mr-2 h-4 w-4" />
                           Ver detalhes
                         </Link>

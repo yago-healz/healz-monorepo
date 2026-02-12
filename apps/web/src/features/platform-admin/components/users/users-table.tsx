@@ -38,7 +38,7 @@ import {
 import type { PlatformUser } from '@/types/api.types'
 
 export function UsersTable() {
-  const [page, setPage] = useState(1)
+  const [page] = useState(1)
   const [search, setSearch] = useState('')
 
   const { data, isLoading } = useUsers({
@@ -118,9 +118,9 @@ export function UsersTable() {
                 <TableCell className="font-medium">{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
-                  <Badge variant="outline">{user.role}</Badge>
+                  <Badge variant="outline">{user.clinics[0]?.role || '-'}</Badge>
                 </TableCell>
-                <TableCell>{user.clinicsCount || 0}</TableCell>
+                <TableCell>{user.clinics.length}</TableCell>
                 <TableCell>
                   {user.emailVerified ? (
                     <Badge variant="default">Verificado</Badge>
@@ -147,7 +147,7 @@ export function UsersTable() {
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link to={`/platform-admin/users/${user.id}`}>
+                        <Link to="/platform-admin/users/$id" params={{ id: user.id }}>
                           <Eye className="mr-2 h-4 w-4" />
                           Ver detalhes
                         </Link>
