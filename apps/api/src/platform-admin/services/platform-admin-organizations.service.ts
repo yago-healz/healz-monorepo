@@ -226,8 +226,8 @@ export class PlatformAdminOrganizationsService {
       throw new BadRequestException("Slug já existe");
     }
 
-    // Usar transação
-    return await db.transaction(async (tx) => {
+    // Transação: apenas org + clinic
+    const { newOrg, newClinic } = await db.transaction(async (tx) => {
       // 1. Criar organização
       const [newOrg] = await tx
         .insert(organizations)
@@ -248,89 +248,82 @@ export class PlatformAdminOrganizationsService {
         })
         .returning();
 
-      // 3. Criar ou buscar usuário admin
-      let adminUserId: string;
-      const existingUser = await tx
-        .select()
-        .from(users)
-        .where(eq(users.email, initialAdmin.email))
-        .limit(1);
+      return { newOrg, newClinic };
+    });
 
-      if (existingUser.length > 0) {
-        adminUserId = existingUser[0].id;
-      } else {
-        // Criar usuário com invite
-        const newUserResult = await tx
-          .insert(users)
-          .values({
-            email: initialAdmin.email,
-            name: initialAdmin.name,
-            passwordHash: "", // Será definido ao aceitar invite
-            status: "active",
-          })
-          .returning();
-        const newUser = (newUserResult as any[])[0];
-        adminUserId = newUser.id;
-      }
+    // 3. Invite ou criação direta (fora da transação, dados commitados)
+    let inviteInfo = null;
+    let createdAdminId: string | null = null;
 
-      // 4. Criar userClinicRole
-      await tx.insert(userClinicRoles).values({
-        userId: adminUserId,
+    if (initialAdmin.sendInvite) {
+      // sendInvite cria apenas o registro de invite + envia email
+      // acceptInvite criará usuário + userClinicRole depois
+      inviteInfo = await this.invitesService.sendInvite(
+        adminUserId,
+        newOrg.id,
+        {
+          name: initialAdmin.name,
+          email: initialAdmin.email,
+          clinicId: newClinic.id,
+          role: "admin",
+        },
+        ip,
+      );
+    } else {
+      // Sem invite: criar usuário + role diretamente
+      const newUserResult = await db
+        .insert(users)
+        .values({
+          email: initialAdmin.email,
+          name: initialAdmin.name,
+          passwordHash: "",
+          status: "active",
+        })
+        .returning();
+      const newUser = (newUserResult as any[])[0];
+      createdAdminId = newUser.id;
+
+      await db.insert(userClinicRoles).values({
+        userId: newUser.id,
         clinicId: newClinic.id,
         role: "admin",
       });
+    }
 
-      // 5. Enviar invite se solicitado
-      let inviteInfo = null;
-      if (initialAdmin.sendInvite) {
-        inviteInfo = await this.invitesService.sendInvite(
-          adminUserId,
-          newOrg.id,
-          {
-            name: initialAdmin.name,
-            email: initialAdmin.email,
-            clinicId: newClinic.id,
-            role: "admin",
-          },
-          ip,
-        );
-      }
-
-      // 6. Log audit
-      this.auditService.log({
-        userId: adminUserId,
-        action: "CREATE",
-        resource: "/api/platform-admin/organizations",
-        method: "POST",
-        statusCode: 201,
-        ip,
-        metadata: {
-          orgId: newOrg.id,
-          orgName: name,
-          clinicId: newClinic.id,
-          adminEmail: initialAdmin.email,
-        },
-      });
-
-      return {
-        organization: {
-          id: newOrg.id,
-          name: newOrg.name,
-          slug: newOrg.slug,
-          status: newOrg.status,
-        },
-        clinic: {
-          id: newClinic.id,
-          name: newClinic.name,
-        },
-        admin: {
-          id: adminUserId,
-          email: initialAdmin.email,
-          name: initialAdmin.name,
-        },
-        invite: inviteInfo,
-      };
+    // 4. Log audit
+    this.auditService.log({
+      userId: adminUserId,
+      action: "CREATE",
+      resource: "/api/platform-admin/organizations",
+      method: "POST",
+      statusCode: 201,
+      ip,
+      metadata: {
+        orgId: newOrg.id,
+        orgName: name,
+        clinicId: newClinic.id,
+        adminEmail: initialAdmin.email,
+      },
     });
+
+    return {
+      organization: {
+        id: newOrg.id,
+        name: newOrg.name,
+        slug: newOrg.slug,
+        status: newOrg.status,
+      },
+      clinic: {
+        id: newClinic.id,
+        name: newClinic.name,
+      },
+      admin: {
+        id: createdAdminId, // null quando sendInvite:true (usuário ainda não existe)
+        email: initialAdmin.email,
+        name: initialAdmin.name,
+      },
+      invite: inviteInfo,
+    };
   }
 
   async update(
