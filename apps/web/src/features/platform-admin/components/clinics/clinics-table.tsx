@@ -18,14 +18,16 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { Clinic } from '@/types/api.types'
-import { Link } from '@tanstack/react-router'
-import { ArrowRightLeft, Edit, Eye, MoreHorizontal } from 'lucide-react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { ArrowRightLeft, BanIcon, CheckCircle, Edit, Eye, MoreHorizontal } from 'lucide-react'
 import { useState } from 'react'
-import { useClinics } from '../../api/clinics-api'
+import { useClinics, useUpdateClinicStatus } from '../../api/clinics-api'
 
 export function ClinicsTable() {
   const [page] = useState(1)
   const [search, setSearch] = useState('')
+  const navigate = useNavigate()
+  const updateStatus = useUpdateClinicStatus()
 
   const { data, isLoading } = useClinics({
     page,
@@ -96,13 +98,24 @@ export function ClinicsTable() {
                           Ver detalhes
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate({ to: '/admin/clinics/$id', params: { id: clinic.id } })}>
                         <Edit className="mr-2 h-4 w-4" />
                         Editar
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <ArrowRightLeft className="mr-2 h-4 w-4" />
                         Transferir
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => updateStatus.mutate({ id: clinic.id, data: { status: clinic.status === 'active' ? 'inactive' : 'active' } })}
+                        className={clinic.status === 'active' ? 'text-destructive' : 'text-green-600'}
+                      >
+                        {clinic.status === 'active' ? (
+                          <><BanIcon className="mr-2 h-4 w-4" /> Desativar</>
+                        ) : (
+                          <><CheckCircle className="mr-2 h-4 w-4" /> Ativar</>
+                        )}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

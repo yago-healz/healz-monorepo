@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import {
   Table,
   TableBody,
@@ -18,7 +18,8 @@ import {
   UserCog,
   ShieldOff,
   KeyRound,
-  CheckCircle
+  CheckCircle,
+  BanIcon,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -29,17 +30,31 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   useUsers,
   useImpersonateUser,
   useRevokeUserSessions,
   useResetUserPassword,
   useVerifyUserEmail,
+  useUpdateUserStatus,
 } from '../../api/users-api'
 import type { PlatformUser } from '@/types/api.types'
 
 export function UsersTable() {
   const [page] = useState(1)
   const [search, setSearch] = useState('')
+  const [statusDialogUser, setStatusDialogUser] = useState<PlatformUser | null>(null)
+  const navigate = useNavigate()
+  const updateStatus = useUpdateUserStatus()
 
   const { data, isLoading } = useUsers({
     page,
@@ -147,9 +162,20 @@ export function UsersTable() {
                           Ver detalhes
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate({ to: '/admin/users/$id', params: { id: user.id } })}>
                         <Edit className="mr-2 h-4 w-4" />
                         Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setStatusDialogUser(user)}
+                        className={user.status === 'active' ? 'text-destructive' : 'text-green-600'}
+                      >
+                        {user.status === 'active' ? (
+                          <><BanIcon className="mr-2 h-4 w-4" /> Desativar</>
+                        ) : (
+                          <><CheckCircle className="mr-2 h-4 w-4" /> Ativar</>
+                        )}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel>Ações Administrativas</DropdownMenuLabel>
@@ -181,6 +207,42 @@ export function UsersTable() {
       </div>
 
       {/* TODO: Add pagination component */}
+
+      <AlertDialog open={!!statusDialogUser} onOpenChange={(open) => !open && setStatusDialogUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {statusDialogUser?.status === 'active' ? 'Desativar usuário' : 'Ativar usuário'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {statusDialogUser?.status === 'active'
+                ? `Deseja desativar o usuário ${statusDialogUser?.name}? Todas as sessões ativas serão revogadas.`
+                : `Deseja reativar o usuário ${statusDialogUser?.name}?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!statusDialogUser) return
+                const isDeactivating = statusDialogUser.status === 'active'
+                updateStatus.mutate({
+                  id: statusDialogUser.id,
+                  data: {
+                    status: isDeactivating ? 'inactive' : 'active',
+                    revokeTokens: isDeactivating,
+                    ...(isDeactivating && { reason: 'Desativado pelo admin' }),
+                  },
+                })
+                setStatusDialogUser(null)
+              }}
+              className={statusDialogUser?.status === 'active' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
+            >
+              {statusDialogUser?.status === 'active' ? 'Desativar' : 'Ativar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

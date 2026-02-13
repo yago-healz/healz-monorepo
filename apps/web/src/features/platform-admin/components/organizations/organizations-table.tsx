@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Eye, Edit, MoreHorizontal } from 'lucide-react'
+import { Eye, Edit, MoreHorizontal, BanIcon, CheckCircle } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,12 +20,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useOrganizations } from '../../api/organizations-api'
+import { useOrganizations, useUpdateOrganizationStatus } from '../../api/organizations-api'
 import type { Organization } from '@/types/api.types'
 
 export function OrganizationsTable() {
   const [page] = useState(1)
   const [search, setSearch] = useState('')
+  const navigate = useNavigate()
+  const updateStatus = useUpdateOrganizationStatus()
 
   const { data, isLoading } = useOrganizations({
     page,
@@ -94,9 +96,20 @@ export function OrganizationsTable() {
                           Ver detalhes
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate({ to: '/admin/organizations/$id', params: { id: org.id } })}>
                         <Edit className="mr-2 h-4 w-4" />
                         Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => updateStatus.mutate({ id: org.id, data: { status: org.status === 'active' ? 'inactive' : 'active' } })}
+                        className={org.status === 'active' ? 'text-destructive' : 'text-green-600'}
+                      >
+                        {org.status === 'active' ? (
+                          <><BanIcon className="mr-2 h-4 w-4" /> Desativar</>
+                        ) : (
+                          <><CheckCircle className="mr-2 h-4 w-4" /> Ativar</>
+                        )}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
