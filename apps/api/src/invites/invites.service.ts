@@ -7,7 +7,7 @@ import {
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { AuditService } from "../audit/audit.service";
 import { JwtPayload } from "../auth/interfaces/jwt-payload.interface";
 import { db } from "../db";
@@ -165,31 +165,68 @@ export class InvitesService {
     // 4. Hash da senha
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    // 5. Criar user e userClinicRole em transação
+    // 5. Verificar se usuário já existe (admin-created scenario)
+    const existingUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, invite[0].email))
+      .limit(1);
+
+    // 6. Criar/atualizar user e userClinicRole em transação
     let createdUser: any;
     let clinic: any;
 
     try {
       await db.transaction(async (tx) => {
-        // Criar user
-        const userResult = await tx
-          .insert(users)
-          .values({
-            email: invite[0].email,
-            name: invite[0].name,
-            passwordHash,
-            emailVerified: false,
-          })
-          .returning();
+        if (existingUsers.length > 0) {
+          // Cenário A: usuário criado pelo admin — atualizar senha
+          const updated = await tx
+            .update(users)
+            .set({ passwordHash })
+            .where(eq(users.id, existingUsers[0].id))
+            .returning();
 
-        createdUser = (userResult as any[])[0];
+          createdUser = (updated as any[])[0];
 
-        // Criar userClinicRole
-        await tx.insert(userClinicRoles).values({
-          userId: createdUser.id,
-          clinicId: invite[0].clinicId,
-          role: invite[0].role,
-        });
+          // Verificar se userClinicRole já existe
+          const existingRole = await tx
+            .select()
+            .from(userClinicRoles)
+            .where(
+              and(
+                eq(userClinicRoles.userId, createdUser.id),
+                eq(userClinicRoles.clinicId, invite[0].clinicId),
+              ),
+            )
+            .limit(1);
+
+          if (existingRole.length === 0) {
+            await tx.insert(userClinicRoles).values({
+              userId: createdUser.id,
+              clinicId: invite[0].clinicId,
+              role: invite[0].role,
+            });
+          }
+        } else {
+          // Cenário B: fluxo normal — criar novo usuário
+          const userResult = await tx
+            .insert(users)
+            .values({
+              email: invite[0].email,
+              name: invite[0].name,
+              passwordHash,
+              emailVerified: false,
+            })
+            .returning();
+
+          createdUser = (userResult as any[])[0];
+
+          await tx.insert(userClinicRoles).values({
+            userId: createdUser.id,
+            clinicId: invite[0].clinicId,
+            role: invite[0].role,
+          });
+        }
 
         // Marcar invite como usado
         await tx
