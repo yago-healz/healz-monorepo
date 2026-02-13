@@ -16,7 +16,7 @@ export class MailService {
     const verificationUrl = `${frontendUrl}/verify-email?token=${token}`;
 
     await this.resend.emails.send({
-      from: "Healz <onboarding@resend.dev>",
+      from: "Healz <noreply@contact.healz.com.br>",
       to,
       subject: "Verifique seu email - Healz",
       html: `
@@ -35,7 +35,7 @@ export class MailService {
     const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
 
     await this.resend.emails.send({
-      from: "Healz <onboarding@resend.dev>",
+      from: "Healz <noreply@contact.healz.com.br>",
       to,
       subject: "Recuperação de senha - Healz",
       html: `
@@ -66,7 +66,7 @@ export class MailService {
     };
 
     await this.resend.emails.send({
-      from: "Healz <onboarding@resend.dev>",
+      from: "Healz <noreply@contact.healz.com.br>",
       to,
       subject: `Você foi convidado para ${organizationName}`,
       html: `
