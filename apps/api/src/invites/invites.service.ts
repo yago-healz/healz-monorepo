@@ -288,6 +288,56 @@ export class InvitesService {
     };
   }
 
+  async createInviteForUser(
+    adminUserId: string,
+    organizationId: string,
+    dto: SendInviteDto,
+    ip?: string,
+  ): Promise<void> {
+    const [org] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, organizationId))
+      .limit(1);
+
+    const [admin] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, adminUserId))
+      .limit(1);
+
+    const token = randomBytes(32).toString("hex");
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    await db.insert(invites).values({
+      email: dto.email,
+      name: dto.name,
+      token,
+      clinicId: dto.clinicId,
+      organizationId,
+      role: dto.role as any,
+      invitedBy: adminUserId,
+      expiresAt,
+    });
+
+    this.mailService
+      .sendInviteEmail(dto.email, token, admin.name, org.name, dto.role)
+      .catch((err) => console.error("Failed to send invite email:", err));
+
+    this.auditService.log({
+      userId: adminUserId,
+      organizationId,
+      clinicId: dto.clinicId,
+      action: "CREATE",
+      resource: "/api/platform-admin/users/invite",
+      method: "POST",
+      statusCode: 201,
+      ip,
+      metadata: { invitedEmail: dto.email, invitedName: dto.name, role: dto.role },
+    });
+  }
+
   private async generateRefreshToken(
     userId: string,
   ): Promise<{ token: string }> {

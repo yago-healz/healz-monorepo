@@ -27,12 +27,14 @@ import {
   calculatePagination,
   buildPaginatedResponse,
 } from "../utils/pagination.helper";
+import { InvitesService } from "../../invites/invites.service";
 
 @Injectable()
 export class PlatformAdminUsersService {
   constructor(
     private auditService: AuditService,
     private mailService: MailService,
+    private invitesService: InvitesService,
   ) {}
 
   async list(query: ListUsersQueryDto, adminUserId: string) {
@@ -298,7 +300,12 @@ export class PlatformAdminUsersService {
         role,
       });
 
-      // TODO: Criar invite e enviar email
+      await this.invitesService.createInviteForUser(
+        adminUserId,
+        clinic.organizationId,
+        { email, name, clinicId, role },
+        ip,
+      );
 
       this.auditService.log({
         userId: adminUserId,
