@@ -174,14 +174,17 @@ export function UserForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Clínica (Opcional)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={(v) => field.onChange(v === 'none' ? '' : v)}
+                    defaultValue={field.value || 'none'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione uma clínica" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Nenhuma</SelectItem>
+                      <SelectItem value="none">Nenhuma</SelectItem>
                       {clinicsData?.data.map((clinic) => (
                         <SelectItem key={clinic.id} value={clinic.id}>
                           {clinic.name}
