@@ -1,11 +1,23 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useOrganization, useUpdateOrganization } from '@/features/platform-admin/api/organizations-api'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { useOrganization, useUpdateOrganization, useUpdateOrganizationStatus } from '@/features/platform-admin/api/organizations-api'
 import { OrganizationForm } from '@/features/platform-admin/components/organizations/organization-form'
+import { OrganizationClinicsTable } from '@/features/platform-admin/components/organizations/organization-clinics-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Building2, Calendar } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { ArrowLeft, Ban, Building, Building2, Calendar, CheckCircle, Plus } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -18,6 +30,7 @@ function OrganizationDetailsPage() {
   const navigate = useNavigate()
   const { data: organization, isLoading } = useOrganization(id)
   const updateMutation = useUpdateOrganization()
+  const updateStatus = useUpdateOrganizationStatus()
 
   const handleSubmit = async (data: any) => {
     await updateMutation.mutateAsync({ id, data })
@@ -65,6 +78,45 @@ function OrganizationDetailsPage() {
               Detalhes e configurações da organização
             </p>
           </div>
+        </div>
+
+        <div>
+          {organization.status === 'active' ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <Ban className="mr-2 h-4 w-4" />
+                  Desativar
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Desativar organização?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Isso desativará "{organization.name}" e todas as suas clínicas. Os usuários não conseguirão fazer login.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => updateStatus.mutate({ id, data: { status: 'inactive' } })}
+                  >
+                    Desativar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => updateStatus.mutate({ id, data: { status: 'active' } })}
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Ativar
+            </Button>
+          )}
         </div>
       </div>
 
@@ -121,6 +173,27 @@ function OrganizationDetailsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Building className="h-5 w-5" />
+              Clínicas
+            </CardTitle>
+            <CardDescription>Clínicas vinculadas a esta organização</CardDescription>
+          </div>
+          <Button asChild size="sm">
+            <Link to="/admin/clinics/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Clínica
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <OrganizationClinicsTable organizationId={id} />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
