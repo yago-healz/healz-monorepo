@@ -1,12 +1,24 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useUser, useUpdateUser } from '@/features/platform-admin/api/users-api'
+import { useUser, useUpdateUser, useUpdateUserStatus } from '@/features/platform-admin/api/users-api'
 import { UserForm } from '@/features/platform-admin/components/users/user-form'
 import { UserClinicsManager } from '@/features/platform-admin/components/users/user-clinics-manager'
+import { UserAdminActions } from '@/features/platform-admin/components/users/user-admin-actions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, User, Calendar, CheckCircle, XCircle } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { ArrowLeft, User, Calendar, CheckCircle, XCircle, PowerOff, Power } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -19,6 +31,7 @@ function UserDetailsPage() {
   const navigate = useNavigate()
   const { data: user, isLoading } = useUser(id)
   const updateMutation = useUpdateUser()
+  const updateStatus = useUpdateUserStatus()
 
   const handleSubmit = async (data: any) => {
     await updateMutation.mutateAsync({ id, data })
@@ -78,6 +91,44 @@ function UserDetailsPage() {
             </p>
           </div>
         </div>
+
+        {user.status === 'active' ? (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="gap-2 text-destructive hover:text-destructive" disabled={updateStatus.isPending}>
+                <PowerOff className="h-4 w-4" />
+                Desativar
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Desativar {user.name}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  O usuário perderá acesso ao sistema e todas as sessões serão encerradas.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => updateStatus.mutate({ id, data: { status: 'inactive', revokeTokens: true } })}
+                >
+                  Desativar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        ) : (
+          <Button
+            variant="outline"
+            className="gap-2"
+            disabled={updateStatus.isPending}
+            onClick={() => updateStatus.mutate({ id, data: { status: 'active', revokeTokens: false } })}
+          >
+            <Power className="h-4 w-4" />
+            Ativar
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -157,6 +208,8 @@ function UserDetailsPage() {
       </div>
 
       <UserClinicsManager user={user} />
+
+      <UserAdminActions user={user} />
 
       <Card>
         <CardHeader>
