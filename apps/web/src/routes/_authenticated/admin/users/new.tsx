@@ -1,21 +1,21 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { ClinicForm } from '@/features/platform-admin/components/clinics/clinic-form'
-import { useCreateClinic } from '@/features/platform-admin/api/clinics-api'
+import { UserForm } from '@/features/platform-admin/components/users/user-form'
+import { useCreateUser } from '@/features/platform-admin/api/users-api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 
-export const Route = createFileRoute('/_authenticated/platform-admin/clinics/new')({
-  component: NewClinicPage,
+export const Route = createFileRoute('/_authenticated/admin/users/new')({
+  component: NewUserPage,
 })
 
-function NewClinicPage() {
+function NewUserPage() {
   const navigate = useNavigate()
-  const createMutation = useCreateClinic()
+  const createMutation = useCreateUser()
 
   const handleSubmit = async (data: any) => {
     await createMutation.mutateAsync(data)
-    navigate({ to: '/platform-admin/clinics' })
+    navigate({ to: '/admin/users' })
   }
 
   return (
@@ -24,30 +24,30 @@ function NewClinicPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate({ to: '/platform-admin/clinics' })}
+          onClick={() => navigate({ to: '/admin/users' })}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Nova Clínica</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Novo Usuário</h1>
           <p className="text-muted-foreground">
-            Crie uma nova clínica vinculada a uma organização
+            Crie um novo usuário no sistema
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Dados da Clínica</CardTitle>
+          <CardTitle>Dados do Usuário</CardTitle>
           <CardDescription>
-            Preencha os dados da nova clínica. Selecione a organização à qual ela pertence.
+            Preencha os dados do novo usuário. Opcionalmente, você pode vinculá-lo a uma clínica.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ClinicForm
+          <UserForm
             onSubmit={handleSubmit}
             isSubmitting={createMutation.isPending}
-            submitLabel="Criar Clínica"
+            submitLabel="Criar Usuário"
           />
         </CardContent>
       </Card>

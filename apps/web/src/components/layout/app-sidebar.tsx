@@ -30,27 +30,27 @@ const navigation = [
       {
         title: 'Dashboard',
         icon: LayoutDashboard,
-        href: '/platform-admin',
+        href: '/admin',
       },
       {
         title: 'Organizações',
         icon: Building2,
-        href: '/platform-admin/organizations',
+        href: '/admin/organizations',
       },
       {
         title: 'Clínicas',
         icon: Hospital,
-        href: '/platform-admin/clinics',
+        href: '/admin/clinics',
       },
       {
         title: 'Usuários',
         icon: Users,
-        href: '/platform-admin/users',
+        href: '/admin/users',
       },
       {
         title: 'Admins',
         icon: Shield,
-        href: '/platform-admin/admins',
+        href: '/admin/admins',
       },
     ],
   },

@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Building2, Hospital, Users, Activity } from 'lucide-react'
 
-export const Route = createFileRoute('/_authenticated/platform-admin/')({
+export const Route = createFileRoute('/_authenticated/admin/')({
   component: PlatformAdminDashboard,
 })
 

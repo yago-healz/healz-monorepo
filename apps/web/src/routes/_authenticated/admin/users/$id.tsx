@@ -10,7 +10,7 @@ import { ArrowLeft, User, Calendar, CheckCircle, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-export const Route = createFileRoute('/_authenticated/platform-admin/users/$id')({
+export const Route = createFileRoute('/_authenticated/admin/users/$id')({
   component: UserDetailsPage,
 })
 
@@ -37,7 +37,7 @@ function UserDetailsPage() {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <h2 className="text-2xl font-bold">Usuário não encontrado</h2>
-        <Button onClick={() => navigate({ to: '/platform-admin/users' })}>
+        <Button onClick={() => navigate({ to: '/admin/users' })}>
           Voltar para lista
         </Button>
       </div>
@@ -51,7 +51,7 @@ function UserDetailsPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate({ to: '/platform-admin/users' })}
+            onClick={() => navigate({ to: '/admin/users' })}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

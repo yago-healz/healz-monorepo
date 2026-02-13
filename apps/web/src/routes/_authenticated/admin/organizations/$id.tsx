@@ -9,7 +9,7 @@ import { ArrowLeft, Building2, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-export const Route = createFileRoute('/_authenticated/platform-admin/organizations/$id')({
+export const Route = createFileRoute('/_authenticated/admin/organizations/$id')({
   component: OrganizationDetailsPage,
 })
 
@@ -36,7 +36,7 @@ function OrganizationDetailsPage() {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <h2 className="text-2xl font-bold">Organização não encontrada</h2>
-        <Button onClick={() => navigate({ to: '/platform-admin/organizations' })}>
+        <Button onClick={() => navigate({ to: '/admin/organizations' })}>
           Voltar para lista
         </Button>
       </div>
@@ -50,7 +50,7 @@ function OrganizationDetailsPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate({ to: '/platform-admin/organizations' })}
+            onClick={() => navigate({ to: '/admin/organizations' })}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

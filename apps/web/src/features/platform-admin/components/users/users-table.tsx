@@ -92,7 +92,7 @@ export function UsersTable() {
           className="max-w-sm"
         />
         <Button asChild>
-          <Link to="/platform-admin/users/new">
+          <Link to="/admin/users/new">
             Novo Usuário
           </Link>
         </Button>
@@ -147,7 +147,7 @@ export function UsersTable() {
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link to="/platform-admin/users/$id" params={{ id: user.id }}>
+                        <Link to="/admin/users/$id" params={{ id: user.id }}>
                           <Eye className="mr-2 h-4 w-4" />
                           Ver detalhes
                         </Link>

@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 
-export const Route = createFileRoute('/_authenticated/platform-admin/clinics/')({
+export const Route = createFileRoute('/_authenticated/admin/clinics/')({
   component: ClinicsPage,
 })
 
@@ -19,7 +19,7 @@ function ClinicsPage() {
             Gerencie todas as clínicas da plataforma
           </p>
         </div>
-        <Button onClick={() => navigate({ to: '/platform-admin/clinics/new' })}>
+        <Button onClick={() => navigate({ to: '/admin/clinics/new' })}>
           <Plus className="mr-2 h-4 w-4" />
           Nova Clínica
         </Button>

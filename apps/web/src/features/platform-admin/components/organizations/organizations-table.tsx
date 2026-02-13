@@ -49,7 +49,7 @@ export function OrganizationsTable() {
           className="max-w-sm"
         />
         <Button asChild>
-          <Link to="/platform-admin/organizations/new">
+          <Link to="/admin/organizations/new">
             Nova Organização
           </Link>
         </Button>
@@ -94,7 +94,7 @@ export function OrganizationsTable() {
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link to="/platform-admin/organizations/$id" params={{ id: org.id }}>
+                        <Link to="/admin/organizations/$id" params={{ id: org.id }}>
                           <Eye className="mr-2 h-4 w-4" />
                           Ver detalhes
                         </Link>

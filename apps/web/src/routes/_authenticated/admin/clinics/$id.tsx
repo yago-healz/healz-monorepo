@@ -10,7 +10,7 @@ import { ArrowLeft, Building, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-export const Route = createFileRoute('/_authenticated/platform-admin/clinics/$id')({
+export const Route = createFileRoute('/_authenticated/admin/clinics/$id')({
   component: ClinicDetailsPage,
 })
 
@@ -37,7 +37,7 @@ function ClinicDetailsPage() {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <h2 className="text-2xl font-bold">Clínica não encontrada</h2>
-        <Button onClick={() => navigate({ to: '/platform-admin/clinics' })}>
+        <Button onClick={() => navigate({ to: '/admin/clinics' })}>
           Voltar para lista
         </Button>
       </div>
@@ -51,7 +51,7 @@ function ClinicDetailsPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate({ to: '/platform-admin/clinics' })}
+            onClick={() => navigate({ to: '/admin/clinics' })}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -92,7 +92,7 @@ function ClinicDetailsPage() {
               <Button
                 variant="link"
                 className="p-0 h-auto text-sm"
-                onClick={() => navigate({ to: '/platform-admin/organizations/$id', params: { id: clinic.organizationId } })}
+                onClick={() => navigate({ to: '/admin/organizations/$id', params: { id: clinic.organizationId } })}
               >
                 {clinic.organizationName || clinic.organizationId}
               </Button>

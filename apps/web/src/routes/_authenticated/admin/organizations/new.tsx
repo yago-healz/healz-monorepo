@@ -1,21 +1,21 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { UserForm } from '@/features/platform-admin/components/users/user-form'
-import { useCreateUser } from '@/features/platform-admin/api/users-api'
+import { OrganizationForm } from '@/features/platform-admin/components/organizations/organization-form'
+import { useCreateOrganization } from '@/features/platform-admin/api/organizations-api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 
-export const Route = createFileRoute('/_authenticated/platform-admin/users/new')({
-  component: NewUserPage,
+export const Route = createFileRoute('/_authenticated/admin/organizations/new')({
+  component: NewOrganizationPage,
 })
 
-function NewUserPage() {
+function NewOrganizationPage() {
   const navigate = useNavigate()
-  const createMutation = useCreateUser()
+  const createMutation = useCreateOrganization()
 
   const handleSubmit = async (data: any) => {
     await createMutation.mutateAsync(data)
-    navigate({ to: '/platform-admin/users' })
+    navigate({ to: '/admin/organizations' })
   }
 
   return (
@@ -24,30 +24,30 @@ function NewUserPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate({ to: '/platform-admin/users' })}
+          onClick={() => navigate({ to: '/admin/organizations' })}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Novo Usuário</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Nova Organização</h1>
           <p className="text-muted-foreground">
-            Crie um novo usuário no sistema
+            Crie uma nova organização no sistema
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Dados do Usuário</CardTitle>
+          <CardTitle>Dados da Organização</CardTitle>
           <CardDescription>
-            Preencha os dados do novo usuário. Opcionalmente, você pode vinculá-lo a uma clínica.
+            Preencha os dados da nova organização. O slug será gerado automaticamente a partir do nome.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <UserForm
+          <OrganizationForm
             onSubmit={handleSubmit}
             isSubmitting={createMutation.isPending}
-            submitLabel="Criar Usuário"
+            submitLabel="Criar Organização"
           />
         </CardContent>
       </Card>

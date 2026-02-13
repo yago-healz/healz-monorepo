@@ -1,21 +1,21 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { OrganizationForm } from '@/features/platform-admin/components/organizations/organization-form'
-import { useCreateOrganization } from '@/features/platform-admin/api/organizations-api'
+import { ClinicForm } from '@/features/platform-admin/components/clinics/clinic-form'
+import { useCreateClinic } from '@/features/platform-admin/api/clinics-api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 
-export const Route = createFileRoute('/_authenticated/platform-admin/organizations/new')({
-  component: NewOrganizationPage,
+export const Route = createFileRoute('/_authenticated/admin/clinics/new')({
+  component: NewClinicPage,
 })
 
-function NewOrganizationPage() {
+function NewClinicPage() {
   const navigate = useNavigate()
-  const createMutation = useCreateOrganization()
+  const createMutation = useCreateClinic()
 
   const handleSubmit = async (data: any) => {
     await createMutation.mutateAsync(data)
-    navigate({ to: '/platform-admin/organizations' })
+    navigate({ to: '/admin/clinics' })
   }
 
   return (
@@ -24,30 +24,30 @@ function NewOrganizationPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate({ to: '/platform-admin/organizations' })}
+          onClick={() => navigate({ to: '/admin/clinics' })}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Nova Organização</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Nova Clínica</h1>
           <p className="text-muted-foreground">
-            Crie uma nova organização no sistema
+            Crie uma nova clínica vinculada a uma organização
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Dados da Organização</CardTitle>
+          <CardTitle>Dados da Clínica</CardTitle>
           <CardDescription>
-            Preencha os dados da nova organização. O slug será gerado automaticamente a partir do nome.
+            Preencha os dados da nova clínica. Selecione a organização à qual ela pertence.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <OrganizationForm
+          <ClinicForm
             onSubmit={handleSubmit}
             isSubmitting={createMutation.isPending}
-            submitLabel="Criar Organização"
+            submitLabel="Criar Clínica"
           />
         </CardContent>
       </Card>

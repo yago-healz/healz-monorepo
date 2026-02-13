@@ -3,7 +3,7 @@ import { UsersTable } from '@/features/platform-admin/components/users/users-tab
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 
-export const Route = createFileRoute('/_authenticated/platform-admin/users/')({
+export const Route = createFileRoute('/_authenticated/admin/users/')({
   component: UsersPage,
 })
 
@@ -19,7 +19,7 @@ function UsersPage() {
             Gerencie todos os usuários da plataforma
           </p>
         </div>
-        <Button onClick={() => navigate({ to: '/platform-admin/users/new' })}>
+        <Button onClick={() => navigate({ to: '/admin/users/new' })}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Usuário
         </Button>

@@ -49,7 +49,7 @@ export function ClinicsTable() {
           className="max-w-sm"
         />
         <Button asChild>
-          <Link to="/platform-admin/clinics/new">
+          <Link to="/admin/clinics/new">
             Nova Clínica
           </Link>
         </Button>
@@ -96,7 +96,7 @@ export function ClinicsTable() {
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link to="/platform-admin/clinics/$id" params={{ id: clinic.id }}>
+                        <Link to="/admin/clinics/$id" params={{ id: clinic.id }}>
                           <Eye className="mr-2 h-4 w-4" />
                           Ver detalhes
                         </Link>
