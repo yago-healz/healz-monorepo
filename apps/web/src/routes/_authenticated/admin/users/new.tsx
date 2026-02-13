@@ -14,7 +14,11 @@ function NewUserPage() {
   const createMutation = useCreateUser()
 
   const handleSubmit = async (data: any) => {
-    await createMutation.mutateAsync(data)
+    const { status: _status, ...rest } = data
+    const payload = rest.sendInvite
+      ? { name: rest.name, email: rest.email, clinicId: rest.clinicId || undefined, role: rest.role, sendInvite: true }
+      : { name: rest.name, email: rest.email, clinicId: rest.clinicId || undefined, role: rest.role, sendInvite: false, password: rest.password }
+    await createMutation.mutateAsync(payload)
     navigate({ to: '/admin/users' })
   }
 

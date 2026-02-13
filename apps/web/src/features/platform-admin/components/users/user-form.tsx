@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { Loader2 } from 'lucide-react'
 import { useClinics } from '../../api/clinics-api'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -27,9 +28,9 @@ import type { PlatformUser } from '@/types/api.types'
 const userSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres').optional().or(z.literal('')),
-  status: z.enum(['active', 'inactive']),
-  clinicId: z.string().uuid().optional().or(z.literal('')),
+  sendInvite: z.boolean(),
+  password: z.string().optional().or(z.literal('')),
+  clinicId: z.string().optional().or(z.literal('')),
   role: z.enum(['admin', 'doctor', 'secretary']).optional(),
 })
 
@@ -61,14 +62,25 @@ export function UserForm({
     defaultValues: {
       name: user?.name || '',
       email: user?.email || '',
+      sendInvite: true,
       password: '',
-      status: user?.status || 'active',
       clinicId: '',
       role: undefined,
     },
   })
 
+  const sendInvite = form.watch('sendInvite')
   const showClinicFields = form.watch('clinicId')
+
+  const handleSubmit = async (data: UserFormValues) => {
+    if (!data.sendInvite && (!data.password || data.password.length < 6)) {
+      form.setError('password', {
+        message: 'Senha obrigatória (mínimo 6 caracteres) quando não enviar convite',
+      })
+      return
+    }
+    await onSubmit(data)
+  }
 
   if (isLoadingClinics) {
     return (
@@ -82,7 +94,7 @@ export function UserForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="name"
@@ -121,50 +133,53 @@ export function UserForm({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{user ? 'Nova Senha (opcional)' : 'Senha'}</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder={user ? 'Deixe vazio para manter a senha atual' : 'Mínimo 6 caracteres'}
-                  {...field}
-                />
-              </FormControl>
-              {user && (
-                <FormDescription>
-                  Preencha apenas se deseja alterar a senha
-                </FormDescription>
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+        {!user && (
+          <FormField
+            control={form.control}
+            name="sendInvite"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel>Enviar convite por email</FormLabel>
+                  <FormDescription>
+                    O usuário receberá um email para definir sua senha. Desative para definir a senha agora.
+                  </FormDescription>
+                </div>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o status" />
-                  </SelectTrigger>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="active">Ativo</SelectItem>
-                  <SelectItem value="inactive">Inativo</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {!sendInvite && (
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{user ? 'Nova Senha (opcional)' : 'Senha'}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder={user ? 'Deixe vazio para manter a senha atual' : 'Mínimo 6 caracteres'}
+                    {...field}
+                  />
+                </FormControl>
+                {user && (
+                  <FormDescription>
+                    Preencha apenas se deseja alterar a senha
+                  </FormDescription>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         {!user && (
           <>
