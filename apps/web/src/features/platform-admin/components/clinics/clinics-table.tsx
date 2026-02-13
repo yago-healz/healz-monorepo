@@ -48,11 +48,6 @@ export function ClinicsTable() {
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
         />
-        <Button asChild>
-          <Link to="/admin/clinics/new">
-            Nova Clínica
-          </Link>
-        </Button>
       </div>
 
       <div className="rounded-md border">

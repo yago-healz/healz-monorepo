@@ -48,11 +48,6 @@ export function OrganizationsTable() {
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
         />
-        <Button asChild>
-          <Link to="/admin/organizations/new">
-            Nova Organização
-          </Link>
-        </Button>
       </div>
 
       <div className="rounded-md border">

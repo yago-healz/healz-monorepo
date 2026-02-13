@@ -91,11 +91,6 @@ export function UsersTable() {
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
         />
-        <Button asChild>
-          <Link to="/admin/users/new">
-            Novo Usuário
-          </Link>
-        </Button>
       </div>
 
       <div className="rounded-md border">
