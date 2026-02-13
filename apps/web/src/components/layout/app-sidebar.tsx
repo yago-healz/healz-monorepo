@@ -5,7 +5,7 @@ import {
   Users,
   LayoutDashboard,
   Settings,
-  Shield,
+  ShieldCheck,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -49,7 +49,7 @@ const navigation = [
       },
       {
         title: 'Admins',
-        icon: Shield,
+        icon: ShieldCheck,
         href: '/admin/admins',
       },
     ],

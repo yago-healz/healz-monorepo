@@ -28,6 +28,7 @@ import { Route as PublicOnboardingCompleteRouteImport } from './routes/_public/o
 import { Route as AuthenticatedAdminUsersIndexRouteImport } from './routes/_authenticated/admin/users/index'
 import { Route as AuthenticatedAdminOrganizationsIndexRouteImport } from './routes/_authenticated/admin/organizations/index'
 import { Route as AuthenticatedAdminClinicsIndexRouteImport } from './routes/_authenticated/admin/clinics/index'
+import { Route as AuthenticatedAdminAdminsIndexRouteImport } from './routes/_authenticated/admin/admins/index'
 import { Route as AuthenticatedAdminUsersNewRouteImport } from './routes/_authenticated/admin/users/new'
 import { Route as AuthenticatedAdminUsersIdRouteImport } from './routes/_authenticated/admin/users/$id'
 import { Route as AuthenticatedAdminOrganizationsNewRouteImport } from './routes/_authenticated/admin/organizations/new'
@@ -132,6 +133,12 @@ const AuthenticatedAdminClinicsIndexRoute =
     path: '/admin/clinics/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminAdminsIndexRoute =
+  AuthenticatedAdminAdminsIndexRouteImport.update({
+    id: '/admin/admins/',
+    path: '/admin/admins/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAdminUsersNewRoute =
   AuthenticatedAdminUsersNewRouteImport.update({
     id: '/admin/users/new',
@@ -190,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/admin/organizations/new': typeof AuthenticatedAdminOrganizationsNewRoute
   '/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
   '/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
+  '/admin/admins/': typeof AuthenticatedAdminAdminsIndexRoute
   '/admin/clinics/': typeof AuthenticatedAdminClinicsIndexRoute
   '/admin/organizations/': typeof AuthenticatedAdminOrganizationsIndexRoute
   '/admin/users/': typeof AuthenticatedAdminUsersIndexRoute
@@ -215,6 +223,7 @@ export interface FileRoutesByTo {
   '/admin/organizations/new': typeof AuthenticatedAdminOrganizationsNewRoute
   '/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
   '/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
+  '/admin/admins': typeof AuthenticatedAdminAdminsIndexRoute
   '/admin/clinics': typeof AuthenticatedAdminClinicsIndexRoute
   '/admin/organizations': typeof AuthenticatedAdminOrganizationsIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
@@ -243,6 +252,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/organizations/new': typeof AuthenticatedAdminOrganizationsNewRoute
   '/_authenticated/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
   '/_authenticated/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
+  '/_authenticated/admin/admins/': typeof AuthenticatedAdminAdminsIndexRoute
   '/_authenticated/admin/clinics/': typeof AuthenticatedAdminClinicsIndexRoute
   '/_authenticated/admin/organizations/': typeof AuthenticatedAdminOrganizationsIndexRoute
   '/_authenticated/admin/users/': typeof AuthenticatedAdminUsersIndexRoute
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/admin/organizations/new'
     | '/admin/users/$id'
     | '/admin/users/new'
+    | '/admin/admins/'
     | '/admin/clinics/'
     | '/admin/organizations/'
     | '/admin/users/'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/admin/organizations/new'
     | '/admin/users/$id'
     | '/admin/users/new'
+    | '/admin/admins'
     | '/admin/clinics'
     | '/admin/organizations'
     | '/admin/users'
@@ -322,6 +334,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/organizations/new'
     | '/_authenticated/admin/users/$id'
     | '/_authenticated/admin/users/new'
+    | '/_authenticated/admin/admins/'
     | '/_authenticated/admin/clinics/'
     | '/_authenticated/admin/organizations/'
     | '/_authenticated/admin/users/'
@@ -468,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminClinicsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/admins/': {
+      id: '/_authenticated/admin/admins/'
+      path: '/admin/admins'
+      fullPath: '/admin/admins/'
+      preLoaderRoute: typeof AuthenticatedAdminAdminsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin/users/new': {
       id: '/_authenticated/admin/users/new'
       path: '/admin/users/new'
@@ -521,6 +541,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminOrganizationsNewRoute: typeof AuthenticatedAdminOrganizationsNewRoute
   AuthenticatedAdminUsersIdRoute: typeof AuthenticatedAdminUsersIdRoute
   AuthenticatedAdminUsersNewRoute: typeof AuthenticatedAdminUsersNewRoute
+  AuthenticatedAdminAdminsIndexRoute: typeof AuthenticatedAdminAdminsIndexRoute
   AuthenticatedAdminClinicsIndexRoute: typeof AuthenticatedAdminClinicsIndexRoute
   AuthenticatedAdminOrganizationsIndexRoute: typeof AuthenticatedAdminOrganizationsIndexRoute
   AuthenticatedAdminUsersIndexRoute: typeof AuthenticatedAdminUsersIndexRoute
@@ -536,6 +557,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedAdminOrganizationsNewRoute,
   AuthenticatedAdminUsersIdRoute: AuthenticatedAdminUsersIdRoute,
   AuthenticatedAdminUsersNewRoute: AuthenticatedAdminUsersNewRoute,
+  AuthenticatedAdminAdminsIndexRoute: AuthenticatedAdminAdminsIndexRoute,
   AuthenticatedAdminClinicsIndexRoute: AuthenticatedAdminClinicsIndexRoute,
   AuthenticatedAdminOrganizationsIndexRoute:
     AuthenticatedAdminOrganizationsIndexRoute,
