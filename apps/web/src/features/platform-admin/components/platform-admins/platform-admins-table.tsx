@@ -51,8 +51,8 @@ export function PlatformAdminsTable() {
       <TableBody>
         {admins.map((admin) => (
           <TableRow key={admin.id}>
-            <TableCell className="font-medium">{admin.userName}</TableCell>
-            <TableCell className="text-muted-foreground">{admin.userEmail}</TableCell>
+            <TableCell className="font-medium">{admin.user.name}</TableCell>
+            <TableCell className="text-muted-foreground">{admin.user.email}</TableCell>
             <TableCell>
               {format(new Date(admin.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
             </TableCell>
@@ -66,10 +66,10 @@ export function PlatformAdminsTable() {
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      Revogar permissões de {admin.userName}?
+                      Revogar permissões de {admin.user.name}?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      {admin.userName} perderá acesso ao painel de platform admin
+                      {admin.user.name} perderá acesso ao painel de platform admin
                       imediatamente. Esta ação não pode ser desfeita.
                     </AlertDialogDescription>
                   </AlertDialogHeader>

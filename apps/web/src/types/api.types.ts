@@ -232,10 +232,13 @@ export interface AcceptInviteDto {
 // === Platform Admin Types ===
 export interface PlatformAdmin {
   id: string
-  userId: string
-  userName: string
-  userEmail: string
+  user: {
+    id: string
+    name: string
+    email: string
+  }
   createdAt: string
+  status: string
 }
 
 export interface CreatePlatformAdminDto {

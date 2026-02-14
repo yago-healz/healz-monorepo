@@ -9,7 +9,7 @@ export const usePlatformAdmins = () => {
     queryKey: ['platform-admin', 'admins'],
     queryFn: async (): Promise<PlatformAdmin[]> => {
       const response = await api.get(ENDPOINTS.PLATFORM_ADMIN.ADMINS.LIST)
-      return response.data
+      return response.data.data
     },
   })
 }
