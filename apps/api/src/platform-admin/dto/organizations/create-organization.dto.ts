@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
 
 export class CreateOrganizationDto {
   @ApiProperty({
@@ -30,6 +30,10 @@ export class CreateOrganizationDto {
       name: "Unidade Principal"
     },
   })
+  @IsOptional()
+  @IsIn(['active', 'inactive'])
+  status?: 'active' | 'inactive';
+
   @IsNotEmpty()
   initialClinic: {
     name: string;

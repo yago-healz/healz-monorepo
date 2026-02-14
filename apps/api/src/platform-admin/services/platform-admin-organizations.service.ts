@@ -213,7 +213,7 @@ export class PlatformAdminOrganizationsService {
     adminUserId: string,
     ip?: string,
   ) {
-    const { name, slug, initialClinic, initialAdmin } = dto;
+    const { name, slug, status, initialClinic, initialAdmin } = dto;
 
     // Verificar se slug já existe
     const existingOrg = await db
@@ -234,7 +234,7 @@ export class PlatformAdminOrganizationsService {
         .values({
           name,
           slug,
-          status: "active",
+          status: status ?? "active",
         })
         .returning();
 
