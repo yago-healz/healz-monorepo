@@ -268,15 +268,19 @@ export class PlatformAdminUsersService {
       throw new BadRequestException("Email já cadastrado");
     }
 
-    // Verificar se clínica existe
-    const [clinic] = await db
-      .select()
-      .from(clinics)
-      .where(eq(clinics.id, clinicId))
-      .limit(1);
+    // Verificar se clínica existe (apenas se informada)
+    let clinic: typeof clinics.$inferSelect | undefined;
+    if (clinicId) {
+      const [foundClinic] = await db
+        .select()
+        .from(clinics)
+        .where(eq(clinics.id, clinicId))
+        .limit(1);
 
-    if (!clinic) {
-      throw new NotFoundException("Clínica não encontrada");
+      if (!foundClinic) {
+        throw new NotFoundException("Clínica não encontrada");
+      }
+      clinic = foundClinic;
     }
 
     if (sendInvite && !password) {
@@ -293,19 +297,21 @@ export class PlatformAdminUsersService {
 
       const newUser = (newUserResult as any[])[0];
 
-      // Adicionar a clínica
-      await db.insert(userClinicRoles).values({
-        userId: newUser.id,
-        clinicId,
-        role,
-      });
+      if (clinicId && role) {
+        // Adicionar a clínica
+        await db.insert(userClinicRoles).values({
+          userId: newUser.id,
+          clinicId,
+          role,
+        });
 
-      await this.invitesService.createInviteForUser(
-        adminUserId,
-        clinic.organizationId,
-        { email, name, clinicId, role },
-        ip,
-      );
+        await this.invitesService.createInviteForUser(
+          adminUserId,
+          clinic!.organizationId,
+          { email, name, clinicId, role },
+          ip,
+        );
+      }
 
       this.auditService.log({
         userId: adminUserId,
@@ -347,12 +353,14 @@ export class PlatformAdminUsersService {
 
       const newUser = (newUserResult as any[])[0];
 
-      // Adicionar a clínica
-      await db.insert(userClinicRoles).values({
-        userId: newUser.id,
-        clinicId,
-        role,
-      });
+      if (clinicId && role) {
+        // Adicionar a clínica
+        await db.insert(userClinicRoles).values({
+          userId: newUser.id,
+          clinicId,
+          role,
+        });
+      }
 
       this.auditService.log({
         userId: adminUserId,

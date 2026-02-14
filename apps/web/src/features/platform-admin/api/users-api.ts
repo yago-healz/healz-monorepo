@@ -7,6 +7,7 @@ import type {
   PlatformUser,
   UserListParams,
   CreateUserDto,
+  CreatePlatformAdminDto,
   UpdateUserDto,
   UpdateUserStatusDto,
   AddUserClinicDto,
@@ -188,6 +189,22 @@ export const useResetUserPassword = () => {
     },
     onSuccess: () => {
       toast.success('Senha resetada com sucesso!')
+    },
+  })
+}
+
+// Create platform admin
+export const useCreatePlatformAdmin = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: CreatePlatformAdminDto) => {
+      const response = await api.post(ENDPOINTS.PLATFORM_ADMIN.ADMINS.CREATE, data)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['platform-admin', 'users'] })
+      queryClient.invalidateQueries({ queryKey: ['platform-admin', 'admins'] })
     },
   })
 }

@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { UserForm } from '@/features/platform-admin/components/users/user-form'
-import { useCreateUser } from '@/features/platform-admin/api/users-api'
+import { useCreateUser, useCreatePlatformAdmin } from '@/features/platform-admin/api/users-api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
@@ -12,13 +12,17 @@ export const Route = createFileRoute('/_authenticated/admin/users/new')({
 function NewUserPage() {
   const navigate = useNavigate()
   const createMutation = useCreateUser()
+  const createPlatformAdminMutation = useCreatePlatformAdmin()
 
   const handleSubmit = async (data: any) => {
-    const { status: _status, ...rest } = data
+    const { makePlatformAdmin, ...rest } = data
     const payload = rest.sendInvite
-      ? { name: rest.name, email: rest.email, clinicId: rest.clinicId || undefined, role: rest.role, sendInvite: true }
-      : { name: rest.name, email: rest.email, clinicId: rest.clinicId || undefined, role: rest.role, sendInvite: false, password: rest.password }
-    await createMutation.mutateAsync(payload)
+      ? { name: rest.name, email: rest.email, clinicId: rest.clinicId || undefined, role: rest.role || undefined, sendInvite: true }
+      : { name: rest.name, email: rest.email, clinicId: rest.clinicId || undefined, role: rest.role || undefined, sendInvite: false, password: rest.password }
+    const response = await createMutation.mutateAsync(payload)
+    if (makePlatformAdmin) {
+      await createPlatformAdminMutation.mutateAsync({ userId: response.id })
+    }
     navigate({ to: '/admin/users' })
   }
 
@@ -50,7 +54,7 @@ function NewUserPage() {
         <CardContent>
           <UserForm
             onSubmit={handleSubmit}
-            isSubmitting={createMutation.isPending}
+            isSubmitting={createMutation.isPending || createPlatformAdminMutation.isPending}
             submitLabel="Criar Usuário"
           />
         </CardContent>

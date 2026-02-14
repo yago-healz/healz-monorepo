@@ -28,6 +28,7 @@ import type { PlatformUser } from '@/types/api.types'
 const userSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   email: z.string().email('Email inválido'),
+  makePlatformAdmin: z.boolean(),
   sendInvite: z.boolean(),
   password: z.string().optional().or(z.literal('')),
   clinicId: z.string().optional().or(z.literal('')),
@@ -62,6 +63,7 @@ export function UserForm({
     defaultValues: {
       name: user?.name || '',
       email: user?.email || '',
+      makePlatformAdmin: false,
       sendInvite: true,
       password: '',
       clinicId: '',
@@ -70,6 +72,7 @@ export function UserForm({
   })
 
   const sendInvite = form.watch('sendInvite')
+  const makePlatformAdmin = form.watch('makePlatformAdmin')
   const showClinicFields = form.watch('clinicId')
 
   const handleSubmit = async (data: UserFormValues) => {
@@ -136,6 +139,29 @@ export function UserForm({
         {!user && (
           <FormField
             control={form.control}
+            name="makePlatformAdmin"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel>Admin da Plataforma</FormLabel>
+                  <FormDescription>
+                    Concede acesso administrativo global. Não é vinculado a nenhuma clínica.
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        )}
+
+        {!user && (
+          <FormField
+            control={form.control}
             name="sendInvite"
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
@@ -181,7 +207,7 @@ export function UserForm({
           />
         )}
 
-        {!user && (
+        {!user && !makePlatformAdmin && (
           <>
             <FormField
               control={form.control}

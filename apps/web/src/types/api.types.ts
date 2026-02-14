@@ -176,10 +176,14 @@ export interface UserClinic {
 export interface CreateUserDto {
   name: string
   email: string
-  clinicId: string
-  role: Role
+  clinicId?: string
+  role?: Role
   sendInvite: boolean
   password?: string
+}
+
+export interface CreatePlatformAdminDto {
+  userId: string
 }
 
 export interface UpdateUserDto {
