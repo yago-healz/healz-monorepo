@@ -363,11 +363,22 @@ export class PlatformAdminOrganizationsService {
 
     if (dto.name) updates.name = dto.name;
     if (dto.slug) updates.slug = dto.slug;
+    if (dto.status) updates.status = dto.status;
 
-    await db
-      .update(organizations)
-      .set(updates)
-      .where(eq(organizations.id, id));
+    await db.transaction(async (tx) => {
+      await tx
+        .update(organizations)
+        .set(updates)
+        .where(eq(organizations.id, id));
+
+      // Se desativando, desativar todas as clínicas
+      if (dto.status === "inactive") {
+        await tx
+          .update(clinics)
+          .set({ status: "inactive", updatedAt: new Date() })
+          .where(eq(clinics.organizationId, id));
+      }
+    });
 
     // Log audit
     this.auditService.log({

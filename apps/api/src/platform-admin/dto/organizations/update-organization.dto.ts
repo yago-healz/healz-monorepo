@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsString, Length } from "class-validator";
+import { IsIn, IsOptional, IsString, Length } from "class-validator";
 
 export class UpdateOrganizationDto {
   @ApiProperty({
@@ -21,4 +21,14 @@ export class UpdateOrganizationDto {
   @IsString()
   @Length(3, 100)
   slug?: string;
+
+  @ApiProperty({
+    description: "Status da organização",
+    enum: ["active", "inactive"],
+    example: "inactive",
+    required: false,
+  })
+  @IsOptional()
+  @IsIn(["active", "inactive"])
+  status?: "active" | "inactive";
 }
