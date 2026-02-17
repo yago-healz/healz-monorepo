@@ -1,17 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Eye, Edit, MoreHorizontal, BanIcon, CheckCircle } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +8,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useOrganizations, useUpdateOrganizationStatus } from '../../api/organizations-api'
+import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import type { Organization } from '@/types/api.types'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { BanIcon, CheckCircle, Edit, Eye, MoreHorizontal } from 'lucide-react'
+import { useState } from 'react'
+import { useOrganizations, useUpdateOrganizationStatus } from '../../api/organizations-api'
 
 export function OrganizationsTable() {
   const [page] = useState(1)
@@ -70,8 +70,8 @@ export function OrganizationsTable() {
               <TableRow key={org.id}>
                 <TableCell className="font-medium">{org.name}</TableCell>
                 <TableCell>{org.slug}</TableCell>
-                <TableCell>{org.clinicsCount || 0}</TableCell>
-                <TableCell>{org.usersCount || 0}</TableCell>
+                <TableCell>{org.stats.clinicsCount || 0}</TableCell>
+                <TableCell>{org.stats.usersCount || 0}</TableCell>
                 <TableCell>
                   <Badge variant={org.status === 'active' ? 'default' : 'secondary'}>
                     {org.status}
