@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 
-export const Route = createFileRoute('/_authenticated/admin/organizations/')({
+export const Route = createFileRoute('/_authenticated/_admin/organizations/')({
   component: OrganizationsPage,
 })
 

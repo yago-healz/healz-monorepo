@@ -1,0 +1,30 @@
+import { createFileRoute, redirect, Outlet } from '@tanstack/react-router'
+import { ClinicSidebar } from '@/components/layout/clinic-sidebar'
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { tokenService } from '@/services/token.service'
+
+export const Route = createFileRoute('/_authenticated/_clinic')({
+  beforeLoad: () => {
+    const user = tokenService.getUser()
+    // Redirect platform admins to their dashboard
+    if (!user?.activeClinic) {
+      throw redirect({ to: '/admin' })
+    }
+  },
+  component: ClinicLayout,
+})
+
+function ClinicLayout() {
+  return (
+    <SidebarProvider>
+      <div className="flex h-screen w-full">
+        <ClinicSidebar />
+        <SidebarInset className="flex flex-1 flex-col">
+          <main className="flex-1 overflow-auto p-6">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
+  )
+}

@@ -22,7 +22,7 @@ import { ArrowLeft, User, Calendar, CheckCircle, XCircle, PowerOff, Power } from
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-export const Route = createFileRoute('/_authenticated/admin/users/$id')({
+export const Route = createFileRoute('/_authenticated/_admin/users/$id')({
   component: UserDetailsPage,
 })
 

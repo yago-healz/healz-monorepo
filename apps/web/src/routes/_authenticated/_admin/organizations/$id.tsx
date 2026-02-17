@@ -21,7 +21,7 @@ import { ArrowLeft, Ban, Building, Building2, Calendar, CheckCircle, Plus } from
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-export const Route = createFileRoute('/_authenticated/admin/organizations/$id')({
+export const Route = createFileRoute('/_authenticated/_admin/organizations/$id')({
   component: OrganizationDetailsPage,
 })
 

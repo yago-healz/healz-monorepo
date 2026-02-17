@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
     if (!user?.activeClinic) {
       throw redirect({ to: '/admin' })
     }
-    throw redirect({ to: '/admin' })
+    throw redirect({ to: '/clinic' })
   },
   component: () => null,
 });

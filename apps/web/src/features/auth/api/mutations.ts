@@ -53,6 +53,7 @@ export const useSwitchContextMutation = () => {
     },
     onSuccess: (data) => {
       tokenService.setAccessToken(data.accessToken)
+      tokenService.updateUserFromToken(data.accessToken)
       queryClient.invalidateQueries({ queryKey: ['auth', 'user'] })
       toast.success('Contexto alterado com sucesso!')
     },

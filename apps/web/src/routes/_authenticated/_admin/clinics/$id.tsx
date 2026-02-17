@@ -22,7 +22,7 @@ import { ArrowLeft, Ban, Building, Calendar, CheckCircle, Users } from 'lucide-r
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-export const Route = createFileRoute('/_authenticated/admin/clinics/$id')({
+export const Route = createFileRoute('/_authenticated/_admin/clinics/$id')({
   component: ClinicDetailsPage,
 })
 

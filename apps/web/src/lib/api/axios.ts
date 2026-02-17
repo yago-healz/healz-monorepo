@@ -45,6 +45,7 @@ api.interceptors.response.use(
         )
 
         tokenService.setAccessToken(data.accessToken)
+        tokenService.updateUserFromToken(data.accessToken)
 
         // Retry request original
         if (originalRequest.headers) {
