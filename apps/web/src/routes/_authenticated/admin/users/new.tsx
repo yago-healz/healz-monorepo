@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 
-export const Route = createFileRoute('/_authenticated/_admin/users/new')({
+export const Route = createFileRoute('/_authenticated/admin/users/new')({
   component: NewUserPage,
 })
 

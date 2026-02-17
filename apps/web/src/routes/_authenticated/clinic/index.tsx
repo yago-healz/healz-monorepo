@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useUserRole } from '@/hooks/use-user-role'
 
-export const Route = createFileRoute('/_authenticated/_clinic/')({
+export const Route = createFileRoute('/_authenticated/clinic/')({
   component: ClinicDashboard,
 })
 

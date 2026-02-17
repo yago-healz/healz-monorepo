@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 
-export const Route = createFileRoute('/_authenticated/_admin/admins/')({
+export const Route = createFileRoute('/_authenticated/admin/admins/')({
   component: PlatformAdminsPage,
 })
 

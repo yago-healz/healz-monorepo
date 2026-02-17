@@ -17,7 +17,10 @@ import { Route as PublicResetPasswordRouteImport } from './routes/_public/reset-
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicForgotPasswordRouteImport } from './routes/_public/forgot-password'
 import { Route as PublicAcceptInviteRouteImport } from './routes/_public/accept-invite'
+import { Route as AuthenticatedClinicRouteImport } from './routes/_authenticated/clinic'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as PublicOnboardingIndexRouteImport } from './routes/_public/onboarding/index'
+import { Route as AuthenticatedClinicIndexRouteImport } from './routes/_authenticated/clinic/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as PublicOnboardingStep5RouteImport } from './routes/_public/onboarding/step-5'
 import { Route as PublicOnboardingStep4RouteImport } from './routes/_public/onboarding/step-4'
@@ -75,15 +78,31 @@ const PublicAcceptInviteRoute = PublicAcceptInviteRouteImport.update({
   path: '/accept-invite',
   getParentRoute: () => PublicRoute,
 } as any)
+const AuthenticatedClinicRoute = AuthenticatedClinicRouteImport.update({
+  id: '/clinic',
+  path: '/clinic',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const PublicOnboardingIndexRoute = PublicOnboardingIndexRouteImport.update({
   id: '/onboarding/',
   path: '/onboarding/',
   getParentRoute: () => PublicRoute,
 } as any)
+const AuthenticatedClinicIndexRoute =
+  AuthenticatedClinicIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedClinicRoute,
+  } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => AuthenticatedRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
 const PublicOnboardingStep5Route = PublicOnboardingStep5RouteImport.update({
   id: '/onboarding/step-5',
@@ -123,67 +142,69 @@ const PublicOnboardingCompleteRoute =
   } as any)
 const AuthenticatedAdminUsersIndexRoute =
   AuthenticatedAdminUsersIndexRouteImport.update({
-    id: '/admin/users/',
-    path: '/admin/users/',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/users/',
+    path: '/users/',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminOrganizationsIndexRoute =
   AuthenticatedAdminOrganizationsIndexRouteImport.update({
-    id: '/admin/organizations/',
-    path: '/admin/organizations/',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/organizations/',
+    path: '/organizations/',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminClinicsIndexRoute =
   AuthenticatedAdminClinicsIndexRouteImport.update({
-    id: '/admin/clinics/',
-    path: '/admin/clinics/',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/clinics/',
+    path: '/clinics/',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminAdminsIndexRoute =
   AuthenticatedAdminAdminsIndexRouteImport.update({
-    id: '/admin/admins/',
-    path: '/admin/admins/',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/admins/',
+    path: '/admins/',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminUsersNewRoute =
   AuthenticatedAdminUsersNewRouteImport.update({
-    id: '/admin/users/new',
-    path: '/admin/users/new',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/users/new',
+    path: '/users/new',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminUsersIdRoute =
   AuthenticatedAdminUsersIdRouteImport.update({
-    id: '/admin/users/$id',
-    path: '/admin/users/$id',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/users/$id',
+    path: '/users/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminOrganizationsNewRoute =
   AuthenticatedAdminOrganizationsNewRouteImport.update({
-    id: '/admin/organizations/new',
-    path: '/admin/organizations/new',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/organizations/new',
+    path: '/organizations/new',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminOrganizationsIdRoute =
   AuthenticatedAdminOrganizationsIdRouteImport.update({
-    id: '/admin/organizations/$id',
-    path: '/admin/organizations/$id',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/organizations/$id',
+    path: '/organizations/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminClinicsNewRoute =
   AuthenticatedAdminClinicsNewRouteImport.update({
-    id: '/admin/clinics/new',
-    path: '/admin/clinics/new',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/clinics/new',
+    path: '/clinics/new',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminClinicsIdRoute =
   AuthenticatedAdminClinicsIdRouteImport.update({
-    id: '/admin/clinics/$id',
-    path: '/admin/clinics/$id',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/clinics/$id',
+    path: '/clinics/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/clinic': typeof AuthenticatedClinicRouteWithChildren
   '/accept-invite': typeof PublicAcceptInviteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
   '/login': typeof PublicLoginRoute
@@ -197,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/onboarding/step-4': typeof PublicOnboardingStep4Route
   '/onboarding/step-5': typeof PublicOnboardingStep5Route
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/clinic/': typeof AuthenticatedClinicIndexRoute
   '/onboarding/': typeof PublicOnboardingIndexRoute
   '/admin/clinics/$id': typeof AuthenticatedAdminClinicsIdRoute
   '/admin/clinics/new': typeof AuthenticatedAdminClinicsNewRoute
@@ -224,6 +246,7 @@ export interface FileRoutesByTo {
   '/onboarding/step-4': typeof PublicOnboardingStep4Route
   '/onboarding/step-5': typeof PublicOnboardingStep5Route
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/clinic': typeof AuthenticatedClinicIndexRoute
   '/onboarding': typeof PublicOnboardingIndexRoute
   '/admin/clinics/$id': typeof AuthenticatedAdminClinicsIdRoute
   '/admin/clinics/new': typeof AuthenticatedAdminClinicsNewRoute
@@ -241,6 +264,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/clinic': typeof AuthenticatedClinicRouteWithChildren
   '/_public/accept-invite': typeof PublicAcceptInviteRoute
   '/_public/forgot-password': typeof PublicForgotPasswordRoute
   '/_public/login': typeof PublicLoginRoute
@@ -254,6 +279,7 @@ export interface FileRoutesById {
   '/_public/onboarding/step-4': typeof PublicOnboardingStep4Route
   '/_public/onboarding/step-5': typeof PublicOnboardingStep5Route
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/clinic/': typeof AuthenticatedClinicIndexRoute
   '/_public/onboarding/': typeof PublicOnboardingIndexRoute
   '/_authenticated/admin/clinics/$id': typeof AuthenticatedAdminClinicsIdRoute
   '/_authenticated/admin/clinics/new': typeof AuthenticatedAdminClinicsNewRoute
@@ -270,6 +296,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
+    | '/clinic'
     | '/accept-invite'
     | '/forgot-password'
     | '/login'
@@ -283,6 +311,7 @@ export interface FileRouteTypes {
     | '/onboarding/step-4'
     | '/onboarding/step-5'
     | '/admin/'
+    | '/clinic/'
     | '/onboarding/'
     | '/admin/clinics/$id'
     | '/admin/clinics/new'
@@ -310,6 +339,7 @@ export interface FileRouteTypes {
     | '/onboarding/step-4'
     | '/onboarding/step-5'
     | '/admin'
+    | '/clinic'
     | '/onboarding'
     | '/admin/clinics/$id'
     | '/admin/clinics/new'
@@ -326,6 +356,8 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/_public'
+    | '/_authenticated/admin'
+    | '/_authenticated/clinic'
     | '/_public/accept-invite'
     | '/_public/forgot-password'
     | '/_public/login'
@@ -339,6 +371,7 @@ export interface FileRouteTypes {
     | '/_public/onboarding/step-4'
     | '/_public/onboarding/step-5'
     | '/_authenticated/admin/'
+    | '/_authenticated/clinic/'
     | '/_public/onboarding/'
     | '/_authenticated/admin/clinics/$id'
     | '/_authenticated/admin/clinics/new'
@@ -416,6 +449,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicAcceptInviteRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_authenticated/clinic': {
+      id: '/_authenticated/clinic'
+      path: '/clinic'
+      fullPath: '/clinic'
+      preLoaderRoute: typeof AuthenticatedClinicRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_public/onboarding/': {
       id: '/_public/onboarding/'
       path: '/onboarding'
@@ -423,12 +470,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicOnboardingIndexRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_authenticated/clinic/': {
+      id: '/_authenticated/clinic/'
+      path: '/'
+      fullPath: '/clinic/'
+      preLoaderRoute: typeof AuthenticatedClinicIndexRouteImport
+      parentRoute: typeof AuthenticatedClinicRoute
+    }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
-      path: '/admin'
+      path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_public/onboarding/step-5': {
       id: '/_public/onboarding/step-5'
@@ -481,78 +535,78 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/admin/users/': {
       id: '/_authenticated/admin/users/'
-      path: '/admin/users'
+      path: '/users'
       fullPath: '/admin/users/'
       preLoaderRoute: typeof AuthenticatedAdminUsersIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/organizations/': {
       id: '/_authenticated/admin/organizations/'
-      path: '/admin/organizations'
+      path: '/organizations'
       fullPath: '/admin/organizations/'
       preLoaderRoute: typeof AuthenticatedAdminOrganizationsIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/clinics/': {
       id: '/_authenticated/admin/clinics/'
-      path: '/admin/clinics'
+      path: '/clinics'
       fullPath: '/admin/clinics/'
       preLoaderRoute: typeof AuthenticatedAdminClinicsIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/admins/': {
       id: '/_authenticated/admin/admins/'
-      path: '/admin/admins'
+      path: '/admins'
       fullPath: '/admin/admins/'
       preLoaderRoute: typeof AuthenticatedAdminAdminsIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/users/new': {
       id: '/_authenticated/admin/users/new'
-      path: '/admin/users/new'
+      path: '/users/new'
       fullPath: '/admin/users/new'
       preLoaderRoute: typeof AuthenticatedAdminUsersNewRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/users/$id': {
       id: '/_authenticated/admin/users/$id'
-      path: '/admin/users/$id'
+      path: '/users/$id'
       fullPath: '/admin/users/$id'
       preLoaderRoute: typeof AuthenticatedAdminUsersIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/organizations/new': {
       id: '/_authenticated/admin/organizations/new'
-      path: '/admin/organizations/new'
+      path: '/organizations/new'
       fullPath: '/admin/organizations/new'
       preLoaderRoute: typeof AuthenticatedAdminOrganizationsNewRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/organizations/$id': {
       id: '/_authenticated/admin/organizations/$id'
-      path: '/admin/organizations/$id'
+      path: '/organizations/$id'
       fullPath: '/admin/organizations/$id'
       preLoaderRoute: typeof AuthenticatedAdminOrganizationsIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/clinics/new': {
       id: '/_authenticated/admin/clinics/new'
-      path: '/admin/clinics/new'
+      path: '/clinics/new'
       fullPath: '/admin/clinics/new'
       preLoaderRoute: typeof AuthenticatedAdminClinicsNewRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/clinics/$id': {
       id: '/_authenticated/admin/clinics/$id'
-      path: '/admin/clinics/$id'
+      path: '/clinics/$id'
       fullPath: '/admin/clinics/$id'
       preLoaderRoute: typeof AuthenticatedAdminClinicsIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
   }
 }
 
-interface AuthenticatedRouteChildren {
+interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminClinicsIdRoute: typeof AuthenticatedAdminClinicsIdRoute
   AuthenticatedAdminClinicsNewRoute: typeof AuthenticatedAdminClinicsNewRoute
@@ -566,7 +620,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminUsersIndexRoute: typeof AuthenticatedAdminUsersIndexRoute
 }
 
-const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminClinicsIdRoute: AuthenticatedAdminClinicsIdRoute,
   AuthenticatedAdminClinicsNewRoute: AuthenticatedAdminClinicsNewRoute,
@@ -581,6 +635,30 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminOrganizationsIndexRoute:
     AuthenticatedAdminOrganizationsIndexRoute,
   AuthenticatedAdminUsersIndexRoute: AuthenticatedAdminUsersIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedClinicRouteChildren {
+  AuthenticatedClinicIndexRoute: typeof AuthenticatedClinicIndexRoute
+}
+
+const AuthenticatedClinicRouteChildren: AuthenticatedClinicRouteChildren = {
+  AuthenticatedClinicIndexRoute: AuthenticatedClinicIndexRoute,
+}
+
+const AuthenticatedClinicRouteWithChildren =
+  AuthenticatedClinicRoute._addFileChildren(AuthenticatedClinicRouteChildren)
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedClinicRoute: typeof AuthenticatedClinicRouteWithChildren
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedClinicRoute: AuthenticatedClinicRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

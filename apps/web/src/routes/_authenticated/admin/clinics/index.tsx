@@ -1,31 +1,31 @@
+import { ClinicsTable } from '@/features/platform-admin/components/clinics/clinics-table'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { UsersTable } from '@/features/platform-admin/components/users/users-table'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 
-export const Route = createFileRoute('/_authenticated/_admin/users/')({
-  component: UsersPage,
+export const Route = createFileRoute('/_authenticated/admin/clinics/')({
+  component: ClinicsPage,
 })
 
-function UsersPage() {
+function ClinicsPage() {
   const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Usuários</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Clínicas</h1>
           <p className="text-muted-foreground">
-            Gerencie todos os usuários da plataforma
+            Gerencie todas as clínicas da plataforma
           </p>
         </div>
-        <Button onClick={() => navigate({ to: '/admin/users/new' })}>
+        <Button onClick={() => navigate({ to: '/admin/clinics/new' })}>
           <Plus className="mr-2 h-4 w-4" />
-          Novo Usuário
+          Nova Clínica
         </Button>
       </div>
 
-      <UsersTable />
+      <ClinicsTable />
     </div>
   )
 }
