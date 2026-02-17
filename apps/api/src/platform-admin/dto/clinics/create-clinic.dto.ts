@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString, IsUUID, Length } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Length } from "class-validator";
 
 export class PlatformAdminCreateClinicDto {
   @ApiProperty({
@@ -18,6 +18,16 @@ export class PlatformAdminCreateClinicDto {
   @IsString()
   @Length(3, 255)
   name: string;
+
+  @ApiProperty({
+    description: "Status inicial da clínica",
+    enum: ["active", "inactive"],
+    default: "active",
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(["active", "inactive"])
+  status?: "active" | "inactive";
 
   @ApiProperty({
     description: "ID do usuário que será admin inicial (opcional)",

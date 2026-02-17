@@ -177,17 +177,7 @@ export class PlatformAdminClinicsService {
       throw new BadRequestException("Organização está inativa");
     }
 
-    // Criar clínica
-    const [newClinic] = await db
-      .insert(clinics)
-      .values({
-        organizationId: dto.organizationId,
-        name: dto.name,
-        status: "active",
-      })
-      .returning();
-
-    // Se houver admin inicial, adicionar
+    // Se initialAdminId fornecido, validar antes de criar a clínica
     if (dto.initialAdminId) {
       const [user] = await db
         .select()
@@ -196,15 +186,31 @@ export class PlatformAdminClinicsService {
         .limit(1);
 
       if (!user) {
-        throw new NotFoundException("Usuário não encontrado");
+        throw new NotFoundException("Usuário admin inicial não encontrado");
+      }
+    }
+
+    // Criar clínica e adicionar admin inicial em transação atômica
+    const newClinic = await db.transaction(async (tx) => {
+      const [clinic] = await tx
+        .insert(clinics)
+        .values({
+          organizationId: dto.organizationId,
+          name: dto.name,
+          status: dto.status ?? "active",
+        })
+        .returning();
+
+      if (dto.initialAdminId) {
+        await tx.insert(userClinicRoles).values({
+          userId: dto.initialAdminId,
+          clinicId: clinic.id,
+          role: "admin",
+        });
       }
 
-      await db.insert(userClinicRoles).values({
-        userId: dto.initialAdminId,
-        clinicId: newClinic.id,
-        role: "admin",
-      });
-    }
+      return clinic;
+    });
 
     this.auditService.log({
       userId: adminUserId,
