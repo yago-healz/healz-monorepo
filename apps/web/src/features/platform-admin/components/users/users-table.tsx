@@ -206,7 +206,7 @@ export function UsersTable() {
                           Verificar email
                         </DropdownMenuItem>
                       )}
-                      {!user.passwordHash && !user.emailVerified && (
+                      {!user.hasPassword && !user.emailVerified && (
                         <DropdownMenuItem onClick={() => handleResendInvite(user.id)}>
                           <Mail className="mr-2 h-4 w-4" />
                           Reenviar convite

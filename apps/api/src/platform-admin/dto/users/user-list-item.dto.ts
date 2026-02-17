@@ -27,6 +27,9 @@ export class UserListItemDto {
   @ApiProperty()
   emailVerified: boolean;
 
+  @ApiProperty({ description: 'Indica se o usuário já definiu uma senha (não expõe o hash)' })
+  hasPassword: boolean;
+
   @ApiProperty({ enum: ["active", "inactive"] })
   status: string;
 
