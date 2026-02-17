@@ -57,6 +57,7 @@ export const ENDPOINTS = {
       UPDATE: (id: string) => `/platform-admin/users/${id}`,
       RESET_PASSWORD: (id: string) => `/platform-admin/users/${id}/reset-password`,
       VERIFY_EMAIL: (id: string) => `/platform-admin/users/${id}/verify-email`,
+      RESEND_INVITE: (id: string) => `/platform-admin/users/${id}/resend-invite`,
       UPDATE_STATUS: (id: string) => `/platform-admin/users/${id}/status`,
       ADD_TO_CLINIC: (userId: string) => `/platform-admin/users/${userId}/clinics`,
       UPDATE_CLINIC_ROLE: (userId: string, clinicId: string) =>

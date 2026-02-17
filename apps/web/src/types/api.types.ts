@@ -160,6 +160,7 @@ export interface PlatformUser {
   name: string
   email: string
   emailVerified: boolean
+  passwordHash?: string
   status: Status
   createdAt: string
   clinics: UserClinic[]

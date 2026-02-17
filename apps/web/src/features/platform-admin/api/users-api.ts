@@ -224,3 +224,24 @@ export const useVerifyUserEmail = () => {
     },
   })
 }
+
+// Resend user invite
+export const useResendUserInvite = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await api.post(ENDPOINTS.PLATFORM_ADMIN.USERS.RESEND_INVITE(id))
+      return response.data
+    },
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['platform-admin', 'users'] })
+      queryClient.invalidateQueries({ queryKey: ['platform-admin', 'users', id] })
+      toast.success('Convite reenviado com sucesso!')
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || 'Erro ao reenviar convite'
+      toast.error(message)
+    },
+  })
+}

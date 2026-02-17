@@ -4,11 +4,13 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
-import { and, eq, ilike, or, sql } from "drizzle-orm";
+import { randomBytes } from "crypto";
+import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { db } from "../../db";
 import {
   auditLogs,
   clinics,
+  invites,
   organizations,
   refreshTokens,
   userClinicRoles,
@@ -86,6 +88,7 @@ export class PlatformAdminUsersService {
         name: users.name,
         email: users.email,
         emailVerified: users.emailVerified,
+        passwordHash: users.passwordHash,
         status: users.status,
         createdAt: users.createdAt,
       })
@@ -126,6 +129,7 @@ export class PlatformAdminUsersService {
         name: users.name,
         email: users.email,
         emailVerified: users.emailVerified,
+        passwordHash: users.passwordHash,
         status: users.status,
         createdAt: users.createdAt,
         clinicId: userClinicRoles.clinicId,
@@ -151,6 +155,7 @@ export class PlatformAdminUsersService {
           name: row.name,
           email: row.email,
           emailVerified: row.emailVerified,
+          passwordHash: row.passwordHash,
           status: row.status,
           createdAt: row.createdAt,
           clinics: [],
@@ -705,6 +710,109 @@ export class PlatformAdminUsersService {
     return {
       message: `Usuário ${dto.status === "active" ? "ativado" : "desativado"} com sucesso`,
     };
+  }
+
+  async resendInvite(
+    userId: string,
+    adminUserId: string,
+    ip?: string,
+  ): Promise<{ message: string }> {
+    // 1. Buscar usuário
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (user.length === 0) {
+      throw new NotFoundException("Usuário não encontrado");
+    }
+
+    // 2. Buscar convite pendente (latest)
+    const pendingInvites = await db
+      .select()
+      .from(invites)
+      .where(and(eq(invites.email, user[0].email), isNull(invites.usedAt)))
+      .orderBy(desc(invites.createdAt))
+      .limit(1);
+
+    if (pendingInvites.length === 0) {
+      throw new NotFoundException(
+        "Nenhum convite pendente encontrado para este usuário",
+      );
+    }
+
+    const invite = pendingInvites[0];
+
+    // 3. Verificar se convite já foi usado (double-check)
+    if (invite.usedAt) {
+      throw new BadRequestException(
+        "Convite já foi aceito. O usuário já possui uma conta.",
+      );
+    }
+
+    // 4. Gerar novo token e estender validade
+    const newToken = randomBytes(32).toString("hex");
+    const newExpiresAt = new Date();
+    newExpiresAt.setDate(newExpiresAt.getDate() + 7);
+
+    // 5. Atualizar convite
+    await db
+      .update(invites)
+      .set({
+        token: newToken,
+        expiresAt: newExpiresAt,
+      })
+      .where(eq(invites.id, invite.id));
+
+    // 6. Buscar dados da clínica e organização para email
+    const clinic = await db
+      .select()
+      .from(clinics)
+      .where(eq(clinics.id, invite.clinicId))
+      .limit(1);
+
+    const organization = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, invite.organizationId))
+      .limit(1);
+
+    const admin = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, adminUserId))
+      .limit(1);
+
+    // 7. Enviar email (fire-and-forget)
+    this.mailService
+      .sendInviteEmail(
+        invite.email,
+        newToken,
+        admin[0]?.name || "Administrador",
+        organization[0]?.name || "Healz",
+        invite.role,
+      )
+      .catch((err) => {
+        console.error("Erro ao enviar email de convite:", err);
+      });
+
+    // 8. Log de auditoria
+    await this.auditService.log({
+      action: "RESEND_INVITE",
+      userId: adminUserId,
+      resource: `/api/platform-admin/users/${userId}/resend-invite`,
+      method: "POST",
+      ip,
+      metadata: {
+        targetUserId: userId,
+        email: invite.email,
+        clinicId: invite.clinicId,
+        organizationId: invite.organizationId,
+      },
+    });
+
+    return { message: "Convite reenviado com sucesso" };
   }
 
   private generateSecurePassword(): string {

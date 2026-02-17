@@ -20,6 +20,7 @@ import {
   KeyRound,
   CheckCircle,
   BanIcon,
+  Mail,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -45,6 +46,7 @@ import {
   useRevokeUserSessions,
   useResetUserPassword,
   useVerifyUserEmail,
+  useResendUserInvite,
   useUpdateUserStatus,
 } from '../../api/users-api'
 import type { PlatformUser } from '@/types/api.types'
@@ -68,6 +70,7 @@ export function UsersTable() {
   const revokeSessionsMutation = useRevokeUserSessions()
   const resetPasswordMutation = useResetUserPassword()
   const verifyEmailMutation = useVerifyUserEmail()
+  const resendInviteMutation = useResendUserInvite()
 
   const handleImpersonate = (userId: string) => {
     if (confirm('Deseja realmente se passar por este usuário?')) {
@@ -90,6 +93,12 @@ export function UsersTable() {
   const handleVerifyEmail = (userId: string) => {
     if (confirm('Deseja verificar manualmente o email deste usuário?')) {
       verifyEmailMutation.mutate(userId)
+    }
+  }
+
+  const handleResendInvite = (userId: string) => {
+    if (confirm('Deseja reenviar o convite para este usuário?')) {
+      resendInviteMutation.mutate(userId)
     }
   }
 
@@ -195,6 +204,12 @@ export function UsersTable() {
                         <DropdownMenuItem onClick={() => handleVerifyEmail(user.id)}>
                           <CheckCircle className="mr-2 h-4 w-4" />
                           Verificar email
+                        </DropdownMenuItem>
+                      )}
+                      {!user.passwordHash && !user.emailVerified && (
+                        <DropdownMenuItem onClick={() => handleResendInvite(user.id)}>
+                          <Mail className="mr-2 h-4 w-4" />
+                          Reenviar convite
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>

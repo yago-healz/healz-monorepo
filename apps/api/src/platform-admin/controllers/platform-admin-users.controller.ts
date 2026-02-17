@@ -94,6 +94,18 @@ export class PlatformAdminUsersController {
     return this.usersService.forceVerifyEmail(id, user.userId, request.ip);
   }
 
+  @Post(":id/resend-invite")
+  @HttpCode(200)
+  @Throttle({ default: { ttl: 60000, limit: 30 } })
+  @ApiOperation({ summary: "Reenviar convite para usuário" })
+  async resendInvite(
+    @Param("id") id: string,
+    @CurrentUser() user: JwtPayload,
+    @Request() request: any,
+  ) {
+    return this.usersService.resendInvite(id, user.userId, request.ip);
+  }
+
   @Patch(":id/status")
   @ApiOperation({ summary: "Ativar/Desativar usuário" })
   async updateStatus(
