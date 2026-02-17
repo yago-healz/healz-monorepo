@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 import api from '@/lib/api/axios'
 import { ENDPOINTS } from '@/lib/api/endpoints'
 import { tokenService } from '@/services/token.service'
-import type { LoginDto, LoginResponse, SwitchContextDto, ForgotPasswordDto, ResetPasswordDto } from '@/types/api.types'
+import type { LoginDto, LoginResponse, SwitchContextDto, ForgotPasswordDto, ResetPasswordDto, AcceptInviteDto } from '@/types/api.types'
 
 // Login mutation
 export const useLoginMutation = () => {
@@ -94,6 +94,33 @@ export const useVerifyEmailMutation = () => {
     },
     onSuccess: () => {
       toast.success('Email verificado com sucesso!')
+    },
+  })
+}
+
+// Accept invite mutation
+export const useAcceptInviteMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: AcceptInviteDto): Promise<LoginResponse> => {
+      const response = await api.post(ENDPOINTS.INVITES.ACCEPT, data)
+      return response.data
+    },
+    onSuccess: (data) => {
+      // Auto-login: store tokens and user data (same as login)
+      tokenService.setAccessToken(data.accessToken)
+      tokenService.setUser(data.user)
+      queryClient.setQueryData(['auth', 'user'], data.user)
+      toast.success('Conta criada com sucesso!')
+    },
+    onError: (error: any) => {
+      // Handle specific error messages
+      if (error.response?.status === 401) {
+        toast.error('Link de convite inválido ou expirado')
+      } else {
+        toast.error('Erro ao criar conta. Tente novamente.')
+      }
     },
   })
 }

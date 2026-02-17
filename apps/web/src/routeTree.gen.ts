@@ -16,6 +16,7 @@ import { Route as PublicVerifyEmailRouteImport } from './routes/_public/verify-e
 import { Route as PublicResetPasswordRouteImport } from './routes/_public/reset-password'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicForgotPasswordRouteImport } from './routes/_public/forgot-password'
+import { Route as PublicAcceptInviteRouteImport } from './routes/_public/accept-invite'
 import { Route as PublicOnboardingIndexRouteImport } from './routes/_public/onboarding/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as PublicOnboardingStep5RouteImport } from './routes/_public/onboarding/step-5'
@@ -67,6 +68,11 @@ const PublicLoginRoute = PublicLoginRouteImport.update({
 const PublicForgotPasswordRoute = PublicForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicAcceptInviteRoute = PublicAcceptInviteRouteImport.update({
+  id: '/accept-invite',
+  path: '/accept-invite',
   getParentRoute: () => PublicRoute,
 } as any)
 const PublicOnboardingIndexRoute = PublicOnboardingIndexRouteImport.update({
@@ -178,6 +184,7 @@ const AuthenticatedAdminClinicsIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accept-invite': typeof PublicAcceptInviteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
   '/login': typeof PublicLoginRoute
   '/reset-password': typeof PublicResetPasswordRoute
@@ -204,6 +211,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accept-invite': typeof PublicAcceptInviteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
   '/login': typeof PublicLoginRoute
   '/reset-password': typeof PublicResetPasswordRoute
@@ -233,6 +241,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
+  '/_public/accept-invite': typeof PublicAcceptInviteRoute
   '/_public/forgot-password': typeof PublicForgotPasswordRoute
   '/_public/login': typeof PublicLoginRoute
   '/_public/reset-password': typeof PublicResetPasswordRoute
@@ -261,6 +270,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accept-invite'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accept-invite'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -315,6 +326,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/_public'
+    | '/_public/accept-invite'
     | '/_public/forgot-password'
     | '/_public/login'
     | '/_public/reset-password'
@@ -395,6 +407,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof PublicForgotPasswordRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/accept-invite': {
+      id: '/_public/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof PublicAcceptInviteRouteImport
       parentRoute: typeof PublicRoute
     }
     '/_public/onboarding/': {
@@ -569,6 +588,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 interface PublicRouteChildren {
+  PublicAcceptInviteRoute: typeof PublicAcceptInviteRoute
   PublicForgotPasswordRoute: typeof PublicForgotPasswordRoute
   PublicLoginRoute: typeof PublicLoginRoute
   PublicResetPasswordRoute: typeof PublicResetPasswordRoute
@@ -584,6 +604,7 @@ interface PublicRouteChildren {
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
+  PublicAcceptInviteRoute: PublicAcceptInviteRoute,
   PublicForgotPasswordRoute: PublicForgotPasswordRoute,
   PublicLoginRoute: PublicLoginRoute,
   PublicResetPasswordRoute: PublicResetPasswordRoute,
