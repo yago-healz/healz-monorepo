@@ -1,6 +1,6 @@
 import { defineConfig } from "drizzle-kit";
 
-const isProduction = process.env.NODE_ENV === "production";
+const useSSL = process.env.DATABASE_SSL === "true";
 
 export default defineConfig({
   schema: "./src/db/schema/",
@@ -8,6 +8,6 @@ export default defineConfig({
   dialect: "postgresql",
   dbCredentials: {
     url: process.env.DATABASE_URL!,
-    ssl: isProduction ? { rejectUnauthorized: false } : false,
+    ssl: useSSL ? { rejectUnauthorized: false } : false,
   },
 });
