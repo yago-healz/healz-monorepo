@@ -3,6 +3,8 @@ import type { User, ActiveClinic, AvailableClinic } from '@/types/api.types'
 
 const ACCESS_TOKEN_KEY = 'healz_access_token'
 const USER_KEY = 'healz_user'
+const ORIGINAL_TOKEN_KEY = 'healz_original_token'
+const ORIGINAL_USER_KEY = 'healz_original_user'
 
 interface JwtPayload {
   userId: string
@@ -80,9 +82,36 @@ export const tokenService = {
     }
   },
 
+  saveOriginalSession(): void {
+    const token = this.getAccessToken()
+    const user = this.getUser()
+    if (token) localStorage.setItem(ORIGINAL_TOKEN_KEY, token)
+    if (user) localStorage.setItem(ORIGINAL_USER_KEY, JSON.stringify(user))
+  },
+
+  restoreOriginalSession(): void {
+    const token = localStorage.getItem(ORIGINAL_TOKEN_KEY)
+    const user = localStorage.getItem(ORIGINAL_USER_KEY)
+    if (token) localStorage.setItem(ACCESS_TOKEN_KEY, token)
+    if (user) localStorage.setItem(USER_KEY, user)
+    localStorage.removeItem(ORIGINAL_TOKEN_KEY)
+    localStorage.removeItem(ORIGINAL_USER_KEY)
+  },
+
+  isImpersonating(): boolean {
+    return !!localStorage.getItem(ORIGINAL_TOKEN_KEY)
+  },
+
+  getOriginalUser(): any | null {
+    const user = localStorage.getItem(ORIGINAL_USER_KEY)
+    return user ? JSON.parse(user) : null
+  },
+
   clearTokens(): void {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
+    localStorage.removeItem(ORIGINAL_TOKEN_KEY)
+    localStorage.removeItem(ORIGINAL_USER_KEY)
   },
 
   hasValidToken(): boolean {

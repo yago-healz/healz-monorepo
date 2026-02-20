@@ -201,6 +201,7 @@ export const useImpersonateUser = () => {
       return response.data;
     },
     onSuccess: (data) => {
+      tokenService.saveOriginalSession();
       tokenService.setAccessToken(data.accessToken);
       tokenService.updateUserFromToken(data.accessToken);
       const impersonatedUser = tokenService.getUser();
