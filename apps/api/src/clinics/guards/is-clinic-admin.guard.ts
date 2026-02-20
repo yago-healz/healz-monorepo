@@ -37,15 +37,15 @@ export class IsClinicAdminGuard implements CanActivate {
         and(
           eq(userClinicRoles.userId, user.userId),
           or(
-            // Admin da clinic específica
-            and(
-              eq(userClinicRoles.clinicId, clinicId),
-              eq(userClinicRoles.role, "admin"),
-            ),
-            // Admin de qualquer clinic da mesma org
+            // Org admin: tem role 'admin' em qualquer clínica da organização
             and(
               eq(clinics.organizationId, clinic[0].organizationId),
               eq(userClinicRoles.role, "admin"),
+            ),
+            // Clinic manager: tem role 'manager' especificamente nesta clínica
+            and(
+              eq(userClinicRoles.clinicId, clinicId),
+              eq(userClinicRoles.role, "manager"),
             ),
           ),
         ),
@@ -54,7 +54,7 @@ export class IsClinicAdminGuard implements CanActivate {
 
     if (adminAccess.length === 0) {
       throw new ForbiddenException(
-        "Apenas administradores da organização ou clínica podem realizar esta ação",
+        "Apenas administradores da organização ou gerentes desta clínica podem realizar esta ação",
       );
     }
 

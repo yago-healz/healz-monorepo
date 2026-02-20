@@ -61,8 +61,10 @@ export class MailService {
 
     const roleTranslation: Record<string, string> = {
       admin: "Administrador",
+      manager: "Gerente",
       doctor: "Médico",
-      secretary: "Secretário",
+      receptionist: "Recepcionista",
+      viewer: "Visualizador",
     };
 
     await this.resend.emails.send({

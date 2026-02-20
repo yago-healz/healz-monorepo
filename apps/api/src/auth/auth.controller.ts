@@ -68,7 +68,7 @@ export class AuthController {
                 id: { type: "string" },
                 name: { type: "string" },
                 organizationId: { type: "string" },
-                role: { type: "string", enum: ["admin", "doctor", "secretary"] },
+                role: { type: "string", enum: ["admin", "manager", "doctor", "receptionist", "viewer"] },
               },
             },
             availableClinics: {

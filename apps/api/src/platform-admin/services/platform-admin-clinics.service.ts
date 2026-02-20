@@ -205,7 +205,7 @@ export class PlatformAdminClinicsService {
         await tx.insert(userClinicRoles).values({
           userId: dto.initialAdminId,
           clinicId: clinic.id,
-          role: "admin",
+          role: "manager",
         });
       }
 

@@ -21,7 +21,7 @@ export class MemberDto {
   @ApiProperty()
   email: string;
 
-  @ApiProperty({ enum: ["admin", "doctor", "secretary"] })
+  @ApiProperty({ enum: ["admin", "manager", "doctor", "receptionist", "viewer"] })
   role: string;
 
   @ApiProperty()

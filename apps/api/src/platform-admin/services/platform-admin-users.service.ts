@@ -76,7 +76,7 @@ export class PlatformAdminUsersService {
     }
 
     if (role) {
-      conditions.push(eq(userClinicRoles.role, role as "admin" | "doctor" | "secretary"));
+      conditions.push(eq(userClinicRoles.role, role as "admin" | "manager" | "doctor" | "receptionist" | "viewer"));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -106,7 +106,7 @@ export class PlatformAdminUsersService {
       }
 
       if (role) {
-        conditions.push(eq(userClinicRoles.role, role as "admin" | "doctor" | "secretary"));
+        conditions.push(eq(userClinicRoles.role, role as "admin" | "manager" | "doctor" | "receptionist" | "viewer"));
       }
 
       if (organizationId) {

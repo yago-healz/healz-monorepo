@@ -10,7 +10,7 @@ export class ClinicAccessDto {
   @ApiProperty()
   organizationName: string;
 
-  @ApiProperty({ enum: ["admin", "doctor", "secretary"] })
+  @ApiProperty({ enum: ["admin", "manager", "doctor", "receptionist", "viewer"] })
   role: string;
 }
 

@@ -85,6 +85,13 @@
       "when": 1770595244888,
       "tag": "0011_fat_mandroid",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1771555763900,
+      "tag": "0012_roles_refactor",
+      "breakpoints": true
     }
   ]
 }

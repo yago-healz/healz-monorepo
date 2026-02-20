@@ -10,7 +10,7 @@ export class InviteDataDto {
   @ApiProperty({ description: "ID da clínica", example: "550e8400-e29b-41d4-a716-446655440000" })
   clinicId: string;
 
-  @ApiProperty({ description: "Role atribuída", enum: ["admin", "doctor", "secretary"], example: "doctor" })
+  @ApiProperty({ description: "Role atribuída", enum: ["admin", "manager", "doctor", "receptionist", "viewer"], example: "doctor" })
   role: string;
 
   @ApiProperty({ description: "Data de expiração do convite", example: "2026-02-14T10:00:00Z" })

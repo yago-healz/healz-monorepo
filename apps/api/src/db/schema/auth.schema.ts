@@ -3,8 +3,10 @@ import { boolean, pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/
 
 export const userRoleEnum = pgEnum("user_role", [
   "admin",
+  "manager",
   "doctor",
-  "secretary",
+  "receptionist",
+  "viewer",
 ]);
 
 export const organizations = pgTable("organizations", {

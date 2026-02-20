@@ -11,7 +11,7 @@ export class ActiveClinicDto {
   @ApiProperty({ description: "ID da organização" })
   organizationId: string;
 
-  @ApiProperty({ description: "Role do usuário na clínica", enum: ["admin", "doctor", "secretary"] })
+  @ApiProperty({ description: "Role do usuário na clínica", enum: ["admin", "manager", "doctor", "receptionist", "viewer"] })
   role: string;
 }
 

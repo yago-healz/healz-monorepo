@@ -41,11 +41,11 @@ export class SendInviteDto {
 
   @ApiProperty({
     description: "Role do usuário na clínica",
-    enum: ["admin", "doctor", "secretary"],
+    enum: ["admin", "manager", "doctor", "receptionist", "viewer"],
     example: "doctor",
     type: String,
   })
   @IsNotEmpty()
-  @IsEnum(["admin", "doctor", "secretary"])
+  @IsEnum(["admin", "manager", "doctor", "receptionist", "viewer"])
   role: string;
 }

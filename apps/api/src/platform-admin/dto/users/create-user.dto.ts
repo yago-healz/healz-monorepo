@@ -39,12 +39,12 @@ export class CreateUserDto {
 
   @ApiProperty({
     description: "Role na clínica",
-    enum: ["admin", "doctor", "secretary"],
+    enum: ["admin", "manager", "doctor", "receptionist", "viewer"],
     required: false,
   })
   @IsOptional()
-  @IsIn(["admin", "doctor", "secretary"])
-  role?: "admin" | "doctor" | "secretary";
+  @IsIn(["admin", "manager", "doctor", "receptionist", "viewer"])
+  role?: "admin" | "manager" | "doctor" | "receptionist" | "viewer";
 
   @ApiProperty({
     description: "Se true, envia email de convite; se false, define senha",

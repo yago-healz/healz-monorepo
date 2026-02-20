@@ -162,6 +162,7 @@ export class AuthService {
         clinicName: c.clinicName,
         role: c.role,
       })),
+      isPlatformAdmin: isPlatformAdmin,
     };
 
     const accessToken = this.jwtService.sign(payload, { expiresIn: "15m" });
@@ -350,6 +351,7 @@ export class AuthService {
         clinicName: c.clinicName,
         role: c.role,
       })),
+      isPlatformAdmin: isPlatformAdmin,
     };
 
     const accessToken = this.jwtService.sign(payload, { expiresIn: "15m" });

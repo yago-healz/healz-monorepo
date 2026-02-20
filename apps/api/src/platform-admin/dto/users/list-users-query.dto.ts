@@ -29,11 +29,11 @@ export class ListUsersQueryDto extends PaginationQueryDto {
 
   @ApiProperty({
     description: "Filtrar por role",
-    enum: ["admin", "doctor", "secretary"],
+    enum: ["admin", "manager", "doctor", "receptionist", "viewer"],
     required: false,
   })
   @IsOptional()
-  @IsIn(["admin", "doctor", "secretary"])
+  @IsIn(["admin", "manager", "doctor", "receptionist", "viewer"])
   role?: string;
 
   @ApiProperty({

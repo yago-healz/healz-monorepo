@@ -11,7 +11,7 @@ export class SignupActiveClinicDto {
   @ApiProperty({ description: "ID da organização", example: "550e8400-e29b-41d4-a716-446655440000" })
   organizationId: string;
 
-  @ApiProperty({ description: "Role do usuário", enum: ["admin", "doctor", "secretary"], example: "admin" })
+  @ApiProperty({ description: "Role do usuário", enum: ["admin", "manager", "doctor", "receptionist", "viewer"], example: "admin" })
   role: string;
 }
 

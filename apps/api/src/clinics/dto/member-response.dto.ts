@@ -7,7 +7,7 @@ export class MemberDataDto {
   @ApiProperty({ description: "ID da clínica", example: "550e8400-e29b-41d4-a716-446655440000" })
   clinicId: string;
 
-  @ApiProperty({ description: "Role do usuário na clínica", enum: ["admin", "doctor", "secretary"], example: "secretary" })
+  @ApiProperty({ description: "Role do usuário na clínica", enum: ["admin", "manager", "doctor", "receptionist", "viewer"], example: "receptionist" })
   role: string;
 }
 
