@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Length } from "class-validator";
 
 export class PlatformAdminCreateClinicDto {
@@ -33,6 +34,7 @@ export class PlatformAdminCreateClinicDto {
     description: "ID do usuário que será admin inicial (opcional)",
     required: false,
   })
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsOptional()
   @IsUUID()
   initialAdminId?: string;

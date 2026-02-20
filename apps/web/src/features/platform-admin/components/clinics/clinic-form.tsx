@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Loader2 } from 'lucide-react'
 import { useOrganizations } from '../../api/organizations-api'
+import { UserSearchCombobox } from '../users/user-search-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Clinic } from '@/types/api.types'
 
@@ -28,7 +29,7 @@ const clinicSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   organizationId: z.string().uuid('Selecione uma organização'),
   status: z.enum(['active', 'inactive']),
-  initialAdminId: z.string().uuid().optional().or(z.literal('')),
+  initialAdminId: z.string().uuid().optional(),
 })
 
 type ClinicFormValues = z.infer<typeof clinicSchema>
@@ -74,9 +75,15 @@ export function ClinicForm({
     )
   }
 
+  const handleFormSubmit = (values: ClinicFormValues) => {
+    const payload = { ...values }
+    if (!payload.initialAdminId) delete payload.initialAdminId
+    return onSubmit(payload)
+  }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="name"
@@ -161,9 +168,9 @@ export function ClinicForm({
               <FormItem>
                 <FormLabel>Admin Inicial (Opcional)</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="ID do usuário (opcional)"
-                    {...field}
+                  <UserSearchCombobox
+                    value={field.value ?? ''}
+                    onChange={field.onChange}
                   />
                 </FormControl>
                 <FormDescription>
