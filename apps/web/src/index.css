@@ -3,6 +3,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --sidebar-offset: 0px;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -121,4 +122,15 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Impersonation banner offset: pushes the fixed sidebar down */
+[data-slot="sidebar-container"] {
+  top: var(--sidebar-offset);
+  height: calc(100svh - var(--sidebar-offset));
+}
+
+/* Impersonation banner offset: pushes sidebar-inset content below the banner */
+[data-slot="sidebar-inset"] {
+  padding-top: var(--sidebar-offset);
 }
