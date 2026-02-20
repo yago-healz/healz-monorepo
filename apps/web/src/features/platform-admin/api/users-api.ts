@@ -202,7 +202,10 @@ export const useImpersonateUser = () => {
     },
     onSuccess: (data) => {
       tokenService.setAccessToken(data.accessToken);
-      window.location.href = "/clinic";
+      tokenService.updateUserFromToken(data.accessToken);
+      const impersonatedUser = tokenService.getUser();
+      const redirectTo = impersonatedUser?.activeClinic ? "/clinic" : "/admin";
+      window.location.href = redirectTo;
       toast.success("Agora você está logado como este usuário");
     },
   });
