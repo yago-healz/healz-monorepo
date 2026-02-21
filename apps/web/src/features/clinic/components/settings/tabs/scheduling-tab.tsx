@@ -1,14 +1,29 @@
-import { useState } from 'react'
-import { Plus, Minus, Trash2, Calendar } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Minus, Trash2, Calendar, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useClinicScheduling, useSaveClinicScheduling } from '@/features/clinic/api/clinic-settings.api'
+import { useParams } from '@tanstack/react-router'
 import type { TimeBlock } from '@/types/onboarding'
 
 export function SchedulingTab() {
+  const { clinicId } = useParams({ from: '/clinic/settings' })
+
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([
     { id: '1', from: '12:00', to: '14:00' },
   ])
   const [minimumInterval, setMinimumInterval] = useState(15)
+
+  const { data: savedData, isLoading: isLoadingData } = useClinicScheduling(clinicId)
+  const { mutate: saveScheduling, isPending: isSaving } = useSaveClinicScheduling(clinicId)
+
+  // Load saved data
+  useEffect(() => {
+    if (savedData) {
+      setTimeBlocks(savedData.timeBlocks.length > 0 ? savedData.timeBlocks : [{ id: '1', from: '12:00', to: '14:00' }])
+      setMinimumInterval(savedData.minimumInterval)
+    }
+  }, [savedData])
 
   const addTimeBlock = () => {
     setTimeBlocks([...timeBlocks, { id: Date.now().toString(), from: '09:00', to: '10:00' }])
@@ -22,6 +37,19 @@ export function SchedulingTab() {
     setTimeBlocks(timeBlocks.map(block =>
       block.id === id ? { ...block, [field]: value } : block
     ))
+  }
+
+  const handleSave = async () => {
+    saveScheduling({ timeBlocks, minimumInterval })
+  }
+
+  if (isLoadingData) {
+    return (
+      <div className="space-y-4 flex items-center justify-center h-96">
+        <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+        <span className="text-muted-foreground">Carregando configurações...</span>
+      </div>
+    )
   }
 
   return (
@@ -117,10 +145,18 @@ export function SchedulingTab() {
       </section>
 
       <Button
-        onClick={() => console.log('save', { timeBlocks, minimumInterval })}
+        onClick={handleSave}
+        disabled={isSaving}
         className="bg-gradient-to-r from-pink-500 to-pink-400 hover:from-pink-600 hover:to-pink-500 text-white px-8"
       >
-        Salvar
+        {isSaving ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Salvando...
+          </>
+        ) : (
+          'Salvar'
+        )}
       </Button>
     </div>
   )

@@ -1,66 +1,87 @@
-import React from 'react'
-import { useState } from 'react'
-import { GripVertical, DollarSign, Users, Zap, CalendarX, Phone, Calendar, UserPlus } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { GripVertical, DollarSign, Users, Zap, CalendarX, Phone, Calendar, UserPlus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { useClinicObjectives, useSaveClinicObjectives } from '@/features/clinic/api/clinic-settings.api'
+import { useParams } from '@tanstack/react-router'
 import type { Priority, PainPoint } from '@/types/onboarding'
 
+const DEFAULT_PRIORITIES: Priority[] = [
+  {
+    id: 'revenue',
+    title: 'Aumentar Receita',
+    description: 'Foque em procedimentos de alto valor e eficiência de faturamento',
+    icon: <DollarSign className="w-5 h-5" />,
+  },
+  {
+    id: 'retention',
+    title: 'Retenção de Pacientes',
+    description: 'Melhore o acompanhamento e engajamento em cuidados de longo prazo',
+    icon: <Users className="w-5 h-5" />,
+  },
+  {
+    id: 'efficiency',
+    title: 'Eficiência Operacional',
+    description: 'Reduza o tempo gasto em agendamento administrativo',
+    icon: <Zap className="w-5 h-5" />,
+  },
+]
+
+const DEFAULT_PAIN_POINTS: PainPoint[] = [
+  {
+    id: 'no-shows',
+    title: 'Pacientes que não comparecem',
+    description: 'Agendamentos perdidos afetando receita',
+    icon: <CalendarX className="w-5 h-5" />,
+    selected: true,
+  },
+  {
+    id: 'follow-ups',
+    title: 'Acompanhamentos Manuais',
+    description: 'A equipe gasta horas no WhatsApp/Telefone',
+    icon: <Phone className="w-5 h-5" />,
+    selected: false,
+  },
+  {
+    id: 'conflicts',
+    title: 'Conflitos de Agendamento',
+    description: 'Agendamentos duplos ou problemas de sincronização de calendário',
+    icon: <Calendar className="w-5 h-5" />,
+    selected: false,
+  },
+  {
+    id: 'intake',
+    title: 'Fricção na Admissão',
+    description: 'Processo lento para integração de novos pacientes',
+    icon: <UserPlus className="w-5 h-5" />,
+    selected: false,
+  },
+]
+
 export function ObjectivesTab() {
-  const [priorities, setPriorities] = useState<Priority[]>([
-    {
-      id: 'revenue',
-      title: 'Aumentar Receita',
-      description: 'Foque em procedimentos de alto valor e eficiência de faturamento',
-      icon: <DollarSign className="w-5 h-5" />,
-    },
-    {
-      id: 'retention',
-      title: 'Retenção de Pacientes',
-      description: 'Melhore o acompanhamento e engajamento em cuidados de longo prazo',
-      icon: <Users className="w-5 h-5" />,
-    },
-    {
-      id: 'efficiency',
-      title: 'Eficiência Operacional',
-      description: 'Reduza o tempo gasto em agendamento administrativo',
-      icon: <Zap className="w-5 h-5" />,
-    },
-  ])
+  // Get clinic ID from route params
+  const { clinicId } = useParams({ from: '/clinic/settings' })
 
-  const [painPoints, setPainPoints] = useState<PainPoint[]>([
-    {
-      id: 'no-shows',
-      title: 'Pacientes que não comparecem',
-      description: 'Agendamentos perdidos afetando receita',
-      icon: <CalendarX className="w-5 h-5" />,
-      selected: true,
-    },
-    {
-      id: 'follow-ups',
-      title: 'Acompanhamentos Manuais',
-      description: 'A equipe gasta horas no WhatsApp/Telefone',
-      icon: <Phone className="w-5 h-5" />,
-      selected: false,
-    },
-    {
-      id: 'conflicts',
-      title: 'Conflitos de Agendamento',
-      description: 'Agendamentos duplos ou problemas de sincronização de calendário',
-      icon: <Calendar className="w-5 h-5" />,
-      selected: false,
-    },
-    {
-      id: 'intake',
-      title: 'Fricção na Admissão',
-      description: 'Processo lento para integração de novos pacientes',
-      icon: <UserPlus className="w-5 h-5" />,
-      selected: false,
-    },
-  ])
-
+  // State
+  const [priorities, setPriorities] = useState<Priority[]>(DEFAULT_PRIORITIES)
+  const [painPoints, setPainPoints] = useState<PainPoint[]>(DEFAULT_PAIN_POINTS)
   const [additionalNotes, setAdditionalNotes] = useState('')
   const [draggedItem, setDraggedItem] = useState<number | null>(null)
 
+  // Queries & Mutations
+  const { data: savedData, isLoading: isLoadingData } = useClinicObjectives(clinicId)
+  const { mutate: saveObjectives, isPending: isSaving } = useSaveClinicObjectives(clinicId)
+
+  // Load saved data when component mounts or data changes
+  useEffect(() => {
+    if (savedData) {
+      setPriorities(savedData.priorities.length > 0 ? savedData.priorities : DEFAULT_PRIORITIES)
+      setPainPoints(savedData.painPoints.length > 0 ? savedData.painPoints : DEFAULT_PAIN_POINTS)
+      setAdditionalNotes(savedData.additionalNotes || '')
+    }
+  }, [savedData])
+
+  // Drag handlers
   const handleDragStart = (index: number) => {
     setDraggedItem(index)
   }
@@ -81,11 +102,31 @@ export function ObjectivesTab() {
     setDraggedItem(null)
   }
 
+  // Pain point toggle
   const togglePainPoint = (id: string) => {
     setPainPoints(points =>
       points.map(point =>
         point.id === id ? { ...point, selected: !point.selected } : point
       )
+    )
+  }
+
+  // Save handler
+  const handleSave = async () => {
+    saveObjectives({
+      priorities,
+      painPoints,
+      additionalNotes,
+    })
+  }
+
+  // Show loading state
+  if (isLoadingData) {
+    return (
+      <div className="space-y-4 flex items-center justify-center h-96">
+        <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+        <span className="text-muted-foreground">Carregando configurações...</span>
+      </div>
     )
   }
 
@@ -180,11 +221,20 @@ export function ObjectivesTab() {
         />
       </section>
 
+      {/* Save Button */}
       <Button
-        onClick={() => console.log('save', { priorities, painPoints, additionalNotes })}
+        onClick={handleSave}
+        disabled={isSaving}
         className="bg-gradient-to-r from-pink-500 to-pink-400 hover:from-pink-600 hover:to-pink-500 text-white px-8"
       >
-        Salvar
+        {isSaving ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Salvando...
+          </>
+        ) : (
+          'Salvar'
+        )}
       </Button>
     </div>
   )

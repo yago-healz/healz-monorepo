@@ -1,18 +1,51 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Bell, Send } from 'lucide-react'
-import type { AlertChannel } from '@/types/onboarding'
+import { Bell, Send, Loader2 } from 'lucide-react'
+import { useClinicNotifications, useSaveClinicNotifications } from '@/features/clinic/api/clinic-settings.api'
+import { useParams } from '@tanstack/react-router'
+import type { AlertChannel, NotificationSettings } from '@/features/clinic/api/clinic-settings.api'
 
 export function NotificationsTab() {
-  const [notifications, setNotifications] = useState({
+  const { clinicId } = useParams({ from: '/clinic/settings' })
+
+  const [notifications, setNotifications] = useState<NotificationSettings>({
     newBooking: true,
     riskOfLoss: true,
   })
   const [alertChannel, setAlertChannel] = useState<AlertChannel>('whatsapp')
   const [phoneNumber, setPhoneNumber] = useState('')
+
+  const { data: savedData, isLoading: isLoadingData } = useClinicNotifications(clinicId)
+  const { mutate: saveNotifications, isPending: isSaving } = useSaveClinicNotifications(clinicId)
+
+  // Load saved data
+  useEffect(() => {
+    if (savedData) {
+      setNotifications(savedData.notificationSettings)
+      setAlertChannel(savedData.alertChannel as AlertChannel)
+      setPhoneNumber(savedData.phoneNumber || '')
+    }
+  }, [savedData])
+
+  const handleSave = async () => {
+    saveNotifications({
+      notificationSettings: notifications,
+      alertChannel,
+      phoneNumber,
+    })
+  }
+
+  if (isLoadingData) {
+    return (
+      <div className="space-y-4 flex items-center justify-center h-96">
+        <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+        <span className="text-muted-foreground">Carregando configurações...</span>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -103,10 +136,18 @@ export function NotificationsTab() {
       </Card>
 
       <Button
-        onClick={() => console.log('save', { notifications, alertChannel, phoneNumber })}
+        onClick={handleSave}
+        disabled={isSaving}
         className="bg-gradient-to-r from-pink-500 to-pink-400 hover:from-pink-600 hover:to-pink-500 text-white px-8"
       >
-        Salvar
+        {isSaving ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Salvando...
+          </>
+        ) : (
+          'Salvar'
+        )}
       </Button>
     </div>
   )

@@ -1,21 +1,55 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { MessageSquare, Ban, GitBranch, Heart } from 'lucide-react'
+import { MessageSquare, Ban, GitBranch, Heart, Loader2 } from 'lucide-react'
 import { PERSONALITY_TRAITS } from '@/types/onboarding'
+import { useClinicCarolSettings, useSaveClinicCarolSettings } from '@/features/clinic/api/clinic-settings.api'
+import { useParams } from '@tanstack/react-router'
+
+const DEFAULT_GREETING =
+  "Olá! Sou a Carol, sua assistente virtual. Estou aqui para ajudá-lo a agendar consultas, responder perguntas sobre nossos serviços ou encaminhá-lo para um especialista. Como posso ajudá-lo hoje?"
 
 export function CarolTab() {
+  const { clinicId } = useParams({ from: '/clinic/settings' })
+
   const [selectedTraits, setSelectedTraits] = useState<string[]>(['welcoming', 'empathetic'])
-  const [greeting, setGreeting] = useState(
-    "Olá! Sou a Carol, sua assistente virtual. Estou aqui para ajudá-lo a agendar consultas, responder perguntas sobre nossos serviços ou encaminhá-lo para um especialista. Como posso ajudá-lo hoje?"
-  )
+  const [greeting, setGreeting] = useState(DEFAULT_GREETING)
   const [restrictSensitiveTopics, setRestrictSensitiveTopics] = useState(true)
+
+  const { data: savedData, isLoading: isLoadingData } = useClinicCarolSettings(clinicId)
+  const { mutate: saveCarolSettings, isPending: isSaving } = useSaveClinicCarolSettings(clinicId)
+
+  // Load saved data
+  useEffect(() => {
+    if (savedData) {
+      setSelectedTraits(savedData.selectedTraits.length > 0 ? savedData.selectedTraits : ['welcoming', 'empathetic'])
+      setGreeting(savedData.greeting || DEFAULT_GREETING)
+      setRestrictSensitiveTopics(savedData.restrictSensitiveTopics)
+    }
+  }, [savedData])
 
   const toggleTrait = (traitId: string) => {
     setSelectedTraits((prev) =>
       prev.includes(traitId) ? prev.filter((t) => t !== traitId) : [...prev, traitId]
+    )
+  }
+
+  const handleSave = async () => {
+    saveCarolSettings({
+      selectedTraits,
+      greeting,
+      restrictSensitiveTopics,
+    })
+  }
+
+  if (isLoadingData) {
+    return (
+      <div className="space-y-4 flex items-center justify-center h-96">
+        <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+        <span className="text-muted-foreground">Carregando configurações...</span>
+      </div>
     )
   }
 
@@ -115,10 +149,18 @@ export function CarolTab() {
       </Card>
 
       <Button
-        onClick={() => console.log('save', { selectedTraits, greeting, restrictSensitiveTopics })}
+        onClick={handleSave}
+        disabled={isSaving}
         className="bg-gradient-to-r from-pink-500 to-pink-400 hover:from-pink-600 hover:to-pink-500 text-white px-8"
       >
-        Salvar
+        {isSaving ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Salvando...
+          </>
+        ) : (
+          'Salvar'
+        )}
       </Button>
     </div>
   )
