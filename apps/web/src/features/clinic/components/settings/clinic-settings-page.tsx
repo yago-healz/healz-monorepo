@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
+import { useState } from 'react'
 
 const tabs = [
   { id: 'geral', label: 'Geral' },
@@ -8,6 +8,7 @@ const tabs = [
   { id: 'servicos', label: 'Serviços' },
   { id: 'agendamentos', label: 'Agendamentos' },
   { id: 'carol', label: 'Carol' },
+  { id: 'notificacoes', label: 'Notificações' },
   { id: 'conectores', label: 'Conectores' },
 ]
 
