@@ -26,7 +26,7 @@ export interface User {
   email: string;
   name: string;
   emailVerified: boolean;
-  activeClinic: ActiveClinic;
+  activeClinic: ActiveClinic | null;
   availableClinics: AvailableClinic[];
 }
 
