@@ -3,6 +3,7 @@ import { ClinicSidebar } from '@/components/layout/clinic-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { tokenService } from '@/services/token.service'
 import { ImpersonationBanner } from '@/components/layout/impersonation-banner'
+import { ClinicHeader } from '@/components/layout/clinic-header'
 
 export const Route = createFileRoute('/_authenticated/clinic')({
   beforeLoad: () => {
@@ -23,6 +24,7 @@ function ClinicLayout() {
         <div className="flex flex-1 overflow-hidden">
           <ClinicSidebar />
           <SidebarInset className="flex flex-1 flex-col">
+            <ClinicHeader />
             <main className="flex-1 overflow-auto p-6">
               <Outlet />
             </main>
