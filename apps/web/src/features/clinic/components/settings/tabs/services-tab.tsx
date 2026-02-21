@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Plus, Briefcase } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Briefcase, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -9,35 +9,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useClinicServices, useSaveClinicServices } from '@/features/clinic/api/clinic-settings.api'
+import { useParams } from '@tanstack/react-router'
 import type { Service } from '@/types/onboarding'
 
-export function ServicesTab() {
-  const [services, setServices] = useState<Service[]>([
-    {
-      id: 'initial',
-      title: 'Consulta Inicial',
-      description: 'Primeiro contato com novos pacientes',
-      duration: '45',
-      value: '350.00',
-    },
-    {
-      id: 'return',
-      title: 'Retorno',
-      description: 'Acompanhamento em até 30 dias',
-      duration: '20',
-      value: '0.00',
-    },
-    {
-      id: 'procedures',
-      title: 'Procedimentos',
-      description: 'Exames e pequenas intervenções',
-      duration: '120',
-      value: '800.00',
-      note: 'Os pacientes devem ser aconselhados a chegar 15 minutos mais cedo para preencher formulários.',
-    },
-  ])
+const DEFAULT_SERVICES: Service[] = [
+  {
+    id: 'initial',
+    title: 'Consulta Inicial',
+    description: 'Primeiro contato com novos pacientes',
+    duration: '45',
+    value: '350.00',
+  },
+  {
+    id: 'return',
+    title: 'Retorno',
+    description: 'Acompanhamento em até 30 dias',
+    duration: '20',
+    value: '0.00',
+  },
+  {
+    id: 'procedures',
+    title: 'Procedimentos',
+    description: 'Exames e pequenas intervenções',
+    duration: '120',
+    value: '800.00',
+    note: 'Os pacientes devem ser aconselhados a chegar 15 minutos mais cedo para preencher formulários.',
+  },
+]
 
+export function ServicesTab() {
+  const { clinicId } = useParams({ from: '/clinic/settings' })
+
+  const [services, setServices] = useState<Service[]>(DEFAULT_SERVICES)
   const [expandedNotes, setExpandedNotes] = useState<string[]>(['procedures'])
+
+  const { data: savedData, isLoading: isLoadingData } = useClinicServices(clinicId)
+  const { mutate: saveServices, isPending: isSaving } = useSaveClinicServices(clinicId)
+
+  // Load saved data
+  useEffect(() => {
+    if (savedData?.services && savedData.services.length > 0) {
+      setServices(savedData.services)
+    }
+  }, [savedData])
 
   const updateService = (id: string, field: keyof Service, value: string) => {
     setServices(services.map(service =>
@@ -50,6 +65,19 @@ export function ServicesTab() {
       prev.includes(id)
         ? prev.filter(noteId => noteId !== id)
         : [...prev, id]
+    )
+  }
+
+  const handleSave = async () => {
+    saveServices({ services })
+  }
+
+  if (isLoadingData) {
+    return (
+      <div className="space-y-4 flex items-center justify-center h-96">
+        <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+        <span className="text-muted-foreground">Carregando serviços...</span>
+      </div>
     )
   }
 
@@ -99,7 +127,7 @@ export function ServicesTab() {
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                      Value (R$)
+                      Valor (R$)
                     </label>
                     <Input
                       type="text"
@@ -116,7 +144,12 @@ export function ServicesTab() {
                   <p className="text-xs text-pink-500 uppercase tracking-wide mb-1">
                     Nota para Carol:
                   </p>
-                  <p className="text-sm text-foreground">{service.note}</p>
+                  <textarea
+                    value={service.note}
+                    onChange={(e) => updateService(service.id, 'note', e.target.value)}
+                    className="w-full text-sm text-foreground bg-transparent focus:outline-none resize-none"
+                    rows={2}
+                  />
                 </div>
               ) : (
                 <button
@@ -133,10 +166,18 @@ export function ServicesTab() {
       </section>
 
       <Button
-        onClick={() => console.log('save', { services })}
+        onClick={handleSave}
+        disabled={isSaving}
         className="bg-gradient-to-r from-pink-500 to-pink-400 hover:from-pink-600 hover:to-pink-500 text-white px-8"
       >
-        Salvar
+        {isSaving ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Salvando...
+          </>
+        ) : (
+          'Salvar'
+        )}
       </Button>
     </div>
   )
