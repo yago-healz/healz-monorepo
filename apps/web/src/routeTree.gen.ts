@@ -29,6 +29,7 @@ import { Route as PublicOnboardingStep2RouteImport } from './routes/_public/onbo
 import { Route as PublicOnboardingStep1RouteImport } from './routes/_public/onboarding/step-1'
 import { Route as PublicOnboardingReviewRouteImport } from './routes/_public/onboarding/review'
 import { Route as PublicOnboardingCompleteRouteImport } from './routes/_public/onboarding/complete'
+import { Route as AuthenticatedClinicSettingsRouteImport } from './routes/_authenticated/clinic/settings'
 import { Route as AuthenticatedClinicMembersRouteImport } from './routes/_authenticated/clinic/members'
 import { Route as AuthenticatedAdminUsersIndexRouteImport } from './routes/_authenticated/admin/users/index'
 import { Route as AuthenticatedAdminOrganizationsIndexRouteImport } from './routes/_authenticated/admin/organizations/index'
@@ -141,6 +142,12 @@ const PublicOnboardingCompleteRoute =
     path: '/onboarding/complete',
     getParentRoute: () => PublicRoute,
   } as any)
+const AuthenticatedClinicSettingsRoute =
+  AuthenticatedClinicSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedClinicRoute,
+  } as any)
 const AuthenticatedClinicMembersRoute =
   AuthenticatedClinicMembersRouteImport.update({
     id: '/members',
@@ -218,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof PublicResetPasswordRoute
   '/verify-email': typeof PublicVerifyEmailRoute
   '/clinic/members': typeof AuthenticatedClinicMembersRoute
+  '/clinic/settings': typeof AuthenticatedClinicSettingsRoute
   '/onboarding/complete': typeof PublicOnboardingCompleteRoute
   '/onboarding/review': typeof PublicOnboardingReviewRoute
   '/onboarding/step-1': typeof PublicOnboardingStep1Route
@@ -247,6 +255,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof PublicResetPasswordRoute
   '/verify-email': typeof PublicVerifyEmailRoute
   '/clinic/members': typeof AuthenticatedClinicMembersRoute
+  '/clinic/settings': typeof AuthenticatedClinicSettingsRoute
   '/onboarding/complete': typeof PublicOnboardingCompleteRoute
   '/onboarding/review': typeof PublicOnboardingReviewRoute
   '/onboarding/step-1': typeof PublicOnboardingStep1Route
@@ -281,6 +290,7 @@ export interface FileRoutesById {
   '/_public/reset-password': typeof PublicResetPasswordRoute
   '/_public/verify-email': typeof PublicVerifyEmailRoute
   '/_authenticated/clinic/members': typeof AuthenticatedClinicMembersRoute
+  '/_authenticated/clinic/settings': typeof AuthenticatedClinicSettingsRoute
   '/_public/onboarding/complete': typeof PublicOnboardingCompleteRoute
   '/_public/onboarding/review': typeof PublicOnboardingReviewRoute
   '/_public/onboarding/step-1': typeof PublicOnboardingStep1Route
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/verify-email'
     | '/clinic/members'
+    | '/clinic/settings'
     | '/onboarding/complete'
     | '/onboarding/review'
     | '/onboarding/step-1'
@@ -343,6 +354,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/verify-email'
     | '/clinic/members'
+    | '/clinic/settings'
     | '/onboarding/complete'
     | '/onboarding/review'
     | '/onboarding/step-1'
@@ -376,6 +388,7 @@ export interface FileRouteTypes {
     | '/_public/reset-password'
     | '/_public/verify-email'
     | '/_authenticated/clinic/members'
+    | '/_authenticated/clinic/settings'
     | '/_public/onboarding/complete'
     | '/_public/onboarding/review'
     | '/_public/onboarding/step-1'
@@ -546,6 +559,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicOnboardingCompleteRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_authenticated/clinic/settings': {
+      id: '/_authenticated/clinic/settings'
+      path: '/settings'
+      fullPath: '/clinic/settings'
+      preLoaderRoute: typeof AuthenticatedClinicSettingsRouteImport
+      parentRoute: typeof AuthenticatedClinicRoute
+    }
     '/_authenticated/clinic/members': {
       id: '/_authenticated/clinic/members'
       path: '/members'
@@ -662,11 +682,13 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedClinicRouteChildren {
   AuthenticatedClinicMembersRoute: typeof AuthenticatedClinicMembersRoute
+  AuthenticatedClinicSettingsRoute: typeof AuthenticatedClinicSettingsRoute
   AuthenticatedClinicIndexRoute: typeof AuthenticatedClinicIndexRoute
 }
 
 const AuthenticatedClinicRouteChildren: AuthenticatedClinicRouteChildren = {
   AuthenticatedClinicMembersRoute: AuthenticatedClinicMembersRoute,
+  AuthenticatedClinicSettingsRoute: AuthenticatedClinicSettingsRoute,
   AuthenticatedClinicIndexRoute: AuthenticatedClinicIndexRoute,
 }
 
