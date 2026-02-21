@@ -1,23 +1,38 @@
-import { IsArray } from 'class-validator'
+import { IsArray, IsString, IsOptional, ValidateNested } from 'class-validator'
+import { Type } from 'class-transformer'
 
-export interface Service {
+export class ServiceDto {
+  @IsString()
   id: string
+
+  @IsString()
   title: string
+
+  @IsString()
   description: string
+
+  @IsString()
   duration: string
+
+  @IsString()
   value: string
+
+  @IsOptional()
+  @IsString()
   note?: string
 }
 
 export class ClinicServicesDto {
   @IsArray()
-  services: Service[]
+  @ValidateNested({ each: true })
+  @Type(() => ServiceDto)
+  services: ServiceDto[]
 }
 
 export class GetClinicServicesResponseDto {
   id: string
   clinicId: string
-  services: Service[]
+  services: ServiceDto[]
   createdAt: Date
   updatedAt?: Date
 }

@@ -1,14 +1,22 @@
-import { IsArray, IsInt, Min } from 'class-validator'
+import { IsArray, IsInt, IsString, Min, ValidateNested } from 'class-validator'
+import { Type } from 'class-transformer'
 
-export interface TimeBlock {
+export class TimeBlockDto {
+  @IsString()
   id: string
+
+  @IsString()
   from: string // HH:MM
+
+  @IsString()
   to: string // HH:MM
 }
 
 export class ClinicSchedulingDto {
   @IsArray()
-  timeBlocks: TimeBlock[]
+  @ValidateNested({ each: true })
+  @Type(() => TimeBlockDto)
+  timeBlocks: TimeBlockDto[]
 
   @IsInt()
   @Min(0)
@@ -18,7 +26,7 @@ export class ClinicSchedulingDto {
 export class GetClinicSchedulingResponseDto {
   id: string
   clinicId: string
-  timeBlocks: TimeBlock[]
+  timeBlocks: TimeBlockDto[]
   minimumInterval: number
   createdAt: Date
   updatedAt?: Date

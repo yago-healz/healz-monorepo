@@ -1,24 +1,47 @@
-import { IsArray, IsString, IsOptional, IsBoolean } from 'class-validator'
+import {
+  IsArray,
+  IsString,
+  IsOptional,
+  IsBoolean,
+  ValidateNested,
+} from 'class-validator'
+import { Type } from 'class-transformer'
 
-export interface Priority {
+export class PriorityDto {
+  @IsString()
   id: string
+
+  @IsString()
   title: string
+
+  @IsString()
   description: string
 }
 
-export interface PainPoint {
+export class PainPointDto {
+  @IsString()
   id: string
+
+  @IsString()
   title: string
+
+  @IsString()
   description: string
+
+  @IsBoolean()
   selected: boolean
 }
 
 export class ClinicObjectivesDto {
   @IsArray()
-  priorities: Priority[]
+  @ValidateNested({ each: true })
+  @Type(() => PriorityDto)
+  priorities: PriorityDto[]
 
   @IsArray()
-  painPoints: PainPoint[]
+  @ValidateNested({ each: true })
+  @Type(() => PainPointDto)
+  painPoints: PainPointDto[]
 
   @IsOptional()
   @IsString()
@@ -28,8 +51,8 @@ export class ClinicObjectivesDto {
 export class GetClinicObjectivesResponseDto {
   id: string
   clinicId: string
-  priorities: Priority[]
-  painPoints: PainPoint[]
+  priorities: PriorityDto[]
+  painPoints: PainPointDto[]
   additionalNotes?: string
   createdAt: Date
   updatedAt?: Date
