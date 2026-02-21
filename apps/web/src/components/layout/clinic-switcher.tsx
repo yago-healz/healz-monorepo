@@ -1,21 +1,21 @@
-import { useState } from 'react'
-import { ChevronsUpDown, Check, Hospital } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-} from '@/components/ui/dropdown-menu'
 import {
   Command,
-  CommandInput,
-  CommandList,
-  CommandItem,
-  CommandGroup,
   CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
 } from '@/components/ui/command'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useSidebar } from '@/components/ui/sidebar'
 import { useSwitchContextMutation } from '@/features/auth/api/mutations'
 import { useUserRole } from '@/hooks/use-user-role'
-import { useSidebar } from '@/components/ui/sidebar'
+import { Check, ChevronsUpDown, Hospital } from 'lucide-react'
+import { useState } from 'react'
 
 export function ClinicSwitcher() {
   const { user, activeClinic } = useUserRole()
@@ -65,7 +65,7 @@ export function ClinicSwitcher() {
             <span className="truncate text-xs text-muted-foreground">
               {activeClinic?.role === 'admin' && 'Administrador'}
               {activeClinic?.role === 'doctor' && 'Médico'}
-              {activeClinic?.role === 'secretary' && 'Secretária'}
+              {activeClinic?.role === 'receptionist' && 'Secretária'}
             </span>
           </div>
           <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
@@ -89,7 +89,7 @@ export function ClinicSwitcher() {
                     <div className="text-xs text-muted-foreground">
                       {clinic.role === 'admin' && 'Administrador'}
                       {clinic.role === 'doctor' && 'Médico'}
-                      {clinic.role === 'secretary' && 'Secretária'}
+                      {clinic.role === 'receptionist' && 'Secretária'}
                     </div>
                   </div>
                   {clinic.clinicId === activeClinic?.id && (

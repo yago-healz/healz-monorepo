@@ -53,7 +53,7 @@ export const tokenService = {
             id: payload.activeClinicId,
             name: clinicInfo.clinicName,
             organizationId: payload.organizationId,
-            role: clinicInfo.role as 'admin' | 'doctor' | 'secretary',
+            role: clinicInfo.role as 'admin' | 'doctor' | 'receptionist',
           }
         }
       }
@@ -63,7 +63,7 @@ export const tokenService = {
         payload.clinicAccess?.map((c) => ({
           clinicId: c.clinicId,
           clinicName: c.clinicName,
-          role: c.role as 'admin' | 'doctor' | 'secretary',
+          role: c.role as 'admin' | 'doctor' | 'receptionist',
         })) ?? []
 
       // Update user object
