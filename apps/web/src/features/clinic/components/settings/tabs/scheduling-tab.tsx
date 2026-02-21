@@ -3,11 +3,11 @@ import { Plus, Minus, Trash2, Calendar, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useClinicScheduling, useSaveClinicScheduling } from '@/features/clinic/api/clinic-settings.api'
-import { useParams } from '@tanstack/react-router'
+import { tokenService } from '@/services/token.service'
 import type { TimeBlock } from '@/types/onboarding'
 
 export function SchedulingTab() {
-  const { clinicId } = useParams({ from: '/clinic/settings' })
+  const clinicId = tokenService.getUser()?.activeClinic?.id ?? ''
 
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([
     { id: '1', from: '12:00', to: '14:00' },

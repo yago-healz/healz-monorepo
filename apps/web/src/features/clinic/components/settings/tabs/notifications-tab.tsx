@@ -5,11 +5,11 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Bell, Send, Loader2 } from 'lucide-react'
 import { useClinicNotifications, useSaveClinicNotifications } from '@/features/clinic/api/clinic-settings.api'
-import { useParams } from '@tanstack/react-router'
+import { tokenService } from '@/services/token.service'
 import type { AlertChannel, NotificationSettings } from '@/features/clinic/api/clinic-settings.api'
 
 export function NotificationsTab() {
-  const { clinicId } = useParams({ from: '/clinic/settings' })
+  const clinicId = tokenService.getUser()?.activeClinic?.id ?? ''
 
   const [notifications, setNotifications] = useState<NotificationSettings>({
     newBooking: true,

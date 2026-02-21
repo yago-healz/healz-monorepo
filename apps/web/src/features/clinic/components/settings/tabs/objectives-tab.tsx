@@ -3,7 +3,7 @@ import { GripVertical, DollarSign, Users, Zap, CalendarX, Phone, Calendar, UserP
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useClinicObjectives, useSaveClinicObjectives } from '@/features/clinic/api/clinic-settings.api'
-import { useParams } from '@tanstack/react-router'
+import { tokenService } from '@/services/token.service'
 import type { Priority, PainPoint } from '@/types/onboarding'
 
 const DEFAULT_PRIORITIES: Priority[] = [
@@ -59,8 +59,7 @@ const DEFAULT_PAIN_POINTS: PainPoint[] = [
 ]
 
 export function ObjectivesTab() {
-  // Get clinic ID from route params
-  const { clinicId } = useParams({ from: '/clinic/settings' })
+  const clinicId = tokenService.getUser()?.activeClinic?.id ?? ''
 
   // State
   const [priorities, setPriorities] = useState<Priority[]>(DEFAULT_PRIORITIES)

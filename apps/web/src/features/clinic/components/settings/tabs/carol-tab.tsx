@@ -6,13 +6,13 @@ import { Switch } from '@/components/ui/switch'
 import { MessageSquare, Ban, GitBranch, Heart, Loader2 } from 'lucide-react'
 import { PERSONALITY_TRAITS } from '@/types/onboarding'
 import { useClinicCarolSettings, useSaveClinicCarolSettings } from '@/features/clinic/api/clinic-settings.api'
-import { useParams } from '@tanstack/react-router'
+import { tokenService } from '@/services/token.service'
 
 const DEFAULT_GREETING =
   "Olá! Sou a Carol, sua assistente virtual. Estou aqui para ajudá-lo a agendar consultas, responder perguntas sobre nossos serviços ou encaminhá-lo para um especialista. Como posso ajudá-lo hoje?"
 
 export function CarolTab() {
-  const { clinicId } = useParams({ from: '/clinic/settings' })
+  const clinicId = tokenService.getUser()?.activeClinic?.id ?? ''
 
   const [selectedTraits, setSelectedTraits] = useState<string[]>(['welcoming', 'empathetic'])
   const [greeting, setGreeting] = useState(DEFAULT_GREETING)

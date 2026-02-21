@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useClinicServices, useSaveClinicServices } from '@/features/clinic/api/clinic-settings.api'
-import { useParams } from '@tanstack/react-router'
+import { tokenService } from '@/services/token.service'
 import type { Service } from '@/types/onboarding'
 
 const DEFAULT_SERVICES: Service[] = [
@@ -39,7 +39,7 @@ const DEFAULT_SERVICES: Service[] = [
 ]
 
 export function ServicesTab() {
-  const { clinicId } = useParams({ from: '/clinic/settings' })
+  const clinicId = tokenService.getUser()?.activeClinic?.id ?? ''
 
   const [services, setServices] = useState<Service[]>(DEFAULT_SERVICES)
   const [expandedNotes, setExpandedNotes] = useState<string[]>(['procedures'])
