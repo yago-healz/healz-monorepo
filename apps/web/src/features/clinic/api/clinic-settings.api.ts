@@ -27,7 +27,7 @@ export interface ClinicObjectivesResponse {
 export const useClinicObjectives = (clinicId: string) => {
   return useQuery({
     queryKey: ['clinic', clinicId, 'settings', 'objectives'],
-    queryFn: async (): Promise<ClinicObjectivesResponse> => {
+    queryFn: async (): Promise<ClinicObjectivesResponse | null> => {
       const response = await api.get(
         CLINIC_SETTINGS_ENDPOINTS.OBJECTIVES(clinicId)
       )
@@ -79,7 +79,7 @@ export interface ClinicServicesResponse {
 export const useClinicServices = (clinicId: string) => {
   return useQuery({
     queryKey: ['clinic', clinicId, 'settings', 'services'],
-    queryFn: async (): Promise<ClinicServicesResponse> => {
+    queryFn: async (): Promise<ClinicServicesResponse | null> => {
       const response = await api.get(
         CLINIC_SETTINGS_ENDPOINTS.SERVICES(clinicId)
       )
@@ -128,7 +128,7 @@ export interface ClinicSchedulingResponse {
 export const useClinicScheduling = (clinicId: string) => {
   return useQuery({
     queryKey: ['clinic', clinicId, 'settings', 'scheduling'],
-    queryFn: async (): Promise<ClinicSchedulingResponse> => {
+    queryFn: async (): Promise<ClinicSchedulingResponse | null> => {
       const response = await api.get(
         CLINIC_SETTINGS_ENDPOINTS.SCHEDULING(clinicId)
       )
@@ -181,7 +181,7 @@ export interface ClinicCarolSettingsResponse {
 export const useClinicCarolSettings = (clinicId: string) => {
   return useQuery({
     queryKey: ['clinic', clinicId, 'settings', 'carol'],
-    queryFn: async (): Promise<ClinicCarolSettingsResponse> => {
+    queryFn: async (): Promise<ClinicCarolSettingsResponse | null> => {
       const response = await api.get(CLINIC_SETTINGS_ENDPOINTS.CAROL(clinicId))
       return response.data
     },
@@ -233,7 +233,7 @@ export interface ClinicNotificationsResponse {
 export const useClinicNotifications = (clinicId: string) => {
   return useQuery({
     queryKey: ['clinic', clinicId, 'settings', 'notifications'],
-    queryFn: async (): Promise<ClinicNotificationsResponse> => {
+    queryFn: async (): Promise<ClinicNotificationsResponse | null> => {
       const response = await api.get(
         CLINIC_SETTINGS_ENDPOINTS.NOTIFICATIONS(clinicId)
       )

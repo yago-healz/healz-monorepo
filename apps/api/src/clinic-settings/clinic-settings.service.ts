@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { db } from '../db'
 import { eq } from 'drizzle-orm'
 import {
@@ -24,13 +24,7 @@ export class ClinicSettingsService {
       .where(eq(clinicObjectives.clinicId, clinicId))
       .limit(1)
 
-    if (!result.length) {
-      throw new NotFoundException(
-        'Configurações de objetivos não encontradas para esta clínica'
-      )
-    }
-
-    return result[0]
+    return result[0] ?? null
   }
 
   async saveObjectives(clinicId: string, dto: ClinicObjectivesDto) {
@@ -79,13 +73,7 @@ export class ClinicSettingsService {
       .where(eq(clinicServices.clinicId, clinicId))
       .limit(1)
 
-    if (!result.length) {
-      throw new NotFoundException(
-        'Configurações de serviços não encontradas para esta clínica'
-      )
-    }
-
-    return result[0]
+    return result[0] ?? null
   }
 
   async saveServices(clinicId: string, dto: ClinicServicesDto) {
@@ -127,13 +115,7 @@ export class ClinicSettingsService {
       .where(eq(clinicScheduling.clinicId, clinicId))
       .limit(1)
 
-    if (!result.length) {
-      throw new NotFoundException(
-        'Configurações de agendamento não encontradas para esta clínica'
-      )
-    }
-
-    return result[0]
+    return result[0] ?? null
   }
 
   async saveScheduling(clinicId: string, dto: ClinicSchedulingDto) {
@@ -177,13 +159,7 @@ export class ClinicSettingsService {
       .where(eq(clinicCarolSettings.clinicId, clinicId))
       .limit(1)
 
-    if (!result.length) {
-      throw new NotFoundException(
-        'Configurações do Carol não encontradas para esta clínica'
-      )
-    }
-
-    return result[0]
+    return result[0] ?? null
   }
 
   async saveCarolSettings(clinicId: string, dto: ClinicCarolSettingsDto) {
@@ -229,13 +205,7 @@ export class ClinicSettingsService {
       .where(eq(clinicNotifications.clinicId, clinicId))
       .limit(1)
 
-    if (!result.length) {
-      throw new NotFoundException(
-        'Configurações de notificações não encontradas para esta clínica'
-      )
-    }
-
-    return result[0]
+    return result[0] ?? null
   }
 
   async saveNotifications(clinicId: string, dto: ClinicNotificationsDto) {
