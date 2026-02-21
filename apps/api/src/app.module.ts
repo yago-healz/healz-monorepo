@@ -7,6 +7,7 @@ import { AuditInterceptor } from "./audit/audit.interceptor";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
 import { CarolModule } from "./carol/carol.module";
+import { ClinicSettingsModule } from "./clinic-settings/clinic-settings.module";
 import { ClinicsModule } from "./clinics/clinics.module";
 import { ConversationModule } from "./conversation/conversation.module";
 import { RlsMiddleware } from "./db/middleware";
@@ -55,6 +56,7 @@ import { SignupModule } from "./signup/signup.module";
     InvitesModule,
     OrganizationsModule,
     ClinicsModule,
+    ClinicSettingsModule,
     PlatformAdminModule,
   ],
   controllers: [HealthController],
