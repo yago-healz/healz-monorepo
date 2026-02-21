@@ -6,6 +6,20 @@ import { useClinicObjectives, useSaveClinicObjectives } from '@/features/clinic/
 import { tokenService } from '@/services/token.service'
 import type { Priority, PainPoint } from '@/types/onboarding'
 
+// Icon maps for rendering without serializing
+const PRIORITY_ICON_MAP: Record<string, React.ReactNode> = {
+  revenue: <DollarSign className="w-5 h-5" />,
+  retention: <Users className="w-5 h-5" />,
+  efficiency: <Zap className="w-5 h-5" />,
+}
+
+const PAIN_POINT_ICON_MAP: Record<string, React.ReactNode> = {
+  'no-shows': <CalendarX className="w-5 h-5" />,
+  'follow-ups': <Phone className="w-5 h-5" />,
+  conflicts: <Calendar className="w-5 h-5" />,
+  intake: <UserPlus className="w-5 h-5" />,
+}
+
 const DEFAULT_PRIORITIES: Priority[] = [
   {
     id: 'revenue',
@@ -74,8 +88,22 @@ export function ObjectivesTab() {
   // Load saved data when component mounts or data changes
   useEffect(() => {
     if (savedData) {
-      setPriorities(savedData.priorities.length > 0 ? savedData.priorities : DEFAULT_PRIORITIES)
-      setPainPoints(savedData.painPoints.length > 0 ? savedData.painPoints : DEFAULT_PAIN_POINTS)
+      const loadedPriorities = savedData.priorities.length > 0
+        ? savedData.priorities.map(p => ({
+            ...p,
+            icon: PRIORITY_ICON_MAP[p.id] ?? null,
+          }))
+        : DEFAULT_PRIORITIES
+
+      const loadedPainPoints = savedData.painPoints.length > 0
+        ? savedData.painPoints.map(p => ({
+            ...p,
+            icon: PAIN_POINT_ICON_MAP[p.id] ?? null,
+          }))
+        : DEFAULT_PAIN_POINTS
+
+      setPriorities(loadedPriorities)
+      setPainPoints(loadedPainPoints)
       setAdditionalNotes(savedData.additionalNotes || '')
     }
   }, [savedData])
@@ -113,8 +141,8 @@ export function ObjectivesTab() {
   // Save handler
   const handleSave = async () => {
     saveObjectives({
-      priorities,
-      painPoints,
+      priorities: priorities.map(({ icon: _icon, ...rest }) => rest),
+      painPoints: painPoints.map(({ icon: _icon, ...rest }) => rest),
       additionalNotes,
     })
   }
