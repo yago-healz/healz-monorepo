@@ -9,20 +9,20 @@ export function ObjectivesTab() {
   const [priorities, setPriorities] = useState<Priority[]>([
     {
       id: 'revenue',
-      title: 'Increase Revenue',
-      description: 'Focus on high-value procedures and billing efficiency',
+      title: 'Aumentar Receita',
+      description: 'Foque em procedimentos de alto valor e eficiência de faturamento',
       icon: <DollarSign className="w-5 h-5" />,
     },
     {
       id: 'retention',
-      title: 'Patient Retention',
-      description: 'Improve follow-ups and long-term care engagement',
+      title: 'Retenção de Pacientes',
+      description: 'Melhore o acompanhamento e engajamento em cuidados de longo prazo',
       icon: <Users className="w-5 h-5" />,
     },
     {
       id: 'efficiency',
-      title: 'Operational Efficiency',
-      description: 'Reduce time spent on administrative scheduling',
+      title: 'Eficiência Operacional',
+      description: 'Reduza o tempo gasto em agendamento administrativo',
       icon: <Zap className="w-5 h-5" />,
     },
   ])
@@ -30,29 +30,29 @@ export function ObjectivesTab() {
   const [painPoints, setPainPoints] = useState<PainPoint[]>([
     {
       id: 'no-shows',
-      title: 'Patient No-shows',
-      description: 'Missed appointments affecting revenue',
+      title: 'Pacientes que não comparecem',
+      description: 'Agendamentos perdidos afetando receita',
       icon: <CalendarX className="w-5 h-5" />,
       selected: true,
     },
     {
       id: 'follow-ups',
-      title: 'Manual Follow-ups',
-      description: 'Staff spends hours on WhatsApp/Phone',
+      title: 'Acompanhamentos Manuais',
+      description: 'A equipe gasta horas no WhatsApp/Telefone',
       icon: <Phone className="w-5 h-5" />,
       selected: false,
     },
     {
       id: 'conflicts',
-      title: 'Booking Conflicts',
-      description: 'Double-bookings or calendar syncing issues',
+      title: 'Conflitos de Agendamento',
+      description: 'Agendamentos duplos ou problemas de sincronização de calendário',
       icon: <Calendar className="w-5 h-5" />,
       selected: false,
     },
     {
       id: 'intake',
-      title: 'Intake Friction',
-      description: 'Slow process for onboarding new patients',
+      title: 'Fricção na Admissão',
+      description: 'Processo lento para integração de novos pacientes',
       icon: <UserPlus className="w-5 h-5" />,
       selected: false,
     },
@@ -94,10 +94,10 @@ export function ObjectivesTab() {
       {/* Rank Priorities Section */}
       <section>
         <h2 className="text-lg font-semibold text-foreground mb-1">
-          Rank your priorities
+          Classifique suas prioridades
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Drag items to reorder by importance
+          Arraste itens para reordenar por importância
         </p>
 
         <div className="space-y-3">
@@ -129,10 +129,10 @@ export function ObjectivesTab() {
       {/* Pain Points Section */}
       <section>
         <h2 className="text-lg font-semibold text-foreground mb-1">
-          Operation pain points
+          Pontos de dor operacional
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Select the bottlenecks Carol should tackle first
+          Selecione os gargalos que Carol deve resolver primeiro
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -170,10 +170,10 @@ export function ObjectivesTab() {
       {/* Additional Notes Section */}
       <section>
         <h2 className="text-lg font-semibold text-foreground mb-2">
-          Anything else we should know?
+          Tem mais algo que devemos saber?
         </h2>
         <Textarea
-          placeholder="Tell us more about your daily routine or specific challenges..."
+          placeholder="Nos diga mais sobre sua rotina diária ou desafios específicos..."
           value={additionalNotes}
           onChange={(e) => setAdditionalNotes(e.target.value)}
           className="min-h-[100px] resize-none"

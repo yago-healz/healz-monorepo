@@ -22,7 +22,7 @@ export function NotificationsTab() {
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Bell className="w-5 h-5 text-pink-500" />
-              <h2 className="font-semibold text-foreground">Notify me when...</h2>
+              <h2 className="font-semibold text-foreground">Notifique-me quando...</h2>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <label className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
@@ -33,7 +33,7 @@ export function NotificationsTab() {
                   }
                   className="data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500"
                 />
-                <span className="text-sm text-foreground">New booking</span>
+                <span className="text-sm text-foreground">Novo agendamento</span>
               </label>
               <label className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                 <Checkbox
@@ -43,7 +43,7 @@ export function NotificationsTab() {
                   }
                   className="data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500"
                 />
-                <span className="text-sm text-foreground">Risk of loss</span>
+                <span className="text-sm text-foreground">Risco de perda</span>
               </label>
             </div>
           </div>
@@ -52,7 +52,7 @@ export function NotificationsTab() {
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Send className="w-5 h-5 text-pink-500" />
-              <h2 className="font-semibold text-foreground">Receive alerts via...</h2>
+              <h2 className="font-semibold text-foreground">Receber alertas via...</h2>
             </div>
             <div className="inline-flex rounded-lg border border-border overflow-hidden">
               <button
@@ -81,7 +81,7 @@ export function NotificationsTab() {
           {/* Phone Number Input */}
           <div>
             <label className="text-sm text-muted-foreground mb-2 block">
-              Destination Phone Number
+              Número de Telefone de Destino
             </label>
             <div className="flex border border-border rounded-lg overflow-hidden">
               <div className="px-4 py-3 bg-gray-50 border-r border-border text-sm text-muted-foreground">
@@ -96,7 +96,7 @@ export function NotificationsTab() {
               />
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              Carol will send automated alerts to this number.
+              Carol enviará alertas automatizados para este número.
             </p>
           </div>
         </CardContent>

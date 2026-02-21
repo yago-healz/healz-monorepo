@@ -9,7 +9,7 @@ import { PERSONALITY_TRAITS } from '@/types/onboarding'
 export function CarolTab() {
   const [selectedTraits, setSelectedTraits] = useState<string[]>(['welcoming', 'empathetic'])
   const [greeting, setGreeting] = useState(
-    "Hi! I'm Carol, your virtual assistant. I'm here to help you schedule appointments, answer questions about our services, or route you to a specialist. How can I help you today?"
+    "Olá! Sou a Carol, sua assistente virtual. Estou aqui para ajudá-lo a agendar consultas, responder perguntas sobre nossos serviços ou encaminhá-lo para um especialista. Como posso ajudá-lo hoje?"
   )
   const [restrictSensitiveTopics, setRestrictSensitiveTopics] = useState(true)
 
@@ -26,10 +26,10 @@ export function CarolTab() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 mb-3">
             <Heart className="w-5 h-5 text-pink-500" />
-            <h2 className="font-semibold text-foreground">Personality</h2>
+            <h2 className="font-semibold text-foreground">Personalidade</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Select the adjectives that best describe how Carol should speak to patients.
+            Selecione os adjetivos que melhor descrevem como Carol deve falar com os pacientes.
           </p>
           <div className="grid grid-cols-3 gap-3">
             {PERSONALITY_TRAITS.map((trait) => (
@@ -54,17 +54,17 @@ export function CarolTab() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 mb-3">
             <MessageSquare className="w-5 h-5 text-pink-500" />
-            <h2 className="font-semibold text-foreground">Initial Greeting</h2>
+            <h2 className="font-semibold text-foreground">Saudação Inicial</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            How Carol introduces herself
+            Como Carol se apresenta
           </p>
           <div className="bg-gray-100 rounded-lg p-4">
             <Textarea
               value={greeting}
               onChange={(e) => setGreeting(e.target.value)}
               className="min-h-24 bg-transparent border-none resize-none focus-visible:ring-0 text-foreground"
-              placeholder="Enter Carol's greeting message..."
+              placeholder="Digite a mensagem de saudação de Carol..."
             />
           </div>
         </CardContent>
@@ -78,9 +78,9 @@ export function CarolTab() {
             <div className="flex items-start gap-3">
               <Ban className="w-5 h-5 text-pink-500 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-foreground">Restrict Sensitive Topics</h3>
+                <h3 className="font-semibold text-foreground">Restringir Tópicos Sensíveis</h3>
                 <p className="text-sm text-muted-foreground">
-                  Should Carol avoid discussing medical diagnoses or billing?
+                  Carol deve evitar discutir diagnósticos médicos ou faturamento?
                 </p>
               </div>
             </div>
@@ -95,19 +95,19 @@ export function CarolTab() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <GitBranch className="w-5 h-5 text-pink-500" />
-              <h3 className="font-semibold text-foreground">Routing Rules</h3>
+              <h3 className="font-semibold text-foreground">Regras de Roteamento</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Define when Carol should hand over to a human agent
+              Defina quando Carol deve transferir para um agente humano
             </p>
             <div className="bg-gray-100 rounded-lg p-4">
               <p className="text-sm text-foreground font-medium mb-2">
-                Transfer to a human agent if:
+                Transferir para um agente humano se:
               </p>
               <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                <li>Patient expresses high levels of distress.</li>
-                <li>Specifically mentions an urgent medical emergency.</li>
-                <li>Asks for a human operator more than twice.</li>
+                <li>O paciente expressa altos níveis de angústia.</li>
+                <li>Menciona especificamente uma emergência médica urgente.</li>
+                <li>Pede um operador humano mais de duas vezes.</li>
               </ol>
             </div>
           </div>

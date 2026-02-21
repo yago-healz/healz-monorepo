@@ -30,7 +30,7 @@ export function SchedulingTab() {
         <div className="flex items-center gap-2 mb-6">
           <Calendar className="w-5 h-5 text-pink-500" />
           <h2 className="text-lg font-semibold text-foreground">
-            Schedule Rules
+            Regras de Agendamento
           </h2>
         </div>
 
@@ -38,9 +38,9 @@ export function SchedulingTab() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Blocked Times */}
             <div>
-              <h3 className="font-semibold text-foreground mb-1">Blocked Times</h3>
+              <h3 className="font-semibold text-foreground mb-1">Horários Bloqueados</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Times when Carol should never book appointments (e.g., Lunch, Admin work).
+                Horários quando Carol nunca deve agendar consultas (ex. Almoço, Trabalho administrativo).
               </p>
 
               {timeBlocks.map((block) => (
@@ -52,7 +52,7 @@ export function SchedulingTab() {
                       onChange={(e) => updateTimeBlock(block.id, 'from', e.target.value)}
                       className="w-24"
                     />
-                    <span className="text-muted-foreground text-sm">to</span>
+                    <span className="text-muted-foreground text-sm">até</span>
                     <Input
                       type="time"
                       value={block.to}
@@ -76,15 +76,15 @@ export function SchedulingTab() {
                 className="flex items-center gap-1 text-pink-500 text-sm hover:text-pink-600 transition-colors mt-2"
               >
                 <Plus className="w-4 h-4" />
-                Add time block
+                Adicionar bloco de tempo
               </button>
             </div>
 
             {/* Minimum Intervals */}
             <div>
-              <h3 className="font-semibold text-foreground mb-1">Minimum Intervals</h3>
+              <h3 className="font-semibold text-foreground mb-1">Intervalos Mínimos</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Buffer time Carol should keep between different patient visits.
+                Tempo de espera que Carol deve manter entre diferentes visitas de pacientes.
               </p>
 
               <div className="flex items-center justify-center gap-4 py-4">
@@ -99,7 +99,7 @@ export function SchedulingTab() {
                 <div className="text-center">
                   <span className="text-4xl font-bold text-pink-500">{minimumInterval}</span>
                   <p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">
-                    Minutes
+                    Minutos
                   </p>
                 </div>
                 <Button

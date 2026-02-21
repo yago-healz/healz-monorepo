@@ -109,10 +109,10 @@ export interface OnboardingContextType {
 
 // Personality traits constant
 export const PERSONALITY_TRAITS: PersonalityTrait[] = [
-  { id: 'welcoming', label: 'Welcoming' },
-  { id: 'professional', label: 'Professional' },
-  { id: 'empathetic', label: 'Empathetic' },
-  { id: 'direct', label: 'Direct' },
-  { id: 'cheerful', label: 'Cheerful' },
-  { id: 'calm', label: 'Calm' },
+  { id: 'welcoming', label: 'Acolhedor' },
+  { id: 'professional', label: 'Profissional' },
+  { id: 'empathetic', label: 'Empático' },
+  { id: 'direct', label: 'Direto' },
+  { id: 'cheerful', label: 'Alegre' },
+  { id: 'calm', label: 'Calmo' },
 ]

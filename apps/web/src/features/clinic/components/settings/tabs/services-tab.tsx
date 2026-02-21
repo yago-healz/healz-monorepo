@@ -15,25 +15,25 @@ export function ServicesTab() {
   const [services, setServices] = useState<Service[]>([
     {
       id: 'initial',
-      title: 'Initial Consultation',
-      description: 'First contact with new patients',
+      title: 'Consulta Inicial',
+      description: 'Primeiro contato com novos pacientes',
       duration: '45',
       value: '350.00',
     },
     {
       id: 'return',
-      title: 'Return',
-      description: 'Follow-up within 30 days',
+      title: 'Retorno',
+      description: 'Acompanhamento em até 30 dias',
       duration: '20',
       value: '0.00',
     },
     {
       id: 'procedures',
-      title: 'Procedures',
-      description: 'Exams and minor interventions',
+      title: 'Procedimentos',
+      description: 'Exames e pequenas intervenções',
       duration: '120',
       value: '800.00',
-      note: 'Patients should be advised to arrive 15 minutes early for paperwork.',
+      note: 'Os pacientes devem ser aconselhados a chegar 15 minutos mais cedo para preencher formulários.',
     },
   ])
 
@@ -59,7 +59,7 @@ export function ServicesTab() {
         <div className="flex items-center gap-2 mb-6">
           <Briefcase className="w-5 h-5 text-pink-500" />
           <h2 className="text-lg font-semibold text-foreground">
-            Services & Procedures
+            Serviços e Procedimentos
           </h2>
         </div>
 
@@ -77,7 +77,7 @@ export function ServicesTab() {
                 <div className="flex gap-4">
                   <div>
                     <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                      Duration (min)
+                      Duração (min)
                     </label>
                     <Select
                       value={service.duration}
@@ -114,7 +114,7 @@ export function ServicesTab() {
               {expandedNotes.includes(service.id) && service.note ? (
                 <div className="mt-4 p-4 bg-pink-50 rounded-lg">
                   <p className="text-xs text-pink-500 uppercase tracking-wide mb-1">
-                    Note for Carol:
+                    Nota para Carol:
                   </p>
                   <p className="text-sm text-foreground">{service.note}</p>
                 </div>
@@ -124,7 +124,7 @@ export function ServicesTab() {
                   className="mt-4 flex items-center gap-1 text-pink-500 text-sm hover:text-pink-600 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  Add internal notes for Carol
+                  Adicionar notas internas para Carol
                 </button>
               )}
             </div>
