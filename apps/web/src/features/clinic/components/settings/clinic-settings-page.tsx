@@ -1,6 +1,11 @@
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
+import { ObjectivesTab } from './tabs/objectives-tab'
+import { ServicesTab } from './tabs/services-tab'
+import { SchedulingTab } from './tabs/scheduling-tab'
+import { CarolTab } from './tabs/carol-tab'
+import { NotificationsTab } from './tabs/notifications-tab'
 
 const tabs = [
   { id: 'geral', label: 'Geral' },
@@ -58,7 +63,13 @@ export function ClinicSettingsPage() {
         </nav>
 
         <div className="flex-1 min-w-0">
-          <PlaceholderTab name={tabs.find(t => t.id === activeTab)?.label ?? ''} />
+          {activeTab === 'geral' && <PlaceholderTab name="Geral" />}
+          {activeTab === 'objetivos' && <ObjectivesTab />}
+          {activeTab === 'servicos' && <ServicesTab />}
+          {activeTab === 'agendamentos' && <SchedulingTab />}
+          {activeTab === 'carol' && <CarolTab />}
+          {activeTab === 'notificacoes' && <NotificationsTab />}
+          {activeTab === 'conectores' && <PlaceholderTab name="Conectores" />}
         </div>
       </div>
     </div>
