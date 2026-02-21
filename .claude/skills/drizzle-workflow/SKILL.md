@@ -1,3 +1,11 @@
+---
+name: drizzle-workflow
+description: Skill for working with Drizzle ORM using the generate + migrate workflow (recommended for development and production). Provides commands, best practices, troubleshooting, and configuration guides.
+metadata:
+  author: yago
+  version: "1.0.0"
+---
+
 # Drizzle ORM - Migration Workflow
 
 Skill for working with Drizzle ORM using the **generate + migrate** workflow (recommended for development and production).
