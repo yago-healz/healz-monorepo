@@ -29,6 +29,7 @@ import { Route as PublicOnboardingStep2RouteImport } from './routes/_public/onbo
 import { Route as PublicOnboardingStep1RouteImport } from './routes/_public/onboarding/step-1'
 import { Route as PublicOnboardingReviewRouteImport } from './routes/_public/onboarding/review'
 import { Route as PublicOnboardingCompleteRouteImport } from './routes/_public/onboarding/complete'
+import { Route as AuthenticatedClinicMembersRouteImport } from './routes/_authenticated/clinic/members'
 import { Route as AuthenticatedAdminUsersIndexRouteImport } from './routes/_authenticated/admin/users/index'
 import { Route as AuthenticatedAdminOrganizationsIndexRouteImport } from './routes/_authenticated/admin/organizations/index'
 import { Route as AuthenticatedAdminClinicsIndexRouteImport } from './routes/_authenticated/admin/clinics/index'
@@ -140,6 +141,12 @@ const PublicOnboardingCompleteRoute =
     path: '/onboarding/complete',
     getParentRoute: () => PublicRoute,
   } as any)
+const AuthenticatedClinicMembersRoute =
+  AuthenticatedClinicMembersRouteImport.update({
+    id: '/members',
+    path: '/members',
+    getParentRoute: () => AuthenticatedClinicRoute,
+  } as any)
 const AuthenticatedAdminUsersIndexRoute =
   AuthenticatedAdminUsersIndexRouteImport.update({
     id: '/users/',
@@ -210,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof PublicLoginRoute
   '/reset-password': typeof PublicResetPasswordRoute
   '/verify-email': typeof PublicVerifyEmailRoute
+  '/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/onboarding/complete': typeof PublicOnboardingCompleteRoute
   '/onboarding/review': typeof PublicOnboardingReviewRoute
   '/onboarding/step-1': typeof PublicOnboardingStep1Route
@@ -238,6 +246,7 @@ export interface FileRoutesByTo {
   '/login': typeof PublicLoginRoute
   '/reset-password': typeof PublicResetPasswordRoute
   '/verify-email': typeof PublicVerifyEmailRoute
+  '/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/onboarding/complete': typeof PublicOnboardingCompleteRoute
   '/onboarding/review': typeof PublicOnboardingReviewRoute
   '/onboarding/step-1': typeof PublicOnboardingStep1Route
@@ -271,6 +280,7 @@ export interface FileRoutesById {
   '/_public/login': typeof PublicLoginRoute
   '/_public/reset-password': typeof PublicResetPasswordRoute
   '/_public/verify-email': typeof PublicVerifyEmailRoute
+  '/_authenticated/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/_public/onboarding/complete': typeof PublicOnboardingCompleteRoute
   '/_public/onboarding/review': typeof PublicOnboardingReviewRoute
   '/_public/onboarding/step-1': typeof PublicOnboardingStep1Route
@@ -303,6 +313,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/verify-email'
+    | '/clinic/members'
     | '/onboarding/complete'
     | '/onboarding/review'
     | '/onboarding/step-1'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/verify-email'
+    | '/clinic/members'
     | '/onboarding/complete'
     | '/onboarding/review'
     | '/onboarding/step-1'
@@ -363,6 +375,7 @@ export interface FileRouteTypes {
     | '/_public/login'
     | '/_public/reset-password'
     | '/_public/verify-email'
+    | '/_authenticated/clinic/members'
     | '/_public/onboarding/complete'
     | '/_public/onboarding/review'
     | '/_public/onboarding/step-1'
@@ -533,6 +546,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicOnboardingCompleteRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_authenticated/clinic/members': {
+      id: '/_authenticated/clinic/members'
+      path: '/members'
+      fullPath: '/clinic/members'
+      preLoaderRoute: typeof AuthenticatedClinicMembersRouteImport
+      parentRoute: typeof AuthenticatedClinicRoute
+    }
     '/_authenticated/admin/users/': {
       id: '/_authenticated/admin/users/'
       path: '/users'
@@ -641,10 +661,12 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedClinicRouteChildren {
+  AuthenticatedClinicMembersRoute: typeof AuthenticatedClinicMembersRoute
   AuthenticatedClinicIndexRoute: typeof AuthenticatedClinicIndexRoute
 }
 
 const AuthenticatedClinicRouteChildren: AuthenticatedClinicRouteChildren = {
+  AuthenticatedClinicMembersRoute: AuthenticatedClinicMembersRoute,
   AuthenticatedClinicIndexRoute: AuthenticatedClinicIndexRoute,
 }
 

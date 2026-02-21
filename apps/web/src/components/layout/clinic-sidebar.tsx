@@ -32,9 +32,9 @@ const navigation = [
         href: '/clinic',
       },
       {
-        title: 'Pacientes',
+        title: 'Membros',
         icon: Users,
-        href: '/clinic/patients',
+        href: '/clinic/members',
       },
       {
         title: 'Agenda',
