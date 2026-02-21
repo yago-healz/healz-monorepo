@@ -6,7 +6,8 @@ export const Route = createFileRoute('/_public')({
   beforeLoad: () => {
     // Redirect to dashboard if already authenticated
     if (tokenService.hasValidToken()) {
-      throw redirect({ to: '/admin' })
+      const user = tokenService.getUser()
+      throw redirect({ to: user?.activeClinic ? '/clinic' : '/admin' })
     }
   },
   component: PublicLayout,

@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useLoginMutation } from '../api/mutations'
+import { tokenService } from '@/services/token.service'
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -41,8 +42,8 @@ export function LoginForm() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await loginMutation.mutateAsync(data)
-      // TODO: Redirect to /platform-admin when route is created (Phase 4)
-      navigate({ to: '/' })
+      const user = tokenService.getUser()
+      navigate({ to: user?.activeClinic ? '/clinic' : '/admin' })
     } catch (error) {
       // Error already handled by mutation
     }

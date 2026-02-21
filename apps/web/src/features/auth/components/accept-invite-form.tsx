@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAcceptInviteMutation } from '../api/mutations'
+import { tokenService } from '@/services/token.service'
 
 const acceptInviteSchema = z.object({
   password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
@@ -36,8 +37,9 @@ export function AcceptInviteForm({ token }: { token: string }) {
         token,
         password: data.password,
       })
-      // Auto-login successful - redirect to dashboard
-      navigate({ to: '/' })
+      // Auto-login successful - redirect to role-appropriate dashboard
+      const user = tokenService.getUser()
+      navigate({ to: user?.activeClinic ? '/clinic' : '/admin' })
     } catch (error) {
       // Error already handled by mutation (toast shown)
     }
