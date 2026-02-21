@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "skills": {
+    "coding-guidelines": {
+      "name": "coding-guidelines",
+      "source": "local",
+      "contentHash": "7d98273930ef3622d6d5339403860722a26e5de91fdcf9d96738618aedd82c10",
+      "installedAt": "2026-02-21T20:28:04.508Z",
+      "updatedAt": "2026-02-21T20:28:04.520Z",
+      "agents": [
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    },
+    "skill-creator": {
+      "name": "skill-creator",
+      "source": "local",
+      "contentHash": "5630765536263e907d31eec2d2c99d2ed87100add353e14b3bc269d0e1eb2d51",
+      "installedAt": "2026-02-21T20:30:45.490Z",
+      "updatedAt": "2026-02-21T20:30:45.498Z",
+      "agents": [
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    },
+    "docs-writer": {
+      "name": "docs-writer",
+      "source": "local",
+      "contentHash": "f8327ca0ba45f57625f26ed23d8d013717640b68379f027a59f6337f489960f0",
+      "installedAt": "2026-02-21T20:31:22.568Z",
+      "updatedAt": "2026-02-21T20:31:22.579Z",
+      "agents": [
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    },
+    "domain-analysis": {
+      "name": "domain-analysis",
+      "source": "local",
+      "contentHash": "f6599c3326d844615e13464a77c28e28f63787b1eeef1eb1cf8cd8615473c884",
+      "installedAt": "2026-02-21T20:34:36.893Z",
+      "updatedAt": "2026-02-21T20:34:36.897Z",
+      "agents": [
+        "claude-code"
+      ],
+      "method": "copy",
+      "global": false
+    }
+  }
+}
