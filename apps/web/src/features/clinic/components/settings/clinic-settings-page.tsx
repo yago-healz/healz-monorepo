@@ -6,6 +6,7 @@ import { ServicesTab } from './tabs/services-tab'
 import { SchedulingTab } from './tabs/scheduling-tab'
 import { CarolTab } from './tabs/carol-tab'
 import { NotificationsTab } from './tabs/notifications-tab'
+import { ConnectorsTab } from './tabs/connectors-tab'
 
 const tabs = [
   { id: 'geral', label: 'Geral' },
@@ -69,7 +70,7 @@ export function ClinicSettingsPage() {
           {activeTab === 'agendamentos' && <SchedulingTab />}
           {activeTab === 'carol' && <CarolTab />}
           {activeTab === 'notificacoes' && <NotificationsTab />}
-          {activeTab === 'conectores' && <PlaceholderTab name="Conectores" />}
+          {activeTab === 'conectores' && <ConnectorsTab />}
         </div>
       </div>
     </div>

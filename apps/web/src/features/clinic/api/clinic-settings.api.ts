@@ -269,3 +269,48 @@ export const useSaveClinicNotifications = (clinicId: string) => {
     },
   })
 }
+
+// ============================================
+// CONNECTORS
+// ============================================
+
+export interface ConnectorStatus {
+  googleCalendar: boolean
+  whatsapp: boolean
+}
+
+export const useClinicConnectors = (clinicId: string) => {
+  return useQuery({
+    queryKey: ['clinic', clinicId, 'settings', 'connectors'],
+    queryFn: async (): Promise<ConnectorStatus | null> => {
+      const response = await api.get(
+        CLINIC_SETTINGS_ENDPOINTS.CONNECTORS(clinicId)
+      )
+      return response.data
+    },
+    enabled: !!clinicId,
+  })
+}
+
+export const useSaveClinicConnectors = (clinicId: string) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (payload: ConnectorStatus) => {
+      const response = await api.patch(
+        CLINIC_SETTINGS_ENDPOINTS.CONNECTORS(clinicId),
+        payload
+      )
+      return response.data as ConnectorStatus
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['clinic', clinicId, 'settings', 'connectors'],
+      })
+      toast.success('Conectores atualizados com sucesso!')
+    },
+    onError: () => {
+      toast.error('Erro ao atualizar conectores. Tente novamente.')
+    },
+  })
+}
