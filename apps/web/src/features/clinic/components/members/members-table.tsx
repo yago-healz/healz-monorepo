@@ -1,9 +1,6 @@
-import { useState } from 'react'
-import { MoreHorizontal, ShieldCheck, UserCheck, Hourglass } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { MoreHorizontal } from 'lucide-react'
+import { useState } from 'react'
 
 const mockMembers = [
   { id: '1', name: 'Ana Silva', email: 'ana.silva@clinica.com', role: 'Dono', status: 'active' },
@@ -135,47 +134,6 @@ export function MembersTable() {
             ))}
           </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="flex items-start gap-4 pt-6">
-            <ShieldCheck className="mt-0.5 h-5 w-5 text-muted-foreground shrink-0" />
-            <div>
-              <p className="text-2xl font-bold">02</p>
-              <p className="font-medium">Administradores</p>
-              <p className="text-sm text-muted-foreground">
-                Permissão total para gerenciar clínica e equipe.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-start gap-4 pt-6">
-            <UserCheck className="mt-0.5 h-5 w-5 text-muted-foreground shrink-0" />
-            <div>
-              <p className="text-2xl font-bold">18</p>
-              <p className="font-medium">Colaboradores</p>
-              <p className="text-sm text-muted-foreground">
-                Podem gerenciar pacientes e agendamentos.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-start gap-4 pt-6">
-            <Hourglass className="mt-0.5 h-5 w-5 text-muted-foreground shrink-0" />
-            <div>
-              <p className="text-2xl font-bold">04</p>
-              <p className="font-medium">Convites Pendentes</p>
-              <p className="text-sm text-muted-foreground">
-                Aguardando aceitação de convite via email.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

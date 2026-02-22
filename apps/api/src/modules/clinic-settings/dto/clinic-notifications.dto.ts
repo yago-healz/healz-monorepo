@@ -1,4 +1,4 @@
-import { IsObject, IsString, IsOptional } from 'class-validator'
+import { IsObject, IsArray, IsIn, IsOptional, IsString } from 'class-validator'
 
 export interface NotificationSettings {
   newBooking: boolean
@@ -9,20 +9,22 @@ export class ClinicNotificationsDto {
   @IsObject()
   notificationSettings: NotificationSettings
 
-  @IsString()
-  alertChannel: 'whatsapp' | 'email'
+  @IsArray()
+  @IsIn(['whatsapp', 'email'], { each: true })
+  alertChannels: ('whatsapp' | 'email')[]
 
   @IsOptional()
-  @IsString()
-  phoneNumber?: string
+  @IsArray()
+  @IsString({ each: true })
+  phoneNumbers?: string[]
 }
 
 export class GetClinicNotificationsResponseDto {
   id: string
   clinicId: string
   notificationSettings: NotificationSettings
-  alertChannel: string
-  phoneNumber?: string
+  alertChannels: ('whatsapp' | 'email')[]
+  phoneNumbers?: string[]
   createdAt: Date
   updatedAt?: Date
 }

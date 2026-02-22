@@ -262,8 +262,8 @@ export interface ClinicNotificationsResponse {
   id: string;
   clinicId: string;
   notificationSettings: NotificationSettings;
-  alertChannel: "whatsapp" | "email";
-  phoneNumber?: string;
+  alertChannels: ("whatsapp" | "email")[];
+  phoneNumbers?: string[];
   createdAt: string;
   updatedAt?: string;
 }
@@ -287,8 +287,8 @@ export const useSaveClinicNotifications = (clinicId: string) => {
   return useMutation({
     mutationFn: async (data: {
       notificationSettings: NotificationSettings;
-      alertChannel: "whatsapp" | "email";
-      phoneNumber?: string;
+      alertChannels: ("whatsapp" | "email")[];
+      phoneNumbers?: string[];
     }) => {
       const response = await api.patch(
         CLINIC_SETTINGS_ENDPOINTS.NOTIFICATIONS(clinicId),

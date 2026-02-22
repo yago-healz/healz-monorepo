@@ -240,8 +240,8 @@ export class ClinicSettingsService {
         .update(clinicNotifications)
         .set({
           notificationSettings: dto.notificationSettings,
-          alertChannel: dto.alertChannel,
-          phoneNumber: dto.phoneNumber,
+          alertChannels: dto.alertChannels,
+          phoneNumbers: dto.phoneNumbers ?? [],
           updatedAt: new Date(),
         })
         .where(eq(clinicNotifications.clinicId, clinicId))
@@ -254,8 +254,8 @@ export class ClinicSettingsService {
         .values({
           clinicId,
           notificationSettings: dto.notificationSettings,
-          alertChannel: dto.alertChannel,
-          phoneNumber: dto.phoneNumber,
+          alertChannels: dto.alertChannels,
+          phoneNumbers: dto.phoneNumbers ?? [],
         })
         .returning();
 

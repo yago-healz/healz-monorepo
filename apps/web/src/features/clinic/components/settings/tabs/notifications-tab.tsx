@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Bell, Send, Loader2 } from 'lucide-react'
+import { Bell, Send, Loader2, Trash2, Plus } from 'lucide-react'
 import { SettingsLoading } from './settings-loading'
 import { useClinicNotifications, useSaveClinicNotifications } from '@/features/clinic/api/clinic-settings.api'
 import { tokenService } from '@/services/token.service'
@@ -16,8 +16,8 @@ export function NotificationsTab() {
     newBooking: true,
     riskOfLoss: true,
   })
-  const [alertChannel, setAlertChannel] = useState<AlertChannel>('whatsapp')
-  const [phoneNumber, setPhoneNumber] = useState('')
+  const [alertChannels, setAlertChannels] = useState<AlertChannel[]>(['whatsapp'])
+  const [phoneNumbers, setPhoneNumbers] = useState<string[]>([''])
 
   const { data: savedData, isLoading: isLoadingData } = useClinicNotifications(clinicId)
   const { mutate: saveNotifications, isPending: isSaving } = useSaveClinicNotifications(clinicId)
@@ -26,16 +26,16 @@ export function NotificationsTab() {
   useEffect(() => {
     if (savedData) {
       setNotifications(savedData.notificationSettings)
-      setAlertChannel(savedData.alertChannel as AlertChannel)
-      setPhoneNumber(savedData.phoneNumber || '')
+      setAlertChannels(savedData.alertChannels ?? ['whatsapp'])
+      setPhoneNumbers(savedData.phoneNumbers?.length ? savedData.phoneNumbers : [''])
     }
   }, [savedData])
 
   const handleSave = async () => {
     saveNotifications({
       notificationSettings: notifications,
-      alertChannel,
-      phoneNumber,
+      alertChannels,
+      phoneNumbers: phoneNumbers.filter(Boolean),
     })
   }
 
@@ -83,49 +83,71 @@ export function NotificationsTab() {
               <Send className="w-5 h-5 text-pink-500" />
               <h2 className="font-semibold text-foreground">Receber alertas via...</h2>
             </div>
-            <div className="inline-flex rounded-lg border border-border overflow-hidden">
-              <button
-                onClick={() => setAlertChannel('whatsapp')}
-                className={`px-6 py-2.5 text-sm font-medium transition-colors ${
-                  alertChannel === 'whatsapp'
-                    ? 'bg-pink-500 text-white'
-                    : 'bg-white text-muted-foreground hover:bg-gray-50'
-                }`}
-              >
-                WhatsApp
-              </button>
-              <button
-                onClick={() => setAlertChannel('email')}
-                className={`px-6 py-2.5 text-sm font-medium transition-colors ${
-                  alertChannel === 'email'
-                    ? 'bg-pink-500 text-white'
-                    : 'bg-white text-muted-foreground hover:bg-gray-50'
-                }`}
-              >
-                Email
-              </button>
+            <div className="flex gap-4">
+              {(['whatsapp', 'email'] as const).map((channel) => (
+                <label key={channel} className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <Checkbox
+                    checked={alertChannels.includes(channel)}
+                    onCheckedChange={(checked) =>
+                      setAlertChannels((prev) =>
+                        checked ? [...prev, channel] : prev.filter((c) => c !== channel)
+                      )
+                    }
+                    className="data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500"
+                  />
+                  <span className="text-sm text-foreground">{channel === 'whatsapp' ? 'WhatsApp' : 'Email'}</span>
+                </label>
+              ))}
             </div>
           </div>
 
-          {/* Phone Number Input */}
+          {/* Phone Numbers */}
           <div>
             <label className="text-sm text-muted-foreground mb-2 block">
-              Número de Telefone de Destino
+              Números de Telefone de Destino
             </label>
-            <div className="flex border border-border rounded-lg overflow-hidden">
-              <div className="px-4 py-3 bg-gray-50 border-r border-border text-sm text-muted-foreground">
-                +55
-              </div>
-              <Input
-                type="tel"
-                placeholder="(11) 99999-9999"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="border-0 rounded-none focus-visible:ring-0"
-              />
+            <div className="space-y-3">
+              {phoneNumbers.map((phone, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <div className="flex flex-1 border border-border rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 bg-gray-50 border-r border-border text-sm text-muted-foreground">
+                      +55
+                    </div>
+                    <Input
+                      type="tel"
+                      placeholder="(11) 99999-9999"
+                      value={phone}
+                      onChange={(e) => {
+                        const updated = [...phoneNumbers]
+                        updated[index] = e.target.value
+                        setPhoneNumbers(updated)
+                      }}
+                      className="border-0 rounded-none focus-visible:ring-0"
+                    />
+                  </div>
+                  {phoneNumbers.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setPhoneNumbers((prev) => prev.filter((_, i) => i !== index))}
+                    >
+                      <Trash2 className="w-4 h-4 text-muted-foreground" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPhoneNumbers((prev) => [...prev, ''])}
+                className="mt-1"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar número
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Carol enviará alertas automatizados para este número.
+            <p className="text-xs text-muted-foreground mt-3">
+              Carol enviará alertas automatizados para estes números.
             </p>
           </div>
         </CardContent>

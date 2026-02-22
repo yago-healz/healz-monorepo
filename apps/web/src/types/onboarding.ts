@@ -98,8 +98,8 @@ export type AlertChannel = 'whatsapp' | 'email'
 
 export interface Step4Data {
   notifications: NotificationSettings
-  alertChannel: AlertChannel
-  phoneNumber: string
+  alertChannels: AlertChannel[]
+  phoneNumbers: string[]
 }
 
 // Step 5: WhatsApp Integration

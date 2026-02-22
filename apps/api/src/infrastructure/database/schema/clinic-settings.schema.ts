@@ -1,7 +1,6 @@
 import {
   pgTable,
   uuid,
-  varchar,
   timestamp,
   integer,
   text,
@@ -123,13 +122,11 @@ export const clinicNotifications = pgTable('clinic_notifications', {
     .notNull()
     .default({ newBooking: true, riskOfLoss: true }),
 
-  // Alert channel: 'whatsapp' or 'email'
-  alertChannel: varchar('alert_channel', { length: 20 })
-    .notNull()
-    .default('whatsapp'),
+  // Alert channels: ['whatsapp', 'email'] (multi-select)
+  alertChannels: jsonb('alert_channels').notNull().default(['whatsapp']),
 
-  // Phone number for alerts (international format, e.g., "+5511999999999")
-  phoneNumber: varchar('phone_number', { length: 20 }),
+  // Phone numbers for alerts (multiple destinations)
+  phoneNumbers: jsonb('phone_numbers').notNull().default([]),
 
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at'),
