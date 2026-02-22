@@ -7,12 +7,15 @@ import {
   clinicScheduling,
   clinicCarolSettings,
   clinicNotifications,
+  clinics,
+  addresses,
 } from '../../infrastructure/database/schema'
 import { ClinicObjectivesDto } from './dto/clinic-objectives.dto'
 import { ClinicServicesDto } from './dto/clinic-services.dto'
 import { ClinicSchedulingDto } from './dto/clinic-scheduling.dto'
 import { ClinicCarolSettingsDto } from './dto/clinic-carol-settings.dto'
 import { ClinicNotificationsDto } from './dto/clinic-notifications.dto'
+import { ClinicGeneralDto, GetClinicGeneralResponseDto } from './dto/clinic-general.dto'
 
 @Injectable()
 export class ClinicSettingsService {
@@ -241,5 +244,101 @@ export class ClinicSettingsService {
 
       return created
     }
+  }
+
+  // GENERAL
+  async getGeneral(clinicId: string): Promise<GetClinicGeneralResponseDto | null> {
+    const result = await db
+      .select()
+      .from(clinics)
+      .leftJoin(addresses, eq(clinics.addressId, addresses.id))
+      .where(eq(clinics.id, clinicId))
+      .limit(1)
+
+    if (!result.length) return null
+
+    const { clinics: clinic, addresses: address } = result[0]
+
+    return {
+      id: clinic.id,
+      name: clinic.name,
+      description: clinic.description,
+      address: address
+        ? {
+            id: address.id,
+            street: address.street,
+            number: address.number,
+            complement: address.complement,
+            neighborhood: address.neighborhood,
+            city: address.city,
+            state: address.state,
+            zipCode: address.zipCode,
+            country: address.country,
+            createdAt: address.createdAt || new Date(),
+            updatedAt: address.updatedAt,
+          }
+        : null,
+    }
+  }
+
+  async saveGeneral(
+    clinicId: string,
+    dto: ClinicGeneralDto
+  ): Promise<GetClinicGeneralResponseDto | null> {
+    // 1. Buscar clínica atual para saber se já tem addressId
+    const [existing] = await db
+      .select({ addressId: clinics.addressId })
+      .from(clinics)
+      .where(eq(clinics.id, clinicId))
+      .limit(1)
+
+    if (!existing) return null
+
+    // 2. Upsert do endereço (se fornecido)
+    let addressId = existing.addressId
+    if (dto.address) {
+      const addressData = {
+        street: dto.address.street,
+        number: dto.address.number,
+        complement: dto.address.complement ?? null,
+        neighborhood: dto.address.neighborhood ?? null,
+        city: dto.address.city,
+        state: dto.address.state,
+        zipCode: dto.address.zipCode,
+        country: dto.address.country ?? 'BR',
+        updatedAt: new Date(),
+      }
+
+      if (addressId) {
+        // Já tem endereço — atualizar
+        await db
+          .update(addresses)
+          .set(addressData)
+          .where(eq(addresses.id, addressId))
+      } else {
+        // Sem endereço — criar e vincular
+        const [newAddress] = await db
+          .insert(addresses)
+          .values(addressData)
+          .returning({ id: addresses.id })
+        addressId = newAddress.id
+      }
+    }
+
+    // 3. Atualizar clínica (name, description, addressId)
+    const clinicUpdates: Partial<typeof clinics.$inferInsert> = {
+      updatedAt: new Date(),
+    }
+    if (dto.name !== undefined) clinicUpdates.name = dto.name
+    if (dto.description !== undefined) clinicUpdates.description = dto.description
+    if (dto.address !== undefined) clinicUpdates.addressId = addressId
+
+    await db
+      .update(clinics)
+      .set(clinicUpdates)
+      .where(eq(clinics.id, clinicId))
+
+    // 4. Retornar estado atualizado
+    return this.getGeneral(clinicId)
   }
 }

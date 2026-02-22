@@ -20,6 +20,7 @@ import { ClinicServicesDto } from './dto/clinic-services.dto'
 import { ClinicSchedulingDto } from './dto/clinic-scheduling.dto'
 import { ClinicCarolSettingsDto } from './dto/clinic-carol-settings.dto'
 import { ClinicNotificationsDto } from './dto/clinic-notifications.dto'
+import { ClinicGeneralDto, GetClinicGeneralResponseDto } from './dto/clinic-general.dto'
 
 @ApiTags('Clinic Settings')
 @Controller('clinics')
@@ -126,5 +127,27 @@ export class ClinicSettingsController {
     @Body() dto: ClinicNotificationsDto
   ) {
     return this.service.saveNotifications(clinicId, dto)
+  }
+
+  // GENERAL
+  @Get(':clinicId/settings/general')
+  @ApiOperation({
+    summary: 'Obter configurações gerais da clínica',
+  })
+  async getGeneral(
+    @Param('clinicId') clinicId: string
+  ): Promise<GetClinicGeneralResponseDto | null> {
+    return this.service.getGeneral(clinicId)
+  }
+
+  @Patch(':clinicId/settings/general')
+  @ApiOperation({
+    summary: 'Salvar configurações gerais da clínica',
+  })
+  async saveGeneral(
+    @Param('clinicId') clinicId: string,
+    @Body() dto: ClinicGeneralDto
+  ): Promise<GetClinicGeneralResponseDto | null> {
+    return this.service.saveGeneral(clinicId, dto)
   }
 }
