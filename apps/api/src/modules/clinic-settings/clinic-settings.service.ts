@@ -1,21 +1,24 @@
-import { Injectable } from '@nestjs/common'
-import { db } from '../../infrastructure/database'
-import { eq } from 'drizzle-orm'
+import { Injectable } from "@nestjs/common";
+import { eq } from "drizzle-orm";
+import { db } from "../../infrastructure/database";
 import {
-  clinicObjectives,
-  clinicServices,
-  clinicScheduling,
+  addresses,
   clinicCarolSettings,
   clinicNotifications,
+  clinicObjectives,
   clinics,
-  addresses,
-} from '../../infrastructure/database/schema'
-import { ClinicObjectivesDto } from './dto/clinic-objectives.dto'
-import { ClinicServicesDto } from './dto/clinic-services.dto'
-import { ClinicSchedulingDto } from './dto/clinic-scheduling.dto'
-import { ClinicCarolSettingsDto } from './dto/clinic-carol-settings.dto'
-import { ClinicNotificationsDto } from './dto/clinic-notifications.dto'
-import { ClinicGeneralDto, GetClinicGeneralResponseDto } from './dto/clinic-general.dto'
+  clinicScheduling,
+  clinicServices,
+} from "../../infrastructure/database/schema";
+import { ClinicCarolSettingsDto } from "./dto/clinic-carol-settings.dto";
+import {
+  ClinicGeneralDto,
+  GetClinicGeneralResponseDto,
+} from "./dto/clinic-general.dto";
+import { ClinicNotificationsDto } from "./dto/clinic-notifications.dto";
+import { ClinicObjectivesDto } from "./dto/clinic-objectives.dto";
+import { ClinicSchedulingDto } from "./dto/clinic-scheduling.dto";
+import { ClinicServicesDto } from "./dto/clinic-services.dto";
 
 @Injectable()
 export class ClinicSettingsService {
@@ -25,9 +28,9 @@ export class ClinicSettingsService {
       .select()
       .from(clinicObjectives)
       .where(eq(clinicObjectives.clinicId, clinicId))
-      .limit(1)
+      .limit(1);
 
-    return result[0] ?? null
+    return result[0] ?? null;
   }
 
   async saveObjectives(clinicId: string, dto: ClinicObjectivesDto) {
@@ -36,7 +39,7 @@ export class ClinicSettingsService {
       .select()
       .from(clinicObjectives)
       .where(eq(clinicObjectives.clinicId, clinicId))
-      .limit(1)
+      .limit(1);
 
     if (existing.length > 0) {
       // UPDATE
@@ -49,9 +52,9 @@ export class ClinicSettingsService {
           updatedAt: new Date(),
         })
         .where(eq(clinicObjectives.clinicId, clinicId))
-        .returning()
+        .returning();
 
-      return updated
+      return updated;
     } else {
       // INSERT
       const [created] = await db
@@ -62,9 +65,9 @@ export class ClinicSettingsService {
           painPoints: dto.painPoints,
           additionalNotes: dto.additionalNotes,
         })
-        .returning()
+        .returning();
 
-      return created
+      return created;
     }
   }
 
@@ -74,9 +77,9 @@ export class ClinicSettingsService {
       .select()
       .from(clinicServices)
       .where(eq(clinicServices.clinicId, clinicId))
-      .limit(1)
+      .limit(1);
 
-    return result[0] ?? null
+    return result[0] ?? null;
   }
 
   async saveServices(clinicId: string, dto: ClinicServicesDto) {
@@ -84,7 +87,7 @@ export class ClinicSettingsService {
       .select()
       .from(clinicServices)
       .where(eq(clinicServices.clinicId, clinicId))
-      .limit(1)
+      .limit(1);
 
     if (existing.length > 0) {
       const [updated] = await db
@@ -94,9 +97,9 @@ export class ClinicSettingsService {
           updatedAt: new Date(),
         })
         .where(eq(clinicServices.clinicId, clinicId))
-        .returning()
+        .returning();
 
-      return updated
+      return updated;
     } else {
       const [created] = await db
         .insert(clinicServices)
@@ -104,9 +107,9 @@ export class ClinicSettingsService {
           clinicId,
           services: dto.services,
         })
-        .returning()
+        .returning();
 
-      return created
+      return created;
     }
   }
 
@@ -116,9 +119,9 @@ export class ClinicSettingsService {
       .select()
       .from(clinicScheduling)
       .where(eq(clinicScheduling.clinicId, clinicId))
-      .limit(1)
+      .limit(1);
 
-    return result[0] ?? null
+    return result[0] ?? null;
   }
 
   async saveScheduling(clinicId: string, dto: ClinicSchedulingDto) {
@@ -126,31 +129,45 @@ export class ClinicSettingsService {
       .select()
       .from(clinicScheduling)
       .where(eq(clinicScheduling.clinicId, clinicId))
-      .limit(1)
+      .limit(1);
 
     if (existing.length > 0) {
       const [updated] = await db
         .update(clinicScheduling)
         .set({
-          timeBlocks: dto.timeBlocks,
-          minimumInterval: dto.minimumInterval,
+          weeklySchedule: dto.weeklySchedule,
+          defaultAppointmentDuration: dto.defaultAppointmentDuration,
+          minimumAdvanceHours: dto.minimumAdvanceHours,
+          maxFutureDays: dto.maxFutureDays,
+          specificBlocks: dto.specificBlocks,
+          // Legacy fields (preserve if not provided)
+          ...(dto.timeBlocks !== undefined && { timeBlocks: dto.timeBlocks }),
+          ...(dto.minimumInterval !== undefined && {
+            minimumInterval: dto.minimumInterval,
+          }),
           updatedAt: new Date(),
         })
         .where(eq(clinicScheduling.clinicId, clinicId))
-        .returning()
+        .returning();
 
-      return updated
+      return updated;
     } else {
       const [created] = await db
         .insert(clinicScheduling)
         .values({
           clinicId,
-          timeBlocks: dto.timeBlocks,
-          minimumInterval: dto.minimumInterval,
+          weeklySchedule: dto.weeklySchedule,
+          defaultAppointmentDuration: dto.defaultAppointmentDuration,
+          minimumAdvanceHours: dto.minimumAdvanceHours,
+          maxFutureDays: dto.maxFutureDays,
+          specificBlocks: dto.specificBlocks,
+          // Legacy fields (with defaults)
+          timeBlocks: dto.timeBlocks ?? [],
+          minimumInterval: dto.minimumInterval ?? 15,
         })
-        .returning()
+        .returning();
 
-      return created
+      return created;
     }
   }
 
@@ -160,9 +177,9 @@ export class ClinicSettingsService {
       .select()
       .from(clinicCarolSettings)
       .where(eq(clinicCarolSettings.clinicId, clinicId))
-      .limit(1)
+      .limit(1);
 
-    return result[0] ?? null
+    return result[0] ?? null;
   }
 
   async saveCarolSettings(clinicId: string, dto: ClinicCarolSettingsDto) {
@@ -170,7 +187,7 @@ export class ClinicSettingsService {
       .select()
       .from(clinicCarolSettings)
       .where(eq(clinicCarolSettings.clinicId, clinicId))
-      .limit(1)
+      .limit(1);
 
     if (existing.length > 0) {
       const [updated] = await db
@@ -182,9 +199,9 @@ export class ClinicSettingsService {
           updatedAt: new Date(),
         })
         .where(eq(clinicCarolSettings.clinicId, clinicId))
-        .returning()
+        .returning();
 
-      return updated
+      return updated;
     } else {
       const [created] = await db
         .insert(clinicCarolSettings)
@@ -194,9 +211,9 @@ export class ClinicSettingsService {
           greeting: dto.greeting,
           restrictSensitiveTopics: dto.restrictSensitiveTopics,
         })
-        .returning()
+        .returning();
 
-      return created
+      return created;
     }
   }
 
@@ -206,9 +223,9 @@ export class ClinicSettingsService {
       .select()
       .from(clinicNotifications)
       .where(eq(clinicNotifications.clinicId, clinicId))
-      .limit(1)
+      .limit(1);
 
-    return result[0] ?? null
+    return result[0] ?? null;
   }
 
   async saveNotifications(clinicId: string, dto: ClinicNotificationsDto) {
@@ -216,7 +233,7 @@ export class ClinicSettingsService {
       .select()
       .from(clinicNotifications)
       .where(eq(clinicNotifications.clinicId, clinicId))
-      .limit(1)
+      .limit(1);
 
     if (existing.length > 0) {
       const [updated] = await db
@@ -228,9 +245,9 @@ export class ClinicSettingsService {
           updatedAt: new Date(),
         })
         .where(eq(clinicNotifications.clinicId, clinicId))
-        .returning()
+        .returning();
 
-      return updated
+      return updated;
     } else {
       const [created] = await db
         .insert(clinicNotifications)
@@ -240,24 +257,26 @@ export class ClinicSettingsService {
           alertChannel: dto.alertChannel,
           phoneNumber: dto.phoneNumber,
         })
-        .returning()
+        .returning();
 
-      return created
+      return created;
     }
   }
 
   // GENERAL
-  async getGeneral(clinicId: string): Promise<GetClinicGeneralResponseDto | null> {
+  async getGeneral(
+    clinicId: string,
+  ): Promise<GetClinicGeneralResponseDto | null> {
     const result = await db
       .select()
       .from(clinics)
       .leftJoin(addresses, eq(clinics.addressId, addresses.id))
       .where(eq(clinics.id, clinicId))
-      .limit(1)
+      .limit(1);
 
-    if (!result.length) return null
+    if (!result.length) return null;
 
-    const { clinics: clinic, addresses: address } = result[0]
+    const { clinics: clinic, addresses: address } = result[0];
 
     return {
       id: clinic.id,
@@ -278,24 +297,24 @@ export class ClinicSettingsService {
             updatedAt: address.updatedAt,
           }
         : null,
-    }
+    };
   }
 
   async saveGeneral(
     clinicId: string,
-    dto: ClinicGeneralDto
+    dto: ClinicGeneralDto,
   ): Promise<GetClinicGeneralResponseDto | null> {
     // 1. Buscar clínica atual para saber se já tem addressId
     const [existing] = await db
       .select({ addressId: clinics.addressId })
       .from(clinics)
       .where(eq(clinics.id, clinicId))
-      .limit(1)
+      .limit(1);
 
-    if (!existing) return null
+    if (!existing) return null;
 
     // 2. Upsert do endereço (se fornecido)
-    let addressId = existing.addressId
+    let addressId = existing.addressId;
     if (dto.address) {
       const addressData = {
         street: dto.address.street,
@@ -305,40 +324,38 @@ export class ClinicSettingsService {
         city: dto.address.city,
         state: dto.address.state,
         zipCode: dto.address.zipCode,
-        country: dto.address.country ?? 'BR',
+        country: dto.address.country ?? "BR",
         updatedAt: new Date(),
-      }
+      };
 
       if (addressId) {
         // Já tem endereço — atualizar
         await db
           .update(addresses)
           .set(addressData)
-          .where(eq(addresses.id, addressId))
+          .where(eq(addresses.id, addressId));
       } else {
         // Sem endereço — criar e vincular
         const [newAddress] = await db
           .insert(addresses)
           .values(addressData)
-          .returning({ id: addresses.id })
-        addressId = newAddress.id
+          .returning({ id: addresses.id });
+        addressId = newAddress.id;
       }
     }
 
     // 3. Atualizar clínica (name, description, addressId)
     const clinicUpdates: Partial<typeof clinics.$inferInsert> = {
       updatedAt: new Date(),
-    }
-    if (dto.name !== undefined) clinicUpdates.name = dto.name
-    if (dto.description !== undefined) clinicUpdates.description = dto.description
-    if (dto.address !== undefined) clinicUpdates.addressId = addressId
+    };
+    if (dto.name !== undefined) clinicUpdates.name = dto.name;
+    if (dto.description !== undefined)
+      clinicUpdates.description = dto.description;
+    if (dto.address !== undefined) clinicUpdates.addressId = addressId;
 
-    await db
-      .update(clinics)
-      .set(clinicUpdates)
-      .where(eq(clinics.id, clinicId))
+    await db.update(clinics).set(clinicUpdates).where(eq(clinics.id, clinicId));
 
     // 4. Retornar estado atualizado
-    return this.getGeneral(clinicId)
+    return this.getGeneral(clinicId);
   }
 }

@@ -50,18 +50,35 @@ export const clinicServices = pgTable('clinic_services', {
 })
 
 // Table 3: Clinic Scheduling Rules
-// Armazena horários bloqueados e intervalos mínimos
+// Armazena disponibilidade semanal, regras e bloqueios específicos
 export const clinicScheduling = pgTable('clinic_scheduling', {
   id: uuid('id').primaryKey().defaultRandom(),
   clinicId: uuid('clinic_id')
     .references(() => clinics.id, { onDelete: 'cascade' })
     .notNull(),
 
-  // Time blocks - stored as JSON array
+  // Weekly schedule - available time slots per day of week
+  // [{ day, isOpen, timeSlots: [{ id, from, to }] }, ...]
+  weeklySchedule: jsonb('weekly_schedule').notNull().default([]),
+
+  // Default appointment duration in minutes
+  defaultAppointmentDuration: integer('default_appointment_duration').notNull().default(30),
+
+  // Minimum hours in advance for scheduling
+  minimumAdvanceHours: integer('minimum_advance_hours').notNull().default(0),
+
+  // Maximum days in the future for appointments
+  maxFutureDays: integer('max_future_days').notNull().default(365),
+
+  // Specific date-based blocks
+  // [{ id, date: "YYYY-MM-DD", from: "HH:MM", to: "HH:MM", reason? }, ...]
+  specificBlocks: jsonb('specific_blocks').notNull().default([]),
+
+  // Legacy: Time blocks - stored as JSON array (keeping for backward compatibility)
   // [{ id, from: "HH:MM", to: "HH:MM" }, ...]
   timeBlocks: jsonb('time_blocks').notNull().default([]),
 
-  // Minimum interval between appointments in minutes
+  // Minimum interval between appointments in minutes (legacy)
   minimumInterval: integer('minimum_interval').notNull().default(15),
 
   createdAt: timestamp('created_at').defaultNow(),

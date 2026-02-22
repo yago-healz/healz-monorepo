@@ -32,10 +32,42 @@ export interface Service {
   note?: string
 }
 
+// Legacy TimeBlock (used in onboarding step 2)
 export interface TimeBlock {
   id: string
   from: string
   to: string
+}
+
+// New scheduling types (for clinic settings redesign)
+export interface TimeSlot {
+  id: string
+  from: string // HH:MM
+  to: string // HH:MM
+}
+
+export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+
+export interface DaySchedule {
+  day: DayOfWeek
+  isOpen: boolean
+  timeSlots: TimeSlot[]
+}
+
+export interface SpecificBlock {
+  id: string
+  date: string // YYYY-MM-DD
+  from: string // HH:MM
+  to: string // HH:MM
+  reason?: string
+}
+
+export interface SchedulingRules {
+  weeklySchedule: DaySchedule[]
+  defaultAppointmentDuration: number
+  minimumAdvanceHours: number
+  maxFutureDays: number
+  specificBlocks: SpecificBlock[]
 }
 
 export interface Step2Data {

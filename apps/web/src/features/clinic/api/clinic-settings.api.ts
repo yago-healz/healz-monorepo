@@ -5,6 +5,7 @@ import type {
   NotificationSettings,
   PainPoint,
   Priority,
+  SchedulingRules,
   Service,
   TimeBlock,
 } from "@/types/onboarding";
@@ -155,11 +156,12 @@ export const useSaveClinicServices = (clinicId: string) => {
 // SCHEDULING
 // ============================================
 
-export interface ClinicSchedulingResponse {
+export interface ClinicSchedulingResponse extends SchedulingRules {
   id: string;
   clinicId: string;
-  timeBlocks: TimeBlock[];
-  minimumInterval: number;
+  // Legacy fields (for backward compatibility)
+  timeBlocks?: TimeBlock[];
+  minimumInterval?: number;
   createdAt: string;
   updatedAt?: string;
 }
@@ -181,10 +183,7 @@ export const useSaveClinicScheduling = (clinicId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: {
-      timeBlocks: TimeBlock[];
-      minimumInterval: number;
-    }) => {
+    mutationFn: async (data: SchedulingRules) => {
       const response = await api.patch(
         CLINIC_SETTINGS_ENDPOINTS.SCHEDULING(clinicId),
         data,
