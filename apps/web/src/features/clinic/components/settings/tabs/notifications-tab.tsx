@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Bell, Send, Loader2 } from 'lucide-react'
+import { Bell, Send } from 'lucide-react'
+import { SettingsLoading } from './settings-loading'
 import { useClinicNotifications, useSaveClinicNotifications } from '@/features/clinic/api/clinic-settings.api'
 import { tokenService } from '@/services/token.service'
 import type { AlertChannel, NotificationSettings } from '@/features/clinic/api/clinic-settings.api'
@@ -39,12 +40,7 @@ export function NotificationsTab() {
   }
 
   if (isLoadingData) {
-    return (
-      <div className="space-y-4 flex items-center justify-center h-96">
-        <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
-        <span className="text-muted-foreground">Carregando configurações...</span>
-      </div>
-    )
+    return <SettingsLoading />
   }
 
   return (

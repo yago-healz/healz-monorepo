@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { GripVertical, DollarSign, Users, Zap, CalendarX, Phone, Calendar, UserPlus, Loader2 } from 'lucide-react'
+import { GripVertical, DollarSign, Users, Zap, CalendarX, Phone, Calendar, UserPlus } from 'lucide-react'
+import { SettingsLoading } from './settings-loading'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useClinicObjectives, useSaveClinicObjectives } from '@/features/clinic/api/clinic-settings.api'
@@ -149,12 +150,7 @@ export function ObjectivesTab() {
 
   // Show loading state
   if (isLoadingData) {
-    return (
-      <div className="space-y-4 flex items-center justify-center h-96">
-        <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
-        <span className="text-muted-foreground">Carregando configurações...</span>
-      </div>
-    )
+    return <SettingsLoading />
   }
 
   return (

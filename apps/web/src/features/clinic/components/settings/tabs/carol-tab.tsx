@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { MessageSquare, Ban, GitBranch, Heart, Loader2 } from 'lucide-react'
+import { MessageSquare, Ban, GitBranch, Heart } from 'lucide-react'
+import { SettingsLoading } from './settings-loading'
 import { PERSONALITY_TRAITS } from '@/types/onboarding'
 import { useClinicCarolSettings, useSaveClinicCarolSettings } from '@/features/clinic/api/clinic-settings.api'
 import { tokenService } from '@/services/token.service'
@@ -45,12 +46,7 @@ export function CarolTab() {
   }
 
   if (isLoadingData) {
-    return (
-      <div className="space-y-4 flex items-center justify-center h-96">
-        <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
-        <span className="text-muted-foreground">Carregando configurações...</span>
-      </div>
-    )
+    return <SettingsLoading />
   }
 
   return (

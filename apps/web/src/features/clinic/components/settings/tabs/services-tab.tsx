@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Plus, Briefcase, Loader2, X } from 'lucide-react'
+import { Plus, Briefcase, X } from 'lucide-react'
+import { SettingsLoading } from './settings-loading'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -86,12 +87,7 @@ export function ServicesTab() {
   }
 
   if (isLoadingData) {
-    return (
-      <div className="space-y-4 flex items-center justify-center h-96">
-        <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
-        <span className="text-muted-foreground">Carregando serviços...</span>
-      </div>
-    )
+    return <SettingsLoading message="Carregando serviços..." />
   }
 
   return (
