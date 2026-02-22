@@ -1,6 +1,7 @@
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
+import { GeneralTab } from './tabs/general-tab'
 import { ObjectivesTab } from './tabs/objectives-tab'
 import { ServicesTab } from './tabs/services-tab'
 import { SchedulingTab } from './tabs/scheduling-tab'
@@ -17,21 +18,6 @@ const tabs = [
   { id: 'notificacoes', label: 'Notificações' },
   { id: 'conectores', label: 'Conectores' },
 ]
-
-function PlaceholderTab({ name }: { name: string }) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-xl font-semibold">{name}</h2>
-      </div>
-      <div className="rounded-lg border border-dashed p-12 text-center">
-        <p className="text-muted-foreground text-sm">
-          Esta seção está em desenvolvimento.
-        </p>
-      </div>
-    </div>
-  )
-}
 
 export function ClinicSettingsPage() {
   const [activeTab, setActiveTab] = useState<string>('geral')
@@ -64,7 +50,7 @@ export function ClinicSettingsPage() {
         </nav>
 
         <div className="flex-1 min-w-0">
-          {activeTab === 'geral' && <PlaceholderTab name="Geral" />}
+          {activeTab === 'geral' && <GeneralTab />}
           {activeTab === 'objetivos' && <ObjectivesTab />}
           {activeTab === 'servicos' && <ServicesTab />}
           {activeTab === 'agendamentos' && <SchedulingTab />}

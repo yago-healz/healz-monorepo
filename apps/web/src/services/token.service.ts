@@ -117,4 +117,9 @@ export const tokenService = {
   hasValidToken(): boolean {
     return !!this.getAccessToken()
   },
+
+  getActiveClinicId(): string | null {
+    const user = this.getUser()
+    return user?.activeClinic?.id ?? null
+  },
 }
