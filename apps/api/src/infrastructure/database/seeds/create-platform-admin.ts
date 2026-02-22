@@ -76,7 +76,7 @@ const name =
 
 if (!email || !password) {
   console.error(
-    "Usage: pnpm tsx src/db/seeds/create-platform-admin.ts --email=admin@healz.com --password=senha123 --name='Admin Name'",
+    "Usage: pnpm tsx src/infrastructure/database/seeds/create-platform-admin.ts --email=admin@healz.com --password=senha123 --name='Admin Name'",
   );
   process.exit(1);
 }

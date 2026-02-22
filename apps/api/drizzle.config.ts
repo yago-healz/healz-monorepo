@@ -9,8 +9,8 @@ const sslUrl =
     : `${dbUrl}${dbUrl.includes("?") ? "&" : "?"}sslmode=require`;
 
 export default defineConfig({
-  schema: "./src/db/schema/",
-  out: "./src/db/migrations",
+  schema: "./src/infrastructure/database/schema/",
+  out: "./src/infrastructure/database/migrations",
   dialect: "postgresql",
   dbCredentials: {
     url: sslUrl,

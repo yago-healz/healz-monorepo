@@ -5,6 +5,12 @@ module.exports = {
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1',
+    '^@common/(.*)$': '<rootDir>/common/$1',
+    '^@infrastructure/(.*)$': '<rootDir>/infrastructure/$1',
+    '^@modules/(.*)$': '<rootDir>/modules/$1',
+  },
   collectCoverageFrom: [
     '**/*.(t|j)s',
   ],
