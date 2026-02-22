@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { GripVertical, DollarSign, Users, Zap, CalendarX, Phone, Calendar, UserPlus } from 'lucide-react'
+import { GripVertical, DollarSign, Users, Zap, CalendarX, Phone, Calendar, UserPlus, Loader2 } from 'lucide-react'
 import { SettingsLoading } from './settings-loading'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'

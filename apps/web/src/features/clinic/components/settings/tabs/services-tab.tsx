@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Briefcase, X } from 'lucide-react'
+import { Plus, Briefcase, X, Loader2 } from 'lucide-react'
 import { SettingsLoading } from './settings-loading'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

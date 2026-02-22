@@ -62,7 +62,7 @@ import type { PlatformUser } from '@/types/api.types'
 
 const addClinicSchema = z.object({
   clinicId: z.string().uuid('Selecione uma clínica'),
-  role: z.enum(['admin', 'doctor', 'secretary']),
+  role: z.enum(['admin', 'doctor', 'receptionist']),
 })
 
 type AddClinicFormValues = z.infer<typeof addClinicSchema>
@@ -108,7 +108,7 @@ export function UserClinicsManager({ user }: UserClinicsManagerProps) {
     form.reset()
   }
 
-  const handleUpdateRole = async (clinicId: string, newRole: 'admin' | 'doctor' | 'secretary') => {
+  const handleUpdateRole = async (clinicId: string, newRole: 'admin' | 'doctor' | 'receptionist') => {
     await updateRoleMutation.mutateAsync({
       userId: user.id,
       clinicId,
@@ -197,7 +197,7 @@ export function UserClinicsManager({ user }: UserClinicsManagerProps) {
                           <SelectContent>
                             <SelectItem value="admin">Admin</SelectItem>
                             <SelectItem value="doctor">Médico</SelectItem>
-                            <SelectItem value="secretary">Secretário</SelectItem>
+                            <SelectItem value="receptionist">Secretário</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -268,8 +268,8 @@ export function UserClinicsManager({ user }: UserClinicsManagerProps) {
                         Alterar para Médico
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => handleUpdateRole(clinic.clinicId, 'secretary')}
-                        disabled={clinic.role === 'secretary' || updateRoleMutation.isPending}
+                        onClick={() => handleUpdateRole(clinic.clinicId, 'receptionist')}
+                        disabled={clinic.role === 'receptionist' || updateRoleMutation.isPending}
                       >
                         <Edit className="mr-2 h-4 w-4" />
                         Alterar para Secretário

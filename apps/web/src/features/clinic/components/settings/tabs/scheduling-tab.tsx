@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Minus, Trash2, Calendar } from 'lucide-react'
+import { Plus, Minus, Trash2, Calendar, Loader2 } from 'lucide-react'
 import { SettingsLoading } from './settings-loading'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

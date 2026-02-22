@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Bell, Send } from 'lucide-react'
+import { Bell, Send, Loader2 } from 'lucide-react'
 import { SettingsLoading } from './settings-loading'
 import { useClinicNotifications, useSaveClinicNotifications } from '@/features/clinic/api/clinic-settings.api'
 import { tokenService } from '@/services/token.service'
-import type { AlertChannel, NotificationSettings } from '@/features/clinic/api/clinic-settings.api'
+import type { AlertChannel, NotificationSettings } from '@/types/onboarding'
 
 export function NotificationsTab() {
   const clinicId = tokenService.getUser()?.activeClinic?.id ?? ''

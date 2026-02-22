@@ -42,8 +42,8 @@ export const useSaveClinicObjectives = (clinicId: string) => {
 
   return useMutation({
     mutationFn: async (data: {
-      priorities: Priority[]
-      painPoints: PainPoint[]
+      priorities: Omit<Priority, 'icon'>[]
+      painPoints: Omit<PainPoint, 'icon'>[]
       additionalNotes?: string
     }) => {
       const response = await api.patch(
