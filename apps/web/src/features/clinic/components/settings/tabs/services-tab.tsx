@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Briefcase, Loader2 } from 'lucide-react'
+import { Plus, Briefcase, Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -42,7 +42,9 @@ export function ServicesTab() {
   const clinicId = tokenService.getUser()?.activeClinic?.id ?? ''
 
   const [services, setServices] = useState<Service[]>(DEFAULT_SERVICES)
-  const [expandedNotes, setExpandedNotes] = useState<string[]>(['procedures'])
+  const [expandedNotes, setExpandedNotes] = useState<string[]>(
+    DEFAULT_SERVICES.filter(s => s.note).map(s => s.id)
+  )
 
   const { data: savedData, isLoading: isLoadingData } = useClinicServices(clinicId)
   const { mutate: saveServices, isPending: isSaving } = useSaveClinicServices(clinicId)
@@ -51,6 +53,7 @@ export function ServicesTab() {
   useEffect(() => {
     if (savedData?.services && savedData.services.length > 0) {
       setServices(savedData.services)
+      setExpandedNotes(savedData.services.filter(s => s.note).map(s => s.id))
     }
   }, [savedData])
 
@@ -61,11 +64,21 @@ export function ServicesTab() {
   }
 
   const toggleNotes = (id: string) => {
+    if (!expandedNotes.includes(id)) {
+      setServices(prev =>
+        prev.map(s => s.id === id && s.note === undefined ? { ...s, note: '' } : s)
+      )
+    }
     setExpandedNotes(prev =>
       prev.includes(id)
         ? prev.filter(noteId => noteId !== id)
         : [...prev, id]
     )
+  }
+
+  const removeNote = (id: string) => {
+    setExpandedNotes(prev => prev.filter(noteId => noteId !== id))
+    updateService(id, 'note', '')
   }
 
   const handleSave = async () => {
@@ -139,16 +152,26 @@ export function ServicesTab() {
                 </div>
               </div>
 
-              {expandedNotes.includes(service.id) && service.note ? (
+              {expandedNotes.includes(service.id) ? (
                 <div className="mt-4 p-4 bg-pink-50 rounded-lg">
-                  <p className="text-xs text-pink-500 uppercase tracking-wide mb-1">
-                    Nota para Carol:
-                  </p>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs text-pink-500 uppercase tracking-wide">
+                      Nota para Carol:
+                    </p>
+                    <button
+                      onClick={() => removeNote(service.id)}
+                      className="text-pink-400 hover:text-pink-600 transition-colors"
+                      aria-label="Excluir nota"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                   <textarea
-                    value={service.note}
+                    value={service.note ?? ''}
                     onChange={(e) => updateService(service.id, 'note', e.target.value)}
                     className="w-full text-sm text-foreground bg-transparent focus:outline-none resize-none"
                     rows={2}
+                    placeholder="Adicione instruções ou observações para Carol..."
                   />
                 </div>
               ) : (
