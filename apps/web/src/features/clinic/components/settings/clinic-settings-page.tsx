@@ -18,13 +18,15 @@ const tabs = [
   { id: 'carol', label: 'Carol' },
   { id: 'notificacoes', label: 'Notificações' },
   { id: 'conectores', label: 'Conectores' },
-]
+] as const
+
+type TabId = typeof tabs[number]['id']
 
 export function ClinicSettingsPage() {
   const { tab: activeTab = 'geral' } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
 
-  function handleTabChange(tabId: string) {
+  function handleTabChange(tabId: TabId) {
     navigate({ search: (prev) => ({ ...prev, tab: tabId }), replace: true })
   }
 

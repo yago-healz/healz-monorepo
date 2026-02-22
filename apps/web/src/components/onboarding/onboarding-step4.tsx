@@ -22,9 +22,9 @@ export function OnboardingStep4() {
   // Load data from context on mount
   useEffect(() => {
     setNotifications(data.step4.notifications)
-    setAlertChannel(data.step4.alertChannel)
-    if (data.step4.phoneNumber) {
-      setPhoneNumber(data.step4.phoneNumber)
+    setAlertChannel(data.step4.alertChannels[0] ?? "whatsapp")
+    if (data.step4.phoneNumbers[0]) {
+      setPhoneNumber(data.step4.phoneNumbers[0])
     }
   }, [])
 
@@ -32,8 +32,8 @@ export function OnboardingStep4() {
     // Save data to context
     updateStep4({
       notifications,
-      alertChannel,
-      phoneNumber,
+      alertChannels: [alertChannel],
+      phoneNumbers: phoneNumber ? [phoneNumber] : [],
     })
     // Navigate to next step
     navigate({ to: '/onboarding/step-5' })

@@ -34,8 +34,8 @@ const getDefaultData = (): OnboardingData => ({
       newBooking: true,
       riskOfLoss: true,
     },
-    alertChannel: 'whatsapp',
-    phoneNumber: '',
+    alertChannels: ['whatsapp'],
+    phoneNumbers: [],
   },
   step5: {
     inboxName: '',
@@ -132,7 +132,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   // Check if onboarding is complete (all required fields filled)
   const isComplete =
     data.step1.priorities.length > 0 &&
-    data.step4.phoneNumber.trim() !== '' &&
+    (data.step4.phoneNumbers[0]?.trim() ?? '') !== '' &&
     data.step5.appId.trim() !== '' &&
     data.step5.apiToken.trim() !== ''
 
