@@ -7,11 +7,20 @@ import {
   useClinicGeneral,
   useSaveClinicGeneral,
 } from '@/features/clinic/api/clinic-settings.api'
+import { useCepLookup } from '@/hooks/use-cep-lookup'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+
+function formatCep(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 8)
+  if (digits.length > 5) {
+    return `${digits.slice(0, 5)}-${digits.slice(5)}`
+  }
+  return digits
+}
 
 const schema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(255),
@@ -22,7 +31,7 @@ const schema = z.object({
   neighborhood: z.string().optional(),
   city: z.string().optional(),
   state: z.string().max(2).optional(),
-  zipCode: z.string().optional(),
+  zipCode: z.string().regex(/^\d{5}-?\d{3}$/, 'CEP inválido').optional().or(z.literal('')),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -46,6 +55,9 @@ export function GeneralTab() {
     },
   })
 
+  const zipCodeValue = form.watch('zipCode')
+  const { isLoading: isCepLoading, address: cepAddress, error: cepError } = useCepLookup(zipCodeValue ?? '')
+
   // Preencher formulário quando dados chegam
   useEffect(() => {
     if (data) {
@@ -62,6 +74,16 @@ export function GeneralTab() {
       })
     }
   }, [data, form])
+
+  // Auto-preencher campos de endereço quando CEP for encontrado
+  useEffect(() => {
+    if (cepAddress) {
+      form.setValue('street', cepAddress.street, { shouldDirty: true })
+      form.setValue('neighborhood', cepAddress.neighborhood, { shouldDirty: true })
+      form.setValue('city', cepAddress.city, { shouldDirty: true })
+      form.setValue('state', cepAddress.state, { shouldDirty: true })
+    }
+  }, [cepAddress, form])
 
   function onSubmit(values: FormValues) {
     const hasAddress =
@@ -138,7 +160,28 @@ export function GeneralTab() {
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2 space-y-2">
             <Label htmlFor="zipCode">CEP</Label>
-            <Input id="zipCode" placeholder="00000-000" {...form.register('zipCode')} />
+            <div className="relative">
+              <Input
+                id="zipCode"
+                placeholder="00000-000"
+                {...form.register('zipCode')}
+                onChange={(e) => {
+                  const formatted = formatCep(e.target.value)
+                  form.setValue('zipCode', formatted, { shouldValidate: true })
+                }}
+              />
+              {isCepLoading && (
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+              )}
+            </div>
+            {cepError && (
+              <p className="text-sm text-destructive">{cepError}</p>
+            )}
+            {form.formState.errors.zipCode && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.zipCode.message}
+              </p>
+            )}
           </div>
 
           <div className="col-span-2 space-y-2">
