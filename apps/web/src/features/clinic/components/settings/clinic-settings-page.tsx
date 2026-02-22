@@ -1,6 +1,6 @@
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-import { useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { GeneralTab } from './tabs/general-tab'
 import { ObjectivesTab } from './tabs/objectives-tab'
 import { ServicesTab } from './tabs/services-tab'
@@ -8,6 +8,7 @@ import { SchedulingTab } from './tabs/scheduling-tab'
 import { CarolTab } from './tabs/carol-tab'
 import { NotificationsTab } from './tabs/notifications-tab'
 import { ConnectorsTab } from './tabs/connectors-tab'
+import { Route } from '@/routes/_authenticated/clinic/settings'
 
 const tabs = [
   { id: 'geral', label: 'Geral' },
@@ -20,7 +21,12 @@ const tabs = [
 ]
 
 export function ClinicSettingsPage() {
-  const [activeTab, setActiveTab] = useState<string>('geral')
+  const { tab: activeTab = 'geral' } = Route.useSearch()
+  const navigate = useNavigate({ from: Route.fullPath })
+
+  function handleTabChange(tabId: string) {
+    navigate({ search: (prev) => ({ ...prev, tab: tabId }), replace: true })
+  }
 
   return (
     <div className="space-y-6">
@@ -36,7 +42,7 @@ export function ClinicSettingsPage() {
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={cn(
                 'w-full text-left rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 activeTab === tab.id
