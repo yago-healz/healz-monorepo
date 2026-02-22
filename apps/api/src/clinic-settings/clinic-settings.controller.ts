@@ -13,7 +13,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger'
 import { ClinicSettingsService } from './clinic-settings.service'
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { IsClinicAdminGuard } from '../clinics/guards/is-clinic-admin.guard'
 import { ClinicObjectivesDto } from './dto/clinic-objectives.dto'
 import { ClinicServicesDto } from './dto/clinic-services.dto'

@@ -19,10 +19,10 @@ import { Request, Response } from "express";
 import { InvitesService } from "./invites.service";
 import { SendInviteDto } from "./dto/send-invite.dto";
 import { AcceptInviteDto } from "./dto/accept-invite.dto";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { IsOrgAdminGuard } from "./guards/is-org-admin.guard";
-import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { JwtPayload } from "../auth/interfaces/jwt-payload.interface";
+import { CurrentUser } from "../common/decorators/current-user.decorator";
+import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
 
 @ApiTags("Invites")
 @Controller("invites")

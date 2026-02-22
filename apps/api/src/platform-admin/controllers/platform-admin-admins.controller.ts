@@ -11,9 +11,9 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
-import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
-import { CurrentUser } from "../../auth/decorators/current-user.decorator";
-import { JwtPayload } from "../../auth/interfaces/jwt-payload.interface";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { JwtPayload } from "../../common/interfaces/jwt-payload.interface";
 import { PlatformAdminGuard } from "../guards/platform-admin.guard";
 import { PlatformAdminAdminsService } from "../services/platform-admin-admins.service";
 import { CreatePlatformAdminDto } from "../dto/admins/create-platform-admin.dto";

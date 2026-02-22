@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { AppointmentModule } from "./appointment/appointment.module";
-import { AuditInterceptor } from "./audit/audit.interceptor";
+import { AuditInterceptor } from "./common/interceptors/audit.interceptor";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
 import { CarolModule } from "./carol/carol.module";

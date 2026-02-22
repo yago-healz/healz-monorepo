@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ClinicAccess } from "../interfaces/jwt-payload.interface";
+import { ClinicAccess } from "../../common/interfaces/jwt-payload.interface";
 
 export class ActiveClinicDto {
   @ApiProperty({ description: "ID da clínica ativa" })

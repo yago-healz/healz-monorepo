@@ -11,7 +11,7 @@ import { randomBytes, randomUUID } from "crypto";
 import { and, eq, isNull, lt } from "drizzle-orm";
 import { db } from "../db";
 import { clinics, refreshTokens, userClinicRoles, users } from "../db/schema";
-import { JwtPayload } from "./interfaces/jwt-payload.interface";
+import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
 import { AuditService } from "../audit/audit.service";
 import { MailService } from "../mail/mail.service";
 

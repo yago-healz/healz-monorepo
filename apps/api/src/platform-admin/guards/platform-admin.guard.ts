@@ -4,7 +4,7 @@ import {
   ForbiddenException,
   Injectable,
 } from "@nestjs/common";
-import { JwtPayload } from "../../auth/interfaces/jwt-payload.interface";
+import { JwtPayload } from "../../common/interfaces/jwt-payload.interface";
 
 @Injectable()
 export class PlatformAdminGuard implements CanActivate {

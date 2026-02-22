@@ -9,7 +9,7 @@ import * as bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 import { and, eq } from "drizzle-orm";
 import { AuditService } from "../audit/audit.service";
-import { JwtPayload } from "../auth/interfaces/jwt-payload.interface";
+import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
 import { db } from "../db";
 import {
   clinics,

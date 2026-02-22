@@ -17,9 +17,9 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
-import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
-import { CurrentUser } from "../../auth/decorators/current-user.decorator";
-import { JwtPayload } from "../../auth/interfaces/jwt-payload.interface";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { JwtPayload } from "../../common/interfaces/jwt-payload.interface";
 import { PlatformAdminGuard } from "../guards/platform-admin.guard";
 import { PlatformAdminClinicsService } from "../services/platform-admin-clinics.service";
 import { ListClinicsQueryDto } from "../dto/clinics/list-clinics-query.dto";

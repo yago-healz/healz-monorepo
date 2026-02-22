@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ClinicAccess } from "../../auth/interfaces/jwt-payload.interface";
+import { ClinicAccess } from "../../common/interfaces/jwt-payload.interface";
 
 export class SignupActiveClinicDto {
   @ApiProperty({ description: "ID da clínica", example: "550e8400-e29b-41d4-a716-446655440000" })

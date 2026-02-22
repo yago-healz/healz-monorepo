@@ -19,7 +19,7 @@ import {
 import { Throttle } from "@nestjs/throttler";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
-import { CurrentUser } from "./decorators/current-user.decorator";
+import { CurrentUser } from "../common/decorators/current-user.decorator";
 import {
   LoginDto,
   SwitchContextDto,
@@ -27,8 +27,8 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
 } from "./dto";
-import { JwtAuthGuard } from "./guards/jwt-auth.guard";
-import { JwtPayload } from "./interfaces/jwt-payload.interface";
+import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
+import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
 
 @ApiTags("Authentication")
 @Controller("auth")

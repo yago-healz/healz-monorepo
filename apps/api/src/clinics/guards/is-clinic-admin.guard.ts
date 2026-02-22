@@ -8,7 +8,7 @@ import {
 import { and, eq, or } from "drizzle-orm";
 import { db } from "../../db";
 import { clinics, userClinicRoles } from "../../db/schema";
-import { JwtPayload } from "../../auth/interfaces/jwt-payload.interface";
+import { JwtPayload } from "../../common/interfaces/jwt-payload.interface";
 
 @Injectable()
 export class IsClinicAdminGuard implements CanActivate {

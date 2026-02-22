@@ -19,10 +19,10 @@ import { Throttle } from "@nestjs/throttler";
 import { Request } from "express";
 import { ClinicsService } from "./clinics.service";
 import { AddMemberDto } from "./dto/add-member.dto";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { IsClinicAdminGuard } from "./guards/is-clinic-admin.guard";
-import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { JwtPayload } from "../auth/interfaces/jwt-payload.interface";
+import { CurrentUser } from "../common/decorators/current-user.decorator";
+import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
 
 @ApiTags("Clinics")
 @Controller("clinics")

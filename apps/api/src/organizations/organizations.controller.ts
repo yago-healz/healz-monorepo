@@ -17,9 +17,9 @@ import {
 } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
 import { Request } from "express";
-import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
-import { JwtPayload } from "../auth/interfaces/jwt-payload.interface";
+import { CurrentUser } from "../common/decorators/current-user.decorator";
+import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
+import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
 import { CreateClinicDto } from "./dto/create-clinic.dto";
 import { OrganizationsService } from "./organizations.service";
 

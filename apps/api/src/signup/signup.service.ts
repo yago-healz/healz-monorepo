@@ -17,7 +17,7 @@ import {
 } from "../db/schema";
 import { SignupDto } from "./dto/signup.dto";
 import { SignupResponseDto } from "./dto/signup-response.dto";
-import { JwtPayload } from "../auth/interfaces/jwt-payload.interface";
+import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
 import { MailService } from "../mail/mail.service";
 import { AuditService } from "../audit/audit.service";
 
