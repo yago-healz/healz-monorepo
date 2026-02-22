@@ -8,9 +8,9 @@ import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 import { and, eq } from "drizzle-orm";
-import { AuditService } from "../audit/audit.service";
+import { AuditService } from "../infrastructure/audit/audit.service";
 import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
-import { db } from "../db";
+import { db } from "../infrastructure/database";
 import {
   clinics,
   invites,
@@ -18,8 +18,8 @@ import {
   refreshTokens,
   userClinicRoles,
   users,
-} from "../db/schema";
-import { MailService } from "../mail/mail.service";
+} from "../infrastructure/database/schema";
+import { MailService } from "../infrastructure/mail/mail.service";
 import { AcceptInviteDto } from "./dto/accept-invite.dto";
 import { InviteResponseDto } from "./dto/invite-response.dto";
 import { SendInviteDto } from "./dto/send-invite.dto";

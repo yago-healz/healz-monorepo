@@ -10,15 +10,15 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import { db } from "../../db";
+import { db } from "../../infrastructure/database";
 import {
   clinics,
   organizations,
   userClinicRoles,
   users,
-} from "../../db/schema";
-import { AuditService } from "../../audit/audit.service";
-import { MailService } from "../../mail/mail.service";
+} from "../../infrastructure/database/schema";
+import { AuditService } from "../../infrastructure/audit/audit.service";
+import { MailService } from "../../infrastructure/mail/mail.service";
 import { InvitesService } from "../../invites/invites.service";
 import { ListOrganizationsQueryDto } from "../dto/organizations/list-organizations-query.dto";
 import { CreateOrganizationDto } from "../dto/organizations/create-organization.dto";

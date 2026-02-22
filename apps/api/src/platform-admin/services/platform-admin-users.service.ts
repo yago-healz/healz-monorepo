@@ -6,7 +6,7 @@ import {
 import * as bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
-import { db } from "../../db";
+import { db } from "../../infrastructure/database";
 import {
   auditLogs,
   clinics,
@@ -15,9 +15,9 @@ import {
   refreshTokens,
   userClinicRoles,
   users,
-} from "../../db/schema";
-import { AuditService } from "../../audit/audit.service";
-import { MailService } from "../../mail/mail.service";
+} from "../../infrastructure/database/schema";
+import { AuditService } from "../../infrastructure/audit/audit.service";
+import { MailService } from "../../infrastructure/mail/mail.service";
 import { ListUsersQueryDto } from "../dto/users/list-users-query.dto";
 import { CreateUserDto } from "../dto/users/create-user.dto";
 import { UpdateUserDto } from "../dto/users/update-user.dto";

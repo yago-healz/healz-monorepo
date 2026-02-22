@@ -5,9 +5,9 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { eq } from "drizzle-orm";
-import { db } from "../../db";
-import { clinics, refreshTokens, userClinicRoles, users } from "../../db/schema";
-import { AuditService } from "../../audit/audit.service";
+import { db } from "../../infrastructure/database";
+import { clinics, refreshTokens, userClinicRoles, users } from "../../infrastructure/database/schema";
+import { AuditService } from "../../infrastructure/audit/audit.service";
 
 @Injectable()
 export class PlatformAdminImpersonationService {

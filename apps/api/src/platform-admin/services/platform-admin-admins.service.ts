@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { and, eq, isNull } from "drizzle-orm";
-import { db } from "../../db";
-import { platformAdmins, users } from "../../db/schema";
-import { AuditService } from "../../audit/audit.service";
+import { db } from "../../infrastructure/database";
+import { platformAdmins, users } from "../../infrastructure/database/schema";
+import { AuditService } from "../../infrastructure/audit/audit.service";
 
 @Injectable()
 export class PlatformAdminAdminsService {

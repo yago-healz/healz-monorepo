@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { IEventBus } from "../../event-sourcing/event-bus/event-bus.interface";
-import { IEventStore } from "../../event-sourcing/event-store/event-store.interface";
+import { IEventBus } from "../../infrastructure/event-sourcing/event-bus/event-bus.interface";
+import { IEventStore } from "../../infrastructure/event-sourcing/event-store/event-store.interface";
 import { PatientJourney } from "../domain/patient-journey.aggregate";
 
 @Injectable()

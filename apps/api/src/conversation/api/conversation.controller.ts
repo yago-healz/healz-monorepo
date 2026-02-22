@@ -9,11 +9,11 @@ import {
 } from "@nestjs/common";
 import { eq, and, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
-import { db } from "../../db";
+import { db } from "../../infrastructure/database";
 import {
   conversationView,
   messageView,
-} from "../../db/schema/conversation-view.schema";
+} from "../../infrastructure/database/schema/conversation-view.schema";
 import { ReceiveMessageHandler } from "../application/commands/receive-message.handler";
 import { ReceiveMessageDto } from "./dtos/receive-message.dto";
 

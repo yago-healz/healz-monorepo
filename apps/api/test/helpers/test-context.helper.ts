@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
 import { TestDatabaseHelper } from './test-database.helper';
 import { TestFixtures } from './test-fixtures.helper';
-import { MailService } from '../../src/mail/mail.service';
+import { MailService } from '../../src/infrastructure/mail/mail.service';
 import {
   MailServiceMock,
   createMailServiceMock,

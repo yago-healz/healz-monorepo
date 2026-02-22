@@ -5,8 +5,8 @@ import {
   Injectable,
 } from "@nestjs/common";
 import { eq } from "drizzle-orm";
-import { db } from "../../db";
-import { users } from "../../db/schema";
+import { db } from "../../infrastructure/database";
+import { users } from "../../infrastructure/database/schema";
 
 @Injectable()
 export class EmailVerifiedGuard implements CanActivate {

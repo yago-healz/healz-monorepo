@@ -6,8 +6,8 @@ import {
   Query,
 } from "@nestjs/common";
 import { and, desc, eq } from "drizzle-orm";
-import { db } from "../../db";
-import { patientJourneyView } from "../../db/schema/patient-journey-view.schema";
+import { db } from "../../infrastructure/database";
+import { patientJourneyView } from "../../infrastructure/database/schema/patient-journey-view.schema";
 
 @Controller("journeys")
 export class PatientJourneyController {

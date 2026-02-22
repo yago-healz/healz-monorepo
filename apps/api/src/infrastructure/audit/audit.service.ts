@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { db } from "../db";
-import { auditLogs } from "../db/schema";
+import { db } from "../database";
+import { auditLogs } from "../database/schema";
 
 export interface AuditEntry {
   userId?: string;

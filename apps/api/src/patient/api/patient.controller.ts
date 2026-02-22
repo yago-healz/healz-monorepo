@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Patch, Param, Body, Query, NotFoundException } from "@nestjs/common";
 import { eq, and } from "drizzle-orm";
-import { db, patientView } from "../../db";
+import { db, patientView } from "../../infrastructure/database";
 import { RegisterPatientHandler } from "../application/commands/register-patient.handler";
 import { UpdatePatientHandler } from "../application/commands/update-patient.handler";
 import { RegisterPatientDto } from "./dtos/register-patient.dto";

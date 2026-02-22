@@ -7,7 +7,7 @@ import {
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 import { Request, Response } from "express";
-import { AuditService } from "../../audit/audit.service";
+import { AuditService } from "../../infrastructure/audit/audit.service";
 import { JwtPayload } from "../interfaces/jwt-payload.interface";
 
 @Injectable()

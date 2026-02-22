@@ -1,9 +1,9 @@
 import { Injectable, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { eq } from "drizzle-orm";
-import { db } from "../../../db";
-import { appointmentView } from "../../../db/schema/appointment-view.schema";
-import { IEventBus } from "../../../event-sourcing/event-bus/event-bus.interface";
-import { DomainEvent } from "../../../event-sourcing/domain/domain-event.interface";
+import { db } from "../../../infrastructure/database";
+import { appointmentView } from "../../../infrastructure/database/schema/appointment-view.schema";
+import { IEventBus } from "../../../infrastructure/event-sourcing/event-bus/event-bus.interface";
+import { DomainEvent } from "../../../infrastructure/event-sourcing/domain/domain-event.interface";
 
 @Injectable()
 export class AppointmentProjectionHandler implements OnModuleInit {

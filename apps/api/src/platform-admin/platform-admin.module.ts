@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
-import { AuditModule } from "../audit/audit.module";
-import { MailModule } from "../mail/mail.module";
+import { AuditModule } from "../infrastructure/audit/audit.module";
+import { MailModule } from "../infrastructure/mail/mail.module";
 import { InvitesModule } from "../invites/invites.module";
 import { PlatformAdminGuard } from "./guards/platform-admin.guard";
 import { PlatformAdminOrganizationsService } from "./services/platform-admin-organizations.service";

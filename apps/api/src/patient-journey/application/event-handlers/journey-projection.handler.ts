@@ -1,9 +1,9 @@
 import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { eq } from "drizzle-orm";
-import { db } from "../../../db";
-import { patientJourneyView } from "../../../db/schema/patient-journey-view.schema";
-import { DomainEvent } from "../../../event-sourcing/domain/domain-event.interface";
-import { IEventBus } from "../../../event-sourcing/event-bus/event-bus.interface";
+import { db } from "../../../infrastructure/database";
+import { patientJourneyView } from "../../../infrastructure/database/schema/patient-journey-view.schema";
+import { DomainEvent } from "../../../infrastructure/event-sourcing/domain/domain-event.interface";
+import { IEventBus } from "../../../infrastructure/event-sourcing/event-bus/event-bus.interface";
 import { getRiskLevel } from "../../domain/risk-score";
 
 @Injectable()

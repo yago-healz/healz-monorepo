@@ -1,5 +1,5 @@
-import { AggregateRoot } from "../../event-sourcing/domain/aggregate-root";
-import { DomainEvent } from "../../event-sourcing/domain/domain-event.interface";
+import { AggregateRoot } from "../../infrastructure/event-sourcing/domain/aggregate-root";
+import { DomainEvent } from "../../infrastructure/event-sourcing/domain/domain-event.interface";
 import {
   createConversationStartedEvent,
   ConversationStartedData,

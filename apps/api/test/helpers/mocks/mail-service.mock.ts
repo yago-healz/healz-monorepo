@@ -1,4 +1,4 @@
-import { MailService } from '../../../src/mail/mail.service';
+import { MailService } from '../../../src/infrastructure/mail/mail.service';
 
 export type MailServiceMock = jest.Mocked<
   Pick<

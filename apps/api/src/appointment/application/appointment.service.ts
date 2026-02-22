@@ -1,12 +1,12 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { randomUUID } from "crypto";
 import { eq, and, gte, lte, inArray, ne } from "drizzle-orm";
-import { db } from "../../db";
-import { appointmentView } from "../../db/schema/appointment-view.schema";
-import { IEventStore } from "../../event-sourcing/event-store/event-store.interface";
-import { IEventBus } from "../../event-sourcing/event-bus/event-bus.interface";
+import { db } from "../../infrastructure/database";
+import { appointmentView } from "../../infrastructure/database/schema/appointment-view.schema";
+import { IEventStore } from "../../infrastructure/event-sourcing/event-store/event-store.interface";
+import { IEventBus } from "../../infrastructure/event-sourcing/event-bus/event-bus.interface";
 import { Appointment } from "../domain/appointment.aggregate";
-import { CorrelationUtil } from "../../event-sourcing/utils/correlation.util";
+import { CorrelationUtil } from "../../infrastructure/event-sourcing/utils/correlation.util";
 import { AppointmentProjectionHandler } from "./event-handlers/appointment-projection.handler";
 
 @Injectable()

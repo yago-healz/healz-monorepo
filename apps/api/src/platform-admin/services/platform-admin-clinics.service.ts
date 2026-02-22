@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { and, eq, ilike, or, sql } from "drizzle-orm";
-import { db } from "../../db";
-import { clinics, organizations, userClinicRoles, users } from "../../db/schema";
-import { AuditService } from "../../audit/audit.service";
+import { db } from "../../infrastructure/database";
+import { clinics, organizations, userClinicRoles, users } from "../../infrastructure/database/schema";
+import { AuditService } from "../../infrastructure/audit/audit.service";
 import { ListClinicsQueryDto } from "../dto/clinics/list-clinics-query.dto";
 import { PlatformAdminCreateClinicDto } from "../dto/clinics/create-clinic.dto";
 import { UpdateClinicDto } from "../dto/clinics/update-clinic.dto";

@@ -1,12 +1,12 @@
 import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { randomUUID } from "crypto";
 import { and, eq, ne, sql } from "drizzle-orm";
-import { db } from "../../../db";
-import { appointmentView } from "../../../db/schema/appointment-view.schema";
-import { patientJourneyView } from "../../../db/schema/patient-journey-view.schema";
-import { DomainEvent } from "../../../event-sourcing/domain/domain-event.interface";
-import { IEventBus } from "../../../event-sourcing/event-bus/event-bus.interface";
-import { IEventStore } from "../../../event-sourcing/event-store/event-store.interface";
+import { db } from "../../../infrastructure/database";
+import { appointmentView } from "../../../infrastructure/database/schema/appointment-view.schema";
+import { patientJourneyView } from "../../../infrastructure/database/schema/patient-journey-view.schema";
+import { DomainEvent } from "../../../infrastructure/event-sourcing/domain/domain-event.interface";
+import { IEventBus } from "../../../infrastructure/event-sourcing/event-bus/event-bus.interface";
+import { IEventStore } from "../../../infrastructure/event-sourcing/event-store/event-store.interface";
 import { JourneyStage } from "../../domain/journey-stage";
 import { PatientJourney } from "../../domain/patient-journey.aggregate";
 import { RISK_FACTORS } from "../../domain/risk-score";

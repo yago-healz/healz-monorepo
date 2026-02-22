@@ -6,8 +6,8 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { and, eq, or } from "drizzle-orm";
-import { db } from "../../db";
-import { clinics, userClinicRoles } from "../../db/schema";
+import { db } from "../../infrastructure/database";
+import { clinics, userClinicRoles } from "../../infrastructure/database/schema";
 import { JwtPayload } from "../../common/interfaces/jwt-payload.interface";
 
 @Injectable()

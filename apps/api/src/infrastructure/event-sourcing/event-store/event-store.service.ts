@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { eq, and, asc, desc } from "drizzle-orm";
-import { db, events } from "../../db";
+import { db, events } from "../../database";
 import { DomainEvent } from "../domain/domain-event.interface";
 import { IEventStore } from "./event-store.interface";
 

@@ -7,19 +7,19 @@ import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
-import { db } from "../db";
+import { db } from "../infrastructure/database";
 import {
   clinics,
   organizations,
   refreshTokens,
   userClinicRoles,
   users,
-} from "../db/schema";
+} from "../infrastructure/database/schema";
 import { SignupDto } from "./dto/signup.dto";
 import { SignupResponseDto } from "./dto/signup-response.dto";
 import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
-import { MailService } from "../mail/mail.service";
-import { AuditService } from "../audit/audit.service";
+import { MailService } from "../infrastructure/mail/mail.service";
+import { AuditService } from "../infrastructure/audit/audit.service";
 
 @Injectable()
 export class SignupService {

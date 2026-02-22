@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { DomainEvent } from "../../../event-sourcing/domain/domain-event.interface";
+import { DomainEvent } from "../../../infrastructure/event-sourcing/domain/domain-event.interface";
 
 export interface AppointmentCompletedData {
   appointment_id: string;

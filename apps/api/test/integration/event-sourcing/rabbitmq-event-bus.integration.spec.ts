@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { randomUUID } from 'crypto';
-import { DomainEvent } from '../../../src/event-sourcing/domain/domain-event.interface';
-import { IEventHandler } from '../../../src/event-sourcing/domain/event-handler.interface';
-import { RabbitMQEventBus } from '../../../src/event-sourcing/event-bus/rabbitmq-event-bus.service';
+import { DomainEvent } from '../../../src/infrastructure/event-sourcing/domain/domain-event.interface';
+import { IEventHandler } from '../../../src/infrastructure/event-sourcing/domain/event-handler.interface';
+import { RabbitMQEventBus } from '../../../src/infrastructure/event-sourcing/event-bus/rabbitmq-event-bus.service';
 
 describe('RabbitMQEventBus (Integration)', () => {
   let eventBus: RabbitMQEventBus;

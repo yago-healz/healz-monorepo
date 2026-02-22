@@ -1,5 +1,5 @@
-import { AggregateRoot } from "../../event-sourcing/domain/aggregate-root";
-import { DomainEvent } from "../../event-sourcing/domain/domain-event.interface";
+import { AggregateRoot } from "../../infrastructure/event-sourcing/domain/aggregate-root";
+import { DomainEvent } from "../../infrastructure/event-sourcing/domain/domain-event.interface";
 import { createPatientRegisteredEvent, PatientRegisteredData } from "./events/patient-registered.event";
 import { createPatientUpdatedEvent, PatientUpdatedData } from "./events/patient-updated.event";
 

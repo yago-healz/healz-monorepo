@@ -4,11 +4,11 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { and, eq } from "drizzle-orm";
-import { db } from "../db";
-import { clinics, organizations, userClinicRoles } from "../db/schema";
+import { db } from "../infrastructure/database";
+import { clinics, organizations, userClinicRoles } from "../infrastructure/database/schema";
 import { CreateClinicDto } from "./dto/create-clinic.dto";
 import { ClinicResponseDto } from "./dto/clinic-response.dto";
-import { AuditService } from "../audit/audit.service";
+import { AuditService } from "../infrastructure/audit/audit.service";
 
 @Injectable()
 export class OrganizationsService {

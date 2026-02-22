@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
-import { db, events } from '../../../src/db';
-import { DomainEvent } from '../../../src/event-sourcing/domain/domain-event.interface';
-import { EventStoreService } from '../../../src/event-sourcing/event-store/event-store.service';
+import { db, events } from '../../../src/infrastructure/database';
+import { DomainEvent } from '../../../src/infrastructure/event-sourcing/domain/domain-event.interface';
+import { EventStoreService } from '../../../src/infrastructure/event-sourcing/event-store/event-store.service';
 import { eq } from 'drizzle-orm';
 
 describe('EventStoreService', () => {

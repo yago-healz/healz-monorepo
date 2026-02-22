@@ -9,11 +9,11 @@ import * as bcrypt from "bcrypt";
 import * as crypto from "crypto";
 import { randomBytes, randomUUID } from "crypto";
 import { and, eq, isNull, lt } from "drizzle-orm";
-import { db } from "../db";
-import { clinics, refreshTokens, userClinicRoles, users } from "../db/schema";
+import { db } from "../infrastructure/database";
+import { clinics, refreshTokens, userClinicRoles, users } from "../infrastructure/database/schema";
 import { JwtPayload } from "../common/interfaces/jwt-payload.interface";
-import { AuditService } from "../audit/audit.service";
-import { MailService } from "../mail/mail.service";
+import { AuditService } from "../infrastructure/audit/audit.service";
+import { MailService } from "../infrastructure/mail/mail.service";
 
 @Injectable()
 export class AuthService {
@@ -74,7 +74,7 @@ export class AuthService {
     }
 
     // 1.7 Verificar se é Platform Admin
-    const { platformAdmins } = await import("../db/schema");
+    const { platformAdmins } = await import("../infrastructure/database/schema");
     const platformAdmin = await db
       .select()
       .from(platformAdmins)
@@ -106,7 +106,7 @@ export class AuthService {
     }
 
     // 2.5 Filtrar apenas clínicas e organizações ativas
-    const { organizations } = await import("../db/schema");
+    const { organizations } = await import("../infrastructure/database/schema");
 
     const activeUserClinics = [];
     for (const uc of userClinics) {
@@ -315,7 +315,7 @@ export class AuthService {
       .limit(1);
 
     // 6.5 Verificar se é Platform Admin
-    const { platformAdmins } = await import("../db/schema");
+    const { platformAdmins } = await import("../infrastructure/database/schema");
     const platformAdmin = await db
       .select()
       .from(platformAdmins)

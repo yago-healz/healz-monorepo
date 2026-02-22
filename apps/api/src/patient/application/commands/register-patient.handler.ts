@@ -1,9 +1,9 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { randomUUID } from "crypto";
-import { IEventStore } from "../../../event-sourcing/event-store/event-store.interface";
-import { IEventBus } from "../../../event-sourcing/event-bus/event-bus.interface";
+import { IEventStore } from "../../../infrastructure/event-sourcing/event-store/event-store.interface";
+import { IEventBus } from "../../../infrastructure/event-sourcing/event-bus/event-bus.interface";
 import { Patient } from "../../domain/patient.aggregate";
-import { CorrelationUtil } from "../../../event-sourcing/utils/correlation.util";
+import { CorrelationUtil } from "../../../infrastructure/event-sourcing/utils/correlation.util";
 
 @Injectable()
 export class RegisterPatientHandler {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { db } from '../db'
+import { db } from '../infrastructure/database'
 import { eq } from 'drizzle-orm'
 import {
   clinicObjectives,
@@ -7,7 +7,7 @@ import {
   clinicScheduling,
   clinicCarolSettings,
   clinicNotifications,
-} from '../db/schema'
+} from '../infrastructure/database/schema'
 import { ClinicObjectivesDto } from './dto/clinic-objectives.dto'
 import { ClinicServicesDto } from './dto/clinic-services.dto'
 import { ClinicSchedulingDto } from './dto/clinic-scheduling.dto'

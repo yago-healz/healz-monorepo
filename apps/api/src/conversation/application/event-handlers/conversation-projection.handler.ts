@@ -1,12 +1,12 @@
 import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { eq, sql } from "drizzle-orm";
-import { db } from "../../../db";
+import { db } from "../../../infrastructure/database";
 import {
   conversationView,
   messageView,
-} from "../../../db/schema/conversation-view.schema";
-import { DomainEvent } from "../../../event-sourcing/domain/domain-event.interface";
-import { IEventBus } from "../../../event-sourcing/event-bus/event-bus.interface";
+} from "../../../infrastructure/database/schema/conversation-view.schema";
+import { DomainEvent } from "../../../infrastructure/event-sourcing/domain/domain-event.interface";
+import { IEventBus } from "../../../infrastructure/event-sourcing/event-bus/event-bus.interface";
 import { ConversationStartedData } from "../../domain/events/conversation-started.event";
 import { MessageReceivedData } from "../../domain/events/message-received.event";
 import { MessageSentData } from "../../domain/events/message-sent.event";

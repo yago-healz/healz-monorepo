@@ -9,8 +9,8 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { eq, and, desc } from "drizzle-orm";
-import { db } from "../../db";
-import { appointmentView } from "../../db/schema/appointment-view.schema";
+import { db } from "../../infrastructure/database";
+import { appointmentView } from "../../infrastructure/database/schema/appointment-view.schema";
 import { AppointmentService } from "../application/appointment.service";
 import {
   ScheduleAppointmentDto,
