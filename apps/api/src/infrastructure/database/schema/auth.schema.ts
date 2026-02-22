@@ -1,5 +1,6 @@
 // src/database/schemas/auth.schema.ts
-import { boolean, pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, pgEnum, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { addresses } from "./address.schema";
 
 export const userRoleEnum = pgEnum("user_role", [
   "admin",
@@ -24,6 +25,8 @@ export const clinics = pgTable("clinics", {
     .references(() => organizations.id)
     .notNull(),
   name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  addressId: uuid("address_id").references(() => addresses.id),
   status: varchar("status", { length: 20 }).default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at"),

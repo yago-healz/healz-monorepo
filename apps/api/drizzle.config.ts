@@ -6,7 +6,7 @@ const isLocalDb =
 const sslUrl =
   isLocalDb || !dbUrl
     ? dbUrl
-    : `${dbUrl}${dbUrl.includes("?") ? "&" : "?"}sslmode=require`;
+    : `${dbUrl}${dbUrl.includes("?") ? "&" : "?"}uselibpqcompat=true&sslmode=require`;
 
 export default defineConfig({
   schema: "./src/infrastructure/database/schema/",
