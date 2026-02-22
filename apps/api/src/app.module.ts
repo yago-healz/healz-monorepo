@@ -2,25 +2,25 @@ import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
-import { AppointmentModule } from "./appointment/appointment.module";
+import { AppointmentModule } from "./modules/appointment/appointment.module";
 import { AuditInterceptor } from "./common/interceptors/audit.interceptor";
 import { AuditModule } from "./infrastructure/audit/audit.module";
-import { AuthModule } from "./auth/auth.module";
-import { CarolModule } from "./carol/carol.module";
-import { ClinicSettingsModule } from "./clinic-settings/clinic-settings.module";
-import { ClinicsModule } from "./clinics/clinics.module";
-import { ConversationModule } from "./conversation/conversation.module";
+import { AuthModule } from "./modules/auth/auth.module";
+import { CarolModule } from "./modules/carol/carol.module";
+import { ClinicSettingsModule } from "./modules/clinic-settings/clinic-settings.module";
+import { ClinicsModule } from "./modules/clinics/clinics.module";
+import { ConversationModule } from "./modules/conversation/conversation.module";
 import { RlsMiddleware } from "./infrastructure/database/middleware";
 import { EventSourcingModule } from "./infrastructure/event-sourcing/event-sourcing.module";
 import { HealthController } from "./health.controller";
-import { InvitesModule } from "./invites/invites.module";
+import { InvitesModule } from "./modules/invites/invites.module";
 import { MailModule } from "./infrastructure/mail/mail.module";
-import { MessagingModule } from "./messaging/messaging.module";
-import { OrganizationsModule } from "./organizations/organizations.module";
-import { PatientJourneyModule } from "./patient-journey/patient-journey.module";
-import { PatientModule } from "./patient/patient.module";
-import { PlatformAdminModule } from "./platform-admin/platform-admin.module";
-import { SignupModule } from "./signup/signup.module";
+import { MessagingModule } from "./modules/messaging/messaging.module";
+import { OrganizationsModule } from "./modules/organizations/organizations.module";
+import { PatientJourneyModule } from "./modules/patient-journey/patient-journey.module";
+import { PatientModule } from "./modules/patient/patient.module";
+import { PlatformAdminModule } from "./modules/platform-admin/platform-admin.module";
+import { SignupModule } from "./modules/signup/signup.module";
 
 @Module({
   imports: [

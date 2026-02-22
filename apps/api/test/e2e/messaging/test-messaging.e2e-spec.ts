@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
-import { MessagingModule } from '../../../src/messaging/messaging.module';
+import { MessagingModule } from '../../../src/modules/messaging/messaging.module';
 
 describe('Test Messaging API (e2e)', () => {
   let app: INestApplication;

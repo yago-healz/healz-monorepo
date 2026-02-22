@@ -1,5 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
-import { MockMessagingGateway } from '../../../src/messaging/infrastructure/mock-messaging-gateway.service';
+import { MockMessagingGateway } from '../../../src/modules/messaging/infrastructure/mock-messaging-gateway.service';
 
 describe('MockMessagingGateway', () => {
   let gateway: MockMessagingGateway;
