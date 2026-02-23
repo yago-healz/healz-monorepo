@@ -70,8 +70,8 @@ export function ClinicsTable() {
             {data?.data.map((clinic: Clinic) => (
               <TableRow key={clinic.id}>
                 <TableCell className="font-medium">{clinic.name}</TableCell>
-                <TableCell>{clinic.name || '-'}</TableCell>
-                <TableCell>{clinic.organization.name}</TableCell>
+                <TableCell>{clinic.organization.name || '-'}</TableCell>
+                <TableCell>-</TableCell>
                 <TableCell>-</TableCell>
                 <TableCell>-</TableCell>
                 <TableCell>
