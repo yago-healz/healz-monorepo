@@ -104,7 +104,6 @@ export function MembersTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Editar cargo</DropdownMenuItem>
                       <DropdownMenuItem>Reenviar convite</DropdownMenuItem>
                       <DropdownMenuItem className="text-destructive">
                         Remover membro
