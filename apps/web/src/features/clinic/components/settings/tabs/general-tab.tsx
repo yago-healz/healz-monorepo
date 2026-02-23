@@ -216,7 +216,7 @@ export function GeneralTab() {
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-start">
         <Button type="submit" disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Salvar alterações
