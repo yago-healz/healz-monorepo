@@ -125,8 +125,7 @@ export interface OrganizationListParams extends PaginationParams {
 export interface Clinic {
   id: string;
   name: string;
-  organizationId: string;
-  organizationName?: string;
+  organization: Organization;
   status: Status;
   createdAt: string;
 }

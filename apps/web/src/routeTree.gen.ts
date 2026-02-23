@@ -19,16 +19,8 @@ import { Route as PublicForgotPasswordRouteImport } from './routes/_public/forgo
 import { Route as PublicAcceptInviteRouteImport } from './routes/_public/accept-invite'
 import { Route as AuthenticatedClinicRouteImport } from './routes/_authenticated/clinic'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as PublicOnboardingIndexRouteImport } from './routes/_public/onboarding/index'
 import { Route as AuthenticatedClinicIndexRouteImport } from './routes/_authenticated/clinic/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
-import { Route as PublicOnboardingStep5RouteImport } from './routes/_public/onboarding/step-5'
-import { Route as PublicOnboardingStep4RouteImport } from './routes/_public/onboarding/step-4'
-import { Route as PublicOnboardingStep3RouteImport } from './routes/_public/onboarding/step-3'
-import { Route as PublicOnboardingStep2RouteImport } from './routes/_public/onboarding/step-2'
-import { Route as PublicOnboardingStep1RouteImport } from './routes/_public/onboarding/step-1'
-import { Route as PublicOnboardingReviewRouteImport } from './routes/_public/onboarding/review'
-import { Route as PublicOnboardingCompleteRouteImport } from './routes/_public/onboarding/complete'
 import { Route as AuthenticatedClinicSettingsRouteImport } from './routes/_authenticated/clinic/settings'
 import { Route as AuthenticatedClinicMembersRouteImport } from './routes/_authenticated/clinic/members'
 import { Route as AuthenticatedAdminUsersIndexRouteImport } from './routes/_authenticated/admin/users/index'
@@ -90,11 +82,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const PublicOnboardingIndexRoute = PublicOnboardingIndexRouteImport.update({
-  id: '/onboarding/',
-  path: '/onboarding/',
-  getParentRoute: () => PublicRoute,
-} as any)
 const AuthenticatedClinicIndexRoute =
   AuthenticatedClinicIndexRouteImport.update({
     id: '/',
@@ -106,42 +93,6 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
-const PublicOnboardingStep5Route = PublicOnboardingStep5RouteImport.update({
-  id: '/onboarding/step-5',
-  path: '/onboarding/step-5',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicOnboardingStep4Route = PublicOnboardingStep4RouteImport.update({
-  id: '/onboarding/step-4',
-  path: '/onboarding/step-4',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicOnboardingStep3Route = PublicOnboardingStep3RouteImport.update({
-  id: '/onboarding/step-3',
-  path: '/onboarding/step-3',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicOnboardingStep2Route = PublicOnboardingStep2RouteImport.update({
-  id: '/onboarding/step-2',
-  path: '/onboarding/step-2',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicOnboardingStep1Route = PublicOnboardingStep1RouteImport.update({
-  id: '/onboarding/step-1',
-  path: '/onboarding/step-1',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicOnboardingReviewRoute = PublicOnboardingReviewRouteImport.update({
-  id: '/onboarding/review',
-  path: '/onboarding/review',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicOnboardingCompleteRoute =
-  PublicOnboardingCompleteRouteImport.update({
-    id: '/onboarding/complete',
-    path: '/onboarding/complete',
-    getParentRoute: () => PublicRoute,
-  } as any)
 const AuthenticatedClinicSettingsRoute =
   AuthenticatedClinicSettingsRouteImport.update({
     id: '/settings',
@@ -226,16 +177,8 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof PublicVerifyEmailRoute
   '/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/clinic/settings': typeof AuthenticatedClinicSettingsRoute
-  '/onboarding/complete': typeof PublicOnboardingCompleteRoute
-  '/onboarding/review': typeof PublicOnboardingReviewRoute
-  '/onboarding/step-1': typeof PublicOnboardingStep1Route
-  '/onboarding/step-2': typeof PublicOnboardingStep2Route
-  '/onboarding/step-3': typeof PublicOnboardingStep3Route
-  '/onboarding/step-4': typeof PublicOnboardingStep4Route
-  '/onboarding/step-5': typeof PublicOnboardingStep5Route
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/clinic/': typeof AuthenticatedClinicIndexRoute
-  '/onboarding/': typeof PublicOnboardingIndexRoute
   '/admin/clinics/$id': typeof AuthenticatedAdminClinicsIdRoute
   '/admin/clinics/new': typeof AuthenticatedAdminClinicsNewRoute
   '/admin/organizations/$id': typeof AuthenticatedAdminOrganizationsIdRoute
@@ -256,16 +199,8 @@ export interface FileRoutesByTo {
   '/verify-email': typeof PublicVerifyEmailRoute
   '/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/clinic/settings': typeof AuthenticatedClinicSettingsRoute
-  '/onboarding/complete': typeof PublicOnboardingCompleteRoute
-  '/onboarding/review': typeof PublicOnboardingReviewRoute
-  '/onboarding/step-1': typeof PublicOnboardingStep1Route
-  '/onboarding/step-2': typeof PublicOnboardingStep2Route
-  '/onboarding/step-3': typeof PublicOnboardingStep3Route
-  '/onboarding/step-4': typeof PublicOnboardingStep4Route
-  '/onboarding/step-5': typeof PublicOnboardingStep5Route
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/clinic': typeof AuthenticatedClinicIndexRoute
-  '/onboarding': typeof PublicOnboardingIndexRoute
   '/admin/clinics/$id': typeof AuthenticatedAdminClinicsIdRoute
   '/admin/clinics/new': typeof AuthenticatedAdminClinicsNewRoute
   '/admin/organizations/$id': typeof AuthenticatedAdminOrganizationsIdRoute
@@ -291,16 +226,8 @@ export interface FileRoutesById {
   '/_public/verify-email': typeof PublicVerifyEmailRoute
   '/_authenticated/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/_authenticated/clinic/settings': typeof AuthenticatedClinicSettingsRoute
-  '/_public/onboarding/complete': typeof PublicOnboardingCompleteRoute
-  '/_public/onboarding/review': typeof PublicOnboardingReviewRoute
-  '/_public/onboarding/step-1': typeof PublicOnboardingStep1Route
-  '/_public/onboarding/step-2': typeof PublicOnboardingStep2Route
-  '/_public/onboarding/step-3': typeof PublicOnboardingStep3Route
-  '/_public/onboarding/step-4': typeof PublicOnboardingStep4Route
-  '/_public/onboarding/step-5': typeof PublicOnboardingStep5Route
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/clinic/': typeof AuthenticatedClinicIndexRoute
-  '/_public/onboarding/': typeof PublicOnboardingIndexRoute
   '/_authenticated/admin/clinics/$id': typeof AuthenticatedAdminClinicsIdRoute
   '/_authenticated/admin/clinics/new': typeof AuthenticatedAdminClinicsNewRoute
   '/_authenticated/admin/organizations/$id': typeof AuthenticatedAdminOrganizationsIdRoute
@@ -325,16 +252,8 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/clinic/members'
     | '/clinic/settings'
-    | '/onboarding/complete'
-    | '/onboarding/review'
-    | '/onboarding/step-1'
-    | '/onboarding/step-2'
-    | '/onboarding/step-3'
-    | '/onboarding/step-4'
-    | '/onboarding/step-5'
     | '/admin/'
     | '/clinic/'
-    | '/onboarding/'
     | '/admin/clinics/$id'
     | '/admin/clinics/new'
     | '/admin/organizations/$id'
@@ -355,16 +274,8 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/clinic/members'
     | '/clinic/settings'
-    | '/onboarding/complete'
-    | '/onboarding/review'
-    | '/onboarding/step-1'
-    | '/onboarding/step-2'
-    | '/onboarding/step-3'
-    | '/onboarding/step-4'
-    | '/onboarding/step-5'
     | '/admin'
     | '/clinic'
-    | '/onboarding'
     | '/admin/clinics/$id'
     | '/admin/clinics/new'
     | '/admin/organizations/$id'
@@ -389,16 +300,8 @@ export interface FileRouteTypes {
     | '/_public/verify-email'
     | '/_authenticated/clinic/members'
     | '/_authenticated/clinic/settings'
-    | '/_public/onboarding/complete'
-    | '/_public/onboarding/review'
-    | '/_public/onboarding/step-1'
-    | '/_public/onboarding/step-2'
-    | '/_public/onboarding/step-3'
-    | '/_public/onboarding/step-4'
-    | '/_public/onboarding/step-5'
     | '/_authenticated/admin/'
     | '/_authenticated/clinic/'
-    | '/_public/onboarding/'
     | '/_authenticated/admin/clinics/$id'
     | '/_authenticated/admin/clinics/new'
     | '/_authenticated/admin/organizations/$id'
@@ -489,13 +392,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_public/onboarding/': {
-      id: '/_public/onboarding/'
-      path: '/onboarding'
-      fullPath: '/onboarding/'
-      preLoaderRoute: typeof PublicOnboardingIndexRouteImport
-      parentRoute: typeof PublicRoute
-    }
     '/_authenticated/clinic/': {
       id: '/_authenticated/clinic/'
       path: '/'
@@ -509,55 +405,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_public/onboarding/step-5': {
-      id: '/_public/onboarding/step-5'
-      path: '/onboarding/step-5'
-      fullPath: '/onboarding/step-5'
-      preLoaderRoute: typeof PublicOnboardingStep5RouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/onboarding/step-4': {
-      id: '/_public/onboarding/step-4'
-      path: '/onboarding/step-4'
-      fullPath: '/onboarding/step-4'
-      preLoaderRoute: typeof PublicOnboardingStep4RouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/onboarding/step-3': {
-      id: '/_public/onboarding/step-3'
-      path: '/onboarding/step-3'
-      fullPath: '/onboarding/step-3'
-      preLoaderRoute: typeof PublicOnboardingStep3RouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/onboarding/step-2': {
-      id: '/_public/onboarding/step-2'
-      path: '/onboarding/step-2'
-      fullPath: '/onboarding/step-2'
-      preLoaderRoute: typeof PublicOnboardingStep2RouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/onboarding/step-1': {
-      id: '/_public/onboarding/step-1'
-      path: '/onboarding/step-1'
-      fullPath: '/onboarding/step-1'
-      preLoaderRoute: typeof PublicOnboardingStep1RouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/onboarding/review': {
-      id: '/_public/onboarding/review'
-      path: '/onboarding/review'
-      fullPath: '/onboarding/review'
-      preLoaderRoute: typeof PublicOnboardingReviewRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/onboarding/complete': {
-      id: '/_public/onboarding/complete'
-      path: '/onboarding/complete'
-      fullPath: '/onboarding/complete'
-      preLoaderRoute: typeof PublicOnboardingCompleteRouteImport
-      parentRoute: typeof PublicRoute
     }
     '/_authenticated/clinic/settings': {
       id: '/_authenticated/clinic/settings'
@@ -715,14 +562,6 @@ interface PublicRouteChildren {
   PublicLoginRoute: typeof PublicLoginRoute
   PublicResetPasswordRoute: typeof PublicResetPasswordRoute
   PublicVerifyEmailRoute: typeof PublicVerifyEmailRoute
-  PublicOnboardingCompleteRoute: typeof PublicOnboardingCompleteRoute
-  PublicOnboardingReviewRoute: typeof PublicOnboardingReviewRoute
-  PublicOnboardingStep1Route: typeof PublicOnboardingStep1Route
-  PublicOnboardingStep2Route: typeof PublicOnboardingStep2Route
-  PublicOnboardingStep3Route: typeof PublicOnboardingStep3Route
-  PublicOnboardingStep4Route: typeof PublicOnboardingStep4Route
-  PublicOnboardingStep5Route: typeof PublicOnboardingStep5Route
-  PublicOnboardingIndexRoute: typeof PublicOnboardingIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
@@ -731,14 +570,6 @@ const PublicRouteChildren: PublicRouteChildren = {
   PublicLoginRoute: PublicLoginRoute,
   PublicResetPasswordRoute: PublicResetPasswordRoute,
   PublicVerifyEmailRoute: PublicVerifyEmailRoute,
-  PublicOnboardingCompleteRoute: PublicOnboardingCompleteRoute,
-  PublicOnboardingReviewRoute: PublicOnboardingReviewRoute,
-  PublicOnboardingStep1Route: PublicOnboardingStep1Route,
-  PublicOnboardingStep2Route: PublicOnboardingStep2Route,
-  PublicOnboardingStep3Route: PublicOnboardingStep3Route,
-  PublicOnboardingStep4Route: PublicOnboardingStep4Route,
-  PublicOnboardingStep5Route: PublicOnboardingStep5Route,
-  PublicOnboardingIndexRoute: PublicOnboardingIndexRoute,
 }
 
 const PublicRouteWithChildren =

@@ -1,6 +1,3 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -19,11 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2 } from 'lucide-react'
-import { useOrganizations } from '../../api/organizations-api'
-import { UserSearchCombobox } from '../users/user-search-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Clinic } from '@/types/api.types'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2 } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { useOrganizations } from '../../api/organizations-api'
+import { UserSearchCombobox } from '../users/user-search-combobox'
 
 const clinicSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -59,7 +59,7 @@ export function ClinicForm({
     resolver: zodResolver(clinicSchema),
     defaultValues: {
       name: clinic?.name || '',
-      organizationId: clinic?.organizationId || '',
+      organizationId: clinic?.organization.id || '',
       status: clinic?.status || 'active',
       initialAdminId: '',
     },
