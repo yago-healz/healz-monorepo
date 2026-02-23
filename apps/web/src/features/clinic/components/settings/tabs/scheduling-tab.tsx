@@ -53,14 +53,14 @@ function DayRow({ label, schedule, onToggleOpen, onAddSlot, onRemoveSlot, onUpda
                 type="time"
                 value={slot.from}
                 onChange={(e) => onUpdateSlot(slot.id, 'from', e.target.value)}
-                className="w-20"
+                className="w-36"
               />
               <span className="text-xs text-muted-foreground">às</span>
               <Input
                 type="time"
                 value={slot.to}
                 onChange={(e) => onUpdateSlot(slot.id, 'to', e.target.value)}
-                className="w-20"
+                className="w-36"
               />
               <Button
                 variant="ghost"
