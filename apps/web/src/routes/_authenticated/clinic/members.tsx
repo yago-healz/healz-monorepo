@@ -1,13 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { UserPlus } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { MembersTable } from '@/features/clinic/components/members/members-table'
+import { InviteMemberDialog } from '@/features/clinic/components/members/invite-member-dialog'
 
 export const Route = createFileRoute('/_authenticated/clinic/members')({
   component: MembersPage,
 })
 
 function MembersPage() {
+  const [inviteOpen, setInviteOpen] = useState(false)
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -18,12 +22,13 @@ function MembersPage() {
             com permissões granulares.
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setInviteOpen(true)}>
           <UserPlus className="mr-2 h-4 w-4" />
           Convidar membro
         </Button>
       </div>
       <MembersTable />
+      <InviteMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} />
     </div>
   )
 }
