@@ -6,6 +6,7 @@ import {
   text,
   jsonb,
   boolean,
+  varchar,
 } from 'drizzle-orm/pg-core'
 import { clinics } from './auth.schema'
 
@@ -92,9 +93,15 @@ export const clinicCarolSettings = pgTable('clinic_carol_settings', {
     .references(() => clinics.id, { onDelete: 'cascade' })
     .notNull(),
 
+  // Identification
+  name: varchar('name', { length: 100 }).notNull().default('Carol'),
+
   // Selected personality traits - stored as JSON array
   // ["welcoming", "empathetic", ...]
   selectedTraits: jsonb('selected_traits').notNull().default([]),
+
+  // Voice tone: 'formal' | 'informal' | 'empathetic'
+  voiceTone: varchar('voice_tone', { length: 20 }).notNull().default('empathetic'),
 
   // Initial greeting message
   greeting: text('greeting').notNull().default(''),
@@ -103,6 +110,15 @@ export const clinicCarolSettings = pgTable('clinic_carol_settings', {
   restrictSensitiveTopics: boolean('restrict_sensitive_topics')
     .notNull()
     .default(true),
+
+  // Scheduling rules: { confirmBeforeScheduling, allowCancellation, allowRescheduling, postSchedulingMessage }
+  schedulingRules: jsonb('scheduling_rules').notNull().default({}),
+
+  // Versioning: 'draft' | 'published'
+  status: varchar('status', { length: 20 }).notNull().default('draft'),
+
+  // Publication timestamp (null = never published)
+  publishedAt: timestamp('published_at'),
 
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at'),

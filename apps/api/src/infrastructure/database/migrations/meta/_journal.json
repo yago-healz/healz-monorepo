@@ -120,6 +120,13 @@
       "when": 1771792259026,
       "tag": "0016_notifications_multi_channel",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1772389443854,
+      "tag": "0017_curvy_sentry",
+      "breakpoints": true
     }
   ]
 }
