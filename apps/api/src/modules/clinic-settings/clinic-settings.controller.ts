@@ -10,7 +10,6 @@ import {
   ApiTags,
   ApiOperation,
   ApiBearerAuth,
-  ApiResponse,
 } from '@nestjs/swagger'
 import { ClinicSettingsService } from './clinic-settings.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
@@ -18,7 +17,6 @@ import { IsClinicAdminGuard } from '../clinics/guards/is-clinic-admin.guard'
 import { ClinicObjectivesDto } from './dto/clinic-objectives.dto'
 import { ClinicServicesDto } from './dto/clinic-services.dto'
 import { ClinicSchedulingDto } from './dto/clinic-scheduling.dto'
-import { ClinicCarolSettingsDto } from './dto/clinic-carol-settings.dto'
 import { ClinicNotificationsDto } from './dto/clinic-notifications.dto'
 import { ClinicGeneralDto, GetClinicGeneralResponseDto } from './dto/clinic-general.dto'
 
@@ -87,26 +85,6 @@ export class ClinicSettingsController {
     @Body() dto: ClinicSchedulingDto
   ) {
     return this.service.saveScheduling(clinicId, dto)
-  }
-
-  // CAROL SETTINGS
-  @Get(':clinicId/settings/carol')
-  @ApiOperation({
-    summary: 'Obter configurações do Carol da clínica',
-  })
-  async getCarolSettings(@Param('clinicId') clinicId: string) {
-    return this.service.getCarolSettings(clinicId)
-  }
-
-  @Patch(':clinicId/settings/carol')
-  @ApiOperation({
-    summary: 'Salvar configurações do Carol da clínica',
-  })
-  async saveCarolSettings(
-    @Param('clinicId') clinicId: string,
-    @Body() dto: ClinicCarolSettingsDto
-  ) {
-    return this.service.saveCarolSettings(clinicId, dto)
   }
 
   // NOTIFICATIONS

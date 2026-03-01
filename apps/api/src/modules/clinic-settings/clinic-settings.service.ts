@@ -3,14 +3,12 @@ import { eq } from "drizzle-orm";
 import { db } from "../../infrastructure/database";
 import {
   addresses,
-  clinicCarolSettings,
   clinicNotifications,
   clinicObjectives,
   clinics,
   clinicScheduling,
   clinicServices,
 } from "../../infrastructure/database/schema";
-import { ClinicCarolSettingsDto } from "./dto/clinic-carol-settings.dto";
 import {
   ClinicGeneralDto,
   GetClinicGeneralResponseDto,
@@ -164,52 +162,6 @@ export class ClinicSettingsService {
           // Legacy fields (with defaults)
           timeBlocks: dto.timeBlocks ?? [],
           minimumInterval: dto.minimumInterval ?? 15,
-        })
-        .returning();
-
-      return created;
-    }
-  }
-
-  // CAROL SETTINGS
-  async getCarolSettings(clinicId: string) {
-    const result = await db
-      .select()
-      .from(clinicCarolSettings)
-      .where(eq(clinicCarolSettings.clinicId, clinicId))
-      .limit(1);
-
-    return result[0] ?? null;
-  }
-
-  async saveCarolSettings(clinicId: string, dto: ClinicCarolSettingsDto) {
-    const existing = await db
-      .select()
-      .from(clinicCarolSettings)
-      .where(eq(clinicCarolSettings.clinicId, clinicId))
-      .limit(1);
-
-    if (existing.length > 0) {
-      const [updated] = await db
-        .update(clinicCarolSettings)
-        .set({
-          selectedTraits: dto.selectedTraits,
-          greeting: dto.greeting,
-          restrictSensitiveTopics: dto.restrictSensitiveTopics,
-          updatedAt: new Date(),
-        })
-        .where(eq(clinicCarolSettings.clinicId, clinicId))
-        .returning();
-
-      return updated;
-    } else {
-      const [created] = await db
-        .insert(clinicCarolSettings)
-        .values({
-          clinicId,
-          selectedTraits: dto.selectedTraits,
-          greeting: dto.greeting,
-          restrictSensitiveTopics: dto.restrictSensitiveTopics,
         })
         .returning();
 

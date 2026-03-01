@@ -1,18 +1,14 @@
-import { Module } from "@nestjs/common";
-import { MockIntentDetector } from "./infrastructure/mock-intent-detector.service";
-import { MockResponseGenerator } from "./infrastructure/mock-response-generator.service";
+import { Module } from '@nestjs/common'
+import { ClinicSettingsModule } from '../clinic-settings/clinic-settings.module'
+import { CarolConfigService } from './carol-config.service'
+import { CarolConfigController } from './carol-config.controller'
+import { CarolChatService } from './chat/carol-chat.service'
+import { CarolChatController } from './chat/carol-chat.controller'
 
 @Module({
-  providers: [
-    {
-      provide: "IIntentDetector",
-      useClass: MockIntentDetector,
-    },
-    {
-      provide: "IResponseGenerator",
-      useClass: MockResponseGenerator,
-    },
-  ],
-  exports: ["IIntentDetector", "IResponseGenerator"],
+  imports: [ClinicSettingsModule],
+  providers: [CarolConfigService, CarolChatService],
+  controllers: [CarolConfigController, CarolChatController],
+  exports: [CarolConfigService],
 })
 export class CarolModule {}
