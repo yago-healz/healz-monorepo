@@ -5,7 +5,6 @@ import { GeneralTab } from './tabs/general-tab'
 import { ObjectivesTab } from './tabs/objectives-tab'
 import { ServicesTab } from './tabs/services-tab'
 import { SchedulingTab } from './tabs/scheduling-tab'
-import { CarolTab } from './tabs/carol-tab'
 import { NotificationsTab } from './tabs/notifications-tab'
 import { ConnectorsTab } from './tabs/connectors-tab'
 import { Route } from '@/routes/_authenticated/clinic/settings'
@@ -15,7 +14,6 @@ const tabs = [
   { id: 'objetivos', label: 'Objetivos' },
   { id: 'servicos', label: 'Serviços' },
   { id: 'agendamentos', label: 'Agendamentos' },
-  { id: 'carol', label: 'Carol' },
   { id: 'notificacoes', label: 'Notificações' },
   { id: 'conectores', label: 'Conectores' },
 ] as const
@@ -62,7 +60,6 @@ export function ClinicSettingsPage() {
           {activeTab === 'objetivos' && <ObjectivesTab />}
           {activeTab === 'servicos' && <ServicesTab />}
           {activeTab === 'agendamentos' && <SchedulingTab />}
-          {activeTab === 'carol' && <CarolTab />}
           {activeTab === 'notificacoes' && <NotificationsTab />}
           {activeTab === 'conectores' && <ConnectorsTab />}
         </div>

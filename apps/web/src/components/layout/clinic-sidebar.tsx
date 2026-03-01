@@ -4,6 +4,8 @@ import {
   Users,
   Calendar,
   Settings,
+  Bot,
+  MessageSquare,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -40,6 +42,21 @@ const navigation = [
         title: 'Agenda',
         icon: Calendar,
         href: '/clinic/schedule',
+      },
+    ],
+  },
+  {
+    title: 'Carol',
+    items: [
+      {
+        title: 'Configurações',
+        icon: Bot,
+        href: '/clinic/carol/settings',
+      },
+      {
+        title: 'Playground',
+        icon: MessageSquare,
+        href: '/clinic/carol/playground',
       },
     ],
   },

@@ -33,6 +33,14 @@ export const ENDPOINTS = {
     MEMBERS: (clinicId: string) => `/clinics/${clinicId}/members`,
   },
 
+  // Carol
+  CAROL: {
+    CONFIG: (clinicId: string) => `/clinics/${clinicId}/carol/config`,
+    CONFIG_PUBLISHED: (clinicId: string) => `/clinics/${clinicId}/carol/config/published`,
+    PUBLISH: (clinicId: string) => `/clinics/${clinicId}/carol/config/publish`,
+    CHAT: (clinicId: string) => `/clinics/${clinicId}/carol/chat`,
+  },
+
   // Platform Admin
   PLATFORM_ADMIN: {
     ORGANIZATIONS: {
