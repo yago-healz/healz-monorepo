@@ -1,6 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { CarolPlaygroundPage } from '@/features/carol/components/carol-playground-page'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/clinic/carol/playground')({
-  component: CarolPlaygroundPage,
+  beforeLoad: () => {
+    throw redirect({ to: '/clinic/carol/settings' })
+  },
 })

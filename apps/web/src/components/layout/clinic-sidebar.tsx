@@ -5,7 +5,6 @@ import {
   Calendar,
   Settings,
   Bot,
-  MessageSquare,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -49,14 +48,9 @@ const navigation = [
     title: 'Carol',
     items: [
       {
-        title: 'Configurações',
+        title: 'Carol',
         icon: Bot,
         href: '/clinic/carol/settings',
-      },
-      {
-        title: 'Playground',
-        icon: MessageSquare,
-        href: '/clinic/carol/playground',
       },
     ],
   },
