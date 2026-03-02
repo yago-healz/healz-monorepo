@@ -330,25 +330,81 @@ export const useClinicConnectors = (clinicId: string) => {
   });
 };
 
-export const useSaveClinicConnectors = (clinicId: string) => {
+export interface GoogleCalendar {
+  id: string;
+  summary: string;
+  description?: string;
+  primary?: boolean;
+}
+
+export const useGoogleCalendarAuthUrl = (clinicId: string) => {
+  return useQuery({
+    queryKey: ["clinic", clinicId, "google-calendar", "auth-url"],
+    queryFn: async (): Promise<{ url: string }> => {
+      const response = await api.get(
+        CLINIC_SETTINGS_ENDPOINTS.GOOGLE_CALENDAR_AUTH_URL(clinicId),
+      );
+      return response.data;
+    },
+    enabled: !!clinicId,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useGoogleCalendarCalendars = (clinicId: string, enabled: boolean) => {
+  return useQuery({
+    queryKey: ["clinic", clinicId, "google-calendar", "calendars"],
+    queryFn: async (): Promise<GoogleCalendar[]> => {
+      const response = await api.get(
+        CLINIC_SETTINGS_ENDPOINTS.GOOGLE_CALENDAR_CALENDARS(clinicId),
+      );
+      return response.data;
+    },
+    enabled: !!clinicId && enabled,
+  });
+};
+
+export const useSelectGoogleCalendar = (clinicId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: ConnectorStatus) => {
-      const response = await api.patch(
-        CLINIC_SETTINGS_ENDPOINTS.CONNECTORS(clinicId),
-        payload,
+    mutationFn: async (calendarId: string) => {
+      const response = await api.post(
+        CLINIC_SETTINGS_ENDPOINTS.GOOGLE_CALENDAR_SELECT(clinicId),
+        { calendarId },
       );
-      return response.data as ConnectorStatus;
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["clinic", clinicId, "settings", "connectors"],
       });
-      toast.success("Conectores atualizados com sucesso!");
+      toast.success("Calendário vinculado com sucesso!");
     },
     onError: () => {
-      toast.error("Erro ao atualizar conectores. Tente novamente.");
+      toast.error("Erro ao vincular calendário. Tente novamente.");
+    },
+  });
+};
+
+export const useDisconnectGoogleCalendar = (clinicId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.delete(
+        CLINIC_SETTINGS_ENDPOINTS.GOOGLE_CALENDAR_DISCONNECT(clinicId),
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["clinic", clinicId, "settings", "connectors"],
+      });
+      toast.success("Google Calendar desconectado com sucesso!");
+    },
+    onError: () => {
+      toast.error("Erro ao desconectar. Tente novamente.");
     },
   });
 };

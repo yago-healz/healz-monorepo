@@ -6,6 +6,8 @@ const TAB_IDS = ['geral', 'objetivos', 'servicos', 'agendamentos', 'notificacoes
 
 const settingsSearchSchema = z.object({
   tab: z.enum(TAB_IDS).optional().catch('geral'),
+  gcal: z.enum(['pending-calendar-selection', 'error']).optional(),
+  reason: z.string().optional(),
 })
 
 export const Route = createFileRoute('/_authenticated/clinic/settings')({
