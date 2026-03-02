@@ -147,3 +147,43 @@ export const clinicNotifications = pgTable('clinic_notifications', {
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at'),
 })
+
+// Table 6: Clinic Google Calendar Credentials
+// Armazena tokens OAuth por clínica (1:1 com clínica)
+export const clinicGoogleCalendarCredentials = pgTable('clinic_google_calendar_credentials', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  clinicId: uuid('clinic_id')
+    .references(() => clinics.id, { onDelete: 'cascade' })
+    .notNull()
+    .unique(),
+
+  // Tokens criptografados com AES-256 (chave via ENCRYPTION_KEY env var)
+  accessToken: text('access_token').notNull(),
+  refreshToken: text('refresh_token').notNull(),
+  tokenExpiresAt: timestamp('token_expires_at', { withTimezone: true }).notNull(),
+
+  // Calendário selecionado (null até clínica completar a seleção)
+  selectedCalendarId: varchar('selected_calendar_id', { length: 255 }),
+  selectedCalendarName: varchar('selected_calendar_name', { length: 255 }),
+
+  // Conta Google vinculada
+  googleAccountEmail: varchar('google_account_email', { length: 255 }),
+
+  // false quando clínica desconecta
+  isActive: boolean('is_active').notNull().default(true),
+
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at'),
+})
+
+// Table 7: Clinic Appointment Google Calendar Events
+// Mapeamento appointmentId <-> gcalEventId para sync e atualizações
+export const clinicAppointmentGcalEvents = pgTable('clinic_appointment_gcal_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  clinicId: uuid('clinic_id')
+    .references(() => clinics.id, { onDelete: 'cascade' })
+    .notNull(),
+  appointmentId: uuid('appointment_id').notNull().unique(),
+  gcalEventId: varchar('gcal_event_id', { length: 255 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+})
