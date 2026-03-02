@@ -6,6 +6,7 @@ import { StructuredTool } from '@langchain/core/tools'
 import { CarolConfigService } from '../carol-config.service'
 import { CarolConfigResponseDto } from '../dto/carol-config-response.dto'
 import { ClinicSettingsService } from '../../clinic-settings/clinic-settings.service'
+import { GoogleCalendarService } from '../../google-calendar/google-calendar.service'
 import { ChatRequestDto, ChatResponseDto } from './dto/chat.dto'
 import { GetClinicInfoTool } from '../tools/get-clinic-info.tool'
 import { GetServicesTool } from '../tools/get-services.tool'
@@ -22,6 +23,7 @@ export class CarolChatService {
   constructor(
     private readonly carolConfigService: CarolConfigService,
     private readonly clinicSettingsService: ClinicSettingsService,
+    private readonly googleCalendarService: GoogleCalendarService,
   ) {}
 
   async processMessage(clinicId: string, dto: ChatRequestDto): Promise<ChatResponseDto> {
@@ -135,7 +137,7 @@ ${schedulingRules?.postSchedulingMessage ? `- Após agendar, diga: "${scheduling
       new GetClinicInfoTool(clinicId, this.clinicSettingsService),
       new GetServicesTool(clinicId, this.clinicSettingsService),
       new GetOperatingHoursTool(clinicId, this.clinicSettingsService),
-      new CheckAvailabilityTool(clinicId),
+      new CheckAvailabilityTool(clinicId, this.clinicSettingsService, this.googleCalendarService),
       new CreateAppointmentTool(clinicId),
     ]
   }
