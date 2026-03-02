@@ -26,13 +26,18 @@ export function CalendarPickerModal({ clinicId, open, onClose }: CalendarPickerM
   const { mutate: selectCalendar, isPending } = useSelectGoogleCalendar(clinicId)
 
   const handleSelect = () => {
-    if (!selectedId) return
-    selectCalendar(selectedId, {
-      onSuccess: () => {
-        setSelectedId(null)
-        onClose()
+    if (!selectedId || !calendars) return
+    const selected = calendars.find((c) => c.id === selectedId)
+    if (!selected) return
+    selectCalendar(
+      { calendarId: selectedId, calendarName: selected.summary },
+      {
+        onSuccess: () => {
+          setSelectedId(null)
+          onClose()
+        },
       },
-    })
+    )
   }
 
   return (

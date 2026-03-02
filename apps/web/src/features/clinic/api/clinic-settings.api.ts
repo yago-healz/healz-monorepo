@@ -340,7 +340,7 @@ export interface GoogleCalendar {
 export const useGoogleCalendarAuthUrl = (clinicId: string) => {
   return useQuery({
     queryKey: ["clinic", clinicId, "google-calendar", "auth-url"],
-    queryFn: async (): Promise<{ url: string }> => {
+    queryFn: async (): Promise<{ authUrl: string }> => {
       const response = await api.get(
         CLINIC_SETTINGS_ENDPOINTS.GOOGLE_CALENDAR_AUTH_URL(clinicId),
       );
@@ -368,10 +368,10 @@ export const useSelectGoogleCalendar = (clinicId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (calendarId: string) => {
+    mutationFn: async ({ calendarId, calendarName }: { calendarId: string; calendarName: string }) => {
       const response = await api.post(
         CLINIC_SETTINGS_ENDPOINTS.GOOGLE_CALENDAR_SELECT(clinicId),
-        { calendarId },
+        { calendarId, calendarName },
       );
       return response.data;
     },

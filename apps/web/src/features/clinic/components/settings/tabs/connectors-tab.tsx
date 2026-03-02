@@ -1,24 +1,25 @@
-import { useEffect, useState } from 'react'
-import { CalendarDays, Loader2, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { SettingsLoading } from './settings-loading'
 import {
   useClinicConnectors,
-  useGoogleCalendarAuthUrl,
   useDisconnectGoogleCalendar,
 } from '@/features/clinic/api/clinic-settings.api'
+import api from '@/lib/api/axios'
+import { CLINIC_SETTINGS_ENDPOINTS } from '@/lib/api/clinic-settings-endpoints'
+import { Route } from '@/routes/_authenticated/clinic/settings'
 import { tokenService } from '@/services/token.service'
 import { useNavigate } from '@tanstack/react-router'
-import { Route } from '@/routes/_authenticated/clinic/settings'
-import { CalendarPickerModal } from './calendar-picker-modal'
+import { CalendarDays, Loader2, MessageCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { CalendarPickerModal } from './calendar-picker-modal'
+import { SettingsLoading } from './settings-loading'
 
 export function ConnectorsTab() {
   const clinicId = tokenService.getUser()?.activeClinic?.id ?? ''
   const [calendarPickerOpen, setCalendarPickerOpen] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
 
   const { data, isLoading } = useClinicConnectors(clinicId)
-  const { data: authUrlData } = useGoogleCalendarAuthUrl(clinicId)
   const { mutate: disconnect, isPending: isDisconnecting } = useDisconnectGoogleCalendar(clinicId)
 
   const search = Route.useSearch()
@@ -35,9 +36,16 @@ export function ConnectorsTab() {
     }
   }, [search.gcal, search.reason, navigate])
 
-  const handleConnect = () => {
-    if (authUrlData?.url) {
-      window.location.href = authUrlData.url
+  const handleConnect = async () => {
+    setIsConnecting(true)
+    try {
+      const { data: result } = await api.get(
+        CLINIC_SETTINGS_ENDPOINTS.GOOGLE_CALENDAR_AUTH_URL(clinicId),
+      )
+      window.location.href = result.authUrl
+    } catch {
+      toast.error('Erro ao iniciar conexão com Google Calendar.')
+      setIsConnecting(false)
     }
   }
 
@@ -93,9 +101,10 @@ export function ConnectorsTab() {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={!authUrlData?.url}
+                  disabled={isConnecting}
                   onClick={handleConnect}
                 >
+                  {isConnecting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Vincular
                 </Button>
               )}
