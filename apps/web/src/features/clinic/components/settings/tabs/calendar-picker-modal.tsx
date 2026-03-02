@@ -22,7 +22,7 @@ interface CalendarPickerModalProps {
 export function CalendarPickerModal({ clinicId, open, onClose }: CalendarPickerModalProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const { data: calendars, isLoading } = useGoogleCalendarCalendars(clinicId, open)
+  const { data: calendars, isLoading, isError } = useGoogleCalendarCalendars(clinicId, open)
   const { mutate: selectCalendar, isPending } = useSelectGoogleCalendar(clinicId)
 
   const handleSelect = () => {
@@ -54,6 +54,14 @@ export function CalendarPickerModal({ clinicId, open, onClose }: CalendarPickerM
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                A autorização expirou ou não tem permissões suficientes.
+                <br />
+                Feche este diálogo e clique em <strong>Vincular</strong> novamente para reconectar.
+              </p>
             </div>
           ) : (
             <ul className="divide-y divide-border rounded-lg border border-border">

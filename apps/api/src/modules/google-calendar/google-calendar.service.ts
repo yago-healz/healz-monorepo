@@ -3,6 +3,7 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common'
 import { google, Auth } from 'googleapis'
 
@@ -22,6 +23,7 @@ import {
 } from './google-calendar.types'
 
 const SCOPES = [
+  'https://www.googleapis.com/auth/calendar.readonly',
   'https://www.googleapis.com/auth/calendar.events',
   'https://www.googleapis.com/auth/calendar.freebusy',
   'email',
@@ -197,14 +199,20 @@ export class GoogleCalendarService {
   async listCalendars(clinicId: string): Promise<CalendarListEntry[]> {
     const client = await this.getAuthenticatedClient(clinicId)
     const cal = google.calendar({ version: 'v3', auth: client })
-    const { data } = await cal.calendarList.list()
-
-    return (data.items ?? []).map((item) => ({
-      id: item.id ?? '',
-      summary: item.summary ?? '',
-      primary: item.primary ?? false,
-      accessRole: item.accessRole ?? '',
-    }))
+    try {
+      const { data } = await cal.calendarList.list()
+      return (data.items ?? []).map((item) => ({
+        id: item.id ?? '',
+        summary: item.summary ?? '',
+        primary: item.primary ?? false,
+        accessRole: item.accessRole ?? '',
+      }))
+    } catch (err: any) {
+      if (err?.message?.includes('insufficient authentication scopes')) {
+        throw new ForbiddenException('GOOGLE_CALENDAR_REAUTH_REQUIRED')
+      }
+      throw err
+    }
   }
 
   async selectCalendar(
