@@ -17,9 +17,11 @@ import { ClinicNotificationsDto } from "./dto/clinic-notifications.dto";
 import { ClinicObjectivesDto } from "./dto/clinic-objectives.dto";
 import { ClinicSchedulingDto } from "./dto/clinic-scheduling.dto";
 import { ClinicServicesDto } from "./dto/clinic-services.dto";
+import { GoogleCalendarService } from "../google-calendar/google-calendar.service";
 
 @Injectable()
 export class ClinicSettingsService {
+  constructor(private readonly googleCalendarService: GoogleCalendarService) {}
   // OBJECTIVES
   async getObjectives(clinicId: string) {
     const result = await db
@@ -309,5 +311,16 @@ export class ClinicSettingsService {
 
     // 4. Retornar estado atualizado
     return this.getGeneral(clinicId);
+  }
+
+  // CONNECTORS
+  async getConnectors(
+    clinicId: string,
+  ): Promise<{ googleCalendar: boolean; whatsapp: boolean }> {
+    const gcalConnected = await this.googleCalendarService.isConnected(clinicId);
+    return {
+      googleCalendar: gcalConnected,
+      whatsapp: false,
+    };
   }
 }

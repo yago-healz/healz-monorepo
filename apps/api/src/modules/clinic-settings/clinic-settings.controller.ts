@@ -128,4 +128,13 @@ export class ClinicSettingsController {
   ): Promise<GetClinicGeneralResponseDto | null> {
     return this.service.saveGeneral(clinicId, dto)
   }
+
+  // CONNECTORS
+  @Get(':clinicId/settings/connectors')
+  @ApiOperation({
+    summary: 'Status dos conectores da clínica',
+  })
+  async getConnectors(@Param('clinicId') clinicId: string) {
+    return this.service.getConnectors(clinicId)
+  }
 }
