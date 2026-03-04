@@ -109,7 +109,25 @@ export class CarolChatService {
 
     const schedulingRules = config.schedulingRules as Record<string, unknown>
 
+    // Injetar data e hora atual no timezone da clínica
+    const now = new Date()
+    const timezone = process.env.CLINIC_TIMEZONE ?? 'America/Sao_Paulo'
+
+    const tzFormatter = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: timezone,
+      dateStyle: 'full',
+      timeStyle: 'short',
+    })
+    const currentDateTime = tzFormatter.format(now)
+
+    const currentDate = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: timezone,
+    }).format(now) // Retorna "YYYY-MM-DD"
+
     return `Você é ${config.name}, assistente virtual de uma clínica de saúde.
+
+DATA E HORA ATUAL: ${currentDateTime} (use esta data para interpretar "hoje", "amanhã", etc.)
+DATA ATUAL (formato YYYY-MM-DD): ${currentDate}
 
 PERSONALIDADE:
 ${tonalidade[config.voiceTone] || tonalidade.empathetic}

@@ -245,7 +245,7 @@ export class GoogleCalendarService {
 
   // ── Free/Busy ─────────────────────────────────────────────────────────────
 
-  async getFreeBusy(clinicId: string, date: Date): Promise<FreeBusySlot[]> {
+  async getFreeBusy(clinicId: string, date: Date, timezone?: string): Promise<FreeBusySlot[]> {
     const [cred] = await db
       .select()
       .from(clinicGoogleCalendarCredentials)
@@ -262,11 +262,13 @@ export class GoogleCalendarService {
     const client = await this.getAuthenticatedClient(clinicId)
     const cal = google.calendar({ version: 'v3', auth: client })
 
-    // Janela: dia inteiro em UTC
-    const timeMin = new Date(date)
-    timeMin.setUTCHours(0, 0, 0, 0)
-    const timeMax = new Date(date)
-    timeMax.setUTCHours(23, 59, 59, 999)
+    // Obter YYYY-MM-DD no timezone da clínica
+    const tz = timezone ?? (process.env.CLINIC_TIMEZONE ?? 'America/Sao_Paulo')
+    const localDateStr = new Intl.DateTimeFormat('sv-SE', { timeZone: tz }).format(date)
+
+    // Construir a janela (00:00:00 a 23:59:59) no timezone local, convertendo para ISO com offset
+    const timeMin = this.localMidnight(localDateStr, tz, 'start')
+    const timeMax = this.localMidnight(localDateStr, tz, 'end')
 
     try {
       const { data } = await cal.freebusy.query({
@@ -286,6 +288,60 @@ export class GoogleCalendarService {
       this.logger.error(`getFreeBusy failed for clinic ${clinicId}: ${err}`)
       return []
     }
+  }
+
+  /**
+   * Retorna Date correspondente a 00:00:00 ou 23:59:59 no timezone dado.
+   * Usa Intl.DateTimeFormat para calcular o offset do timezone naquela data.
+   */
+  private localMidnight(
+    dateStr: string,
+    timezone: string,
+    boundary: 'start' | 'end',
+  ): Date {
+    const timeStr = boundary === 'start' ? '00:00:00' : '23:59:59'
+    // Construir uma string ISO sem offset e descobrir o offset real do timezone
+    const probe = new Date(`${dateStr}T12:00:00Z`) // Usar UTC como base
+    const offset = this.getTimezoneOffset(timezone, probe)
+
+    // Formatar offset para string ISO: +HH:MM ou -HH:MM
+    const sign = offset <= 0 ? '+' : '-'
+    const absOffset = Math.abs(offset)
+    const hh = String(Math.floor(absOffset / 60)).padStart(2, '0')
+    const mm = String(absOffset % 60).padStart(2, '0')
+
+    return new Date(`${dateStr}T${timeStr}${sign}${hh}:${mm}`)
+  }
+
+  /**
+   * Retorna offset em minutos: UTC - local
+   * Negativo para UTC+, positivo para UTC-
+   * Exemplo: UTC-3 = +180, UTC+1 = -60
+   */
+  private getTimezoneOffset(timezone: string, date: Date): number {
+    // Formatar a data como YYYY-MM-DD HH:MM:SS no timezone alvo
+    const parts = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
+      .formatToParts(date)
+      .reduce((acc, part) => {
+        acc[part.type] = part.value
+        return acc
+      }, {} as Record<string, string>)
+
+    // Reconstruir como Date (interpretado como UTC, mas com valores locais do timezone)
+    const localDate = new Date(
+      `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}Z`,
+    )
+
+    // Calcular a diferença: quanto um Date em UTC difere do mesmo "relógio" no timezone local
+    return Math.round((localDate.getTime() - date.getTime()) / (60 * 1000))
   }
 
   // ── Eventos ───────────────────────────────────────────────────────────────
