@@ -270,6 +270,8 @@ export class GoogleCalendarService {
     const timeMin = this.localMidnight(localDateStr, tz, 'start')
     const timeMax = this.localMidnight(localDateStr, tz, 'end')
 
+    this.logger.debug(`[getFreeBusy] date=${localDateStr}, tz=${tz}, timeMin=${timeMin.toISOString()}, timeMax=${timeMax.toISOString()}`)
+
     try {
       const { data } = await cal.freebusy.query({
         requestBody: {
@@ -280,6 +282,7 @@ export class GoogleCalendarService {
       })
 
       const busySlots = data.calendars?.[cred.selectedCalendarId]?.busy ?? []
+      this.logger.debug(`[getFreeBusy] returned ${busySlots.length} busy slots`)
       return busySlots.map((slot) => ({
         start: slot.start ?? '',
         end: slot.end ?? '',
@@ -305,7 +308,9 @@ export class GoogleCalendarService {
     const offset = this.getTimezoneOffset(timezone, probe)
 
     // Formatar offset para string ISO: +HH:MM ou -HH:MM
-    const sign = offset <= 0 ? '+' : '-'
+    // offset < 0 significa UTC está à frente do local (ex: UTC-3), sinal é '-'
+    // offset > 0 significa local está à frente do UTC (ex: UTC+1), sinal é '+'
+    const sign = offset >= 0 ? '+' : '-'
     const absOffset = Math.abs(offset)
     const hh = String(Math.floor(absOffset / 60)).padStart(2, '0')
     const mm = String(absOffset % 60).padStart(2, '0')
@@ -548,5 +553,49 @@ export class GoogleCalendarService {
     const client = this.createOAuthClient()
     client.setCredentials({ access_token: creds.accessToken })
     return client
+  }
+
+  // 🔧 DEBUG: Teste conversão de timezone
+  debugTimezoneConversion(dateStr: string, timeStr: string, timezone: string) {
+    const offset = this.getTimezoneOffset(timezone, new Date(`${dateStr}T12:00:00Z`))
+    const sign = offset >= 0 ? '+' : '-'
+    const absOffset = Math.abs(offset)
+    const hh = String(Math.floor(absOffset / 60)).padStart(2, '0')
+    const mm = String(absOffset % 60).padStart(2, '0')
+
+    const isoString = `${dateStr}T${timeStr}:00${sign}${hh}:${mm}`
+    const dateObj = new Date(isoString)
+    const utcIso = dateObj.toISOString()
+
+    const midnight = new Date(`${dateStr}T00:00:00${sign}${hh}:${mm}`)
+    const midnightUtc = midnight.toISOString()
+
+    const midnightEnd = new Date(`${dateStr}T23:59:59${sign}${hh}:${mm}`)
+    const midnightEndUtc = midnightEnd.toISOString()
+
+    return {
+      input: { date: dateStr, time: timeStr, timezone },
+      offset: {
+        minutes: offset,
+        description: offset < 0
+          ? `UTC${Math.floor(Math.abs(offset) / 60)}${offset % 60 !== 0 ? ':' + (offset % 60) : ''}`
+          : `UTC+${Math.floor(offset / 60)}${offset % 60 !== 0 ? ':' + (offset % 60) : ''}`,
+      },
+      conversion: {
+        localTime: `${timeStr} em ${timezone}`,
+        isoString,
+        utcTime: utcIso,
+      },
+      midnight: {
+        start: {
+          local: `${dateStr}T00:00:00${sign}${hh}:${mm}`,
+          utc: midnightUtc,
+        },
+        end: {
+          local: `${dateStr}T23:59:59${sign}${hh}:${mm}`,
+          utc: midnightEndUtc,
+        },
+      },
+    }
   }
 }

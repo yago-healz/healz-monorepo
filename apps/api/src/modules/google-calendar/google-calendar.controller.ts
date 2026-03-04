@@ -96,4 +96,15 @@ export class GoogleCalendarController {
   async disconnect(@Param('clinicId') clinicId: string): Promise<void> {
     return this.googleCalendarService.disconnect(clinicId)
   }
+
+  // 🔧 DEBUG ENDPOINT: Testa conversão de timezone
+  @Get('debug/timezone-test')
+  @ApiOperation({ summary: '[DEBUG] Testa conversão de timezone e Free/Busy' })
+  async debugTimezoneConversion(
+    @Query('date') date: string = '2026-03-04',
+    @Query('time') time: string = '14:30',
+    @Query('timezone') timezone: string = 'America/Sao_Paulo',
+  ) {
+    return this.googleCalendarService.debugTimezoneConversion(date, time, timezone)
+  }
 }
