@@ -270,23 +270,38 @@ export class GoogleCalendarService {
     const timeMin = this.localMidnight(localDateStr, tz, 'start')
     const timeMax = this.localMidnight(localDateStr, tz, 'end')
 
-    this.logger.debug(`[getFreeBusy] date=${localDateStr}, tz=${tz}, timeMin=${timeMin.toISOString()}, timeMax=${timeMax.toISOString()}`)
+    // Construir lista de calendários: sempre incluir 'primary' + selectedCalendarId (se diferente)
+    const calendarIds = Array.from(
+      new Set(['primary', cred.selectedCalendarId].filter(Boolean))
+    )
+
+    this.logger.debug(
+      `[getFreeBusy] date=${localDateStr}, tz=${tz}, timeMin=${timeMin.toISOString()}, timeMax=${timeMax.toISOString()}, querying calendars: [${calendarIds.join(', ')}]`
+    )
 
     try {
       const { data } = await cal.freebusy.query({
         requestBody: {
           timeMin: timeMin.toISOString(),
           timeMax: timeMax.toISOString(),
-          items: [{ id: cred.selectedCalendarId }],
+          items: calendarIds.map((id) => ({ id })),
         },
       })
 
-      const busySlots = data.calendars?.[cred.selectedCalendarId]?.busy ?? []
-      this.logger.debug(`[getFreeBusy] returned ${busySlots.length} busy slots`)
-      return busySlots.map((slot) => ({
-        start: slot.start ?? '',
-        end: slot.end ?? '',
-      }))
+      // Mesclar busy slots de todos os calendários consultados
+      const busySlots: Array<{ start: string; end: string }> = []
+      for (const calId of calendarIds) {
+        const slots = data.calendars?.[calId]?.busy ?? []
+        this.logger.debug(`[getFreeBusy] ${calId}: ${slots.length} busy slot(s)`)
+        for (const slot of slots) {
+          if (slot.start && slot.end) {
+            busySlots.push({ start: slot.start, end: slot.end })
+          }
+        }
+      }
+
+      this.logger.debug(`[getFreeBusy] total merged: ${busySlots.length} busy slot(s)`)
+      return busySlots
     } catch (err) {
       this.logger.error(`getFreeBusy failed for clinic ${clinicId}: ${err}`)
       return []
