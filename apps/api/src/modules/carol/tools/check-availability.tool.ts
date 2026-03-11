@@ -109,9 +109,19 @@ export class CheckAvailabilityTool extends StructuredTool {
   }
 
   async _call(input: { date: string }): Promise<string> {
+    this.logger.debug(`[CheckAvailabilityTool] Starting availability check for clinic ${this.clinicId} on date ${input.date}`)
+
     const scheduling = await this.clinicSettingsService.getScheduling(this.clinicId)
+    this.logger.debug(`[CheckAvailabilityTool] Scheduling config retrieved:`, {
+      weeklyScheduleExists: !!scheduling?.weeklySchedule,
+      maxFutureDays: scheduling?.maxFutureDays,
+      defaultAppointmentDuration: scheduling?.defaultAppointmentDuration,
+      minimumAdvanceHours: scheduling?.minimumAdvanceHours,
+      specificBlocksCount: (scheduling?.specificBlocks as any[])?.length ?? 0,
+    })
 
     if (!scheduling?.weeklySchedule) {
+      this.logger.warn(`[CheckAvailabilityTool] No weeklySchedule configured for clinic ${this.clinicId}`)
       return JSON.stringify({ date: input.date, slots: [] })
     }
 
@@ -120,6 +130,7 @@ export class CheckAvailabilityTool extends StructuredTool {
     const requestedDate = new Date(`${input.date}T12:00:00Z`)
     const maxDate = new Date(Date.now() + maxFutureDays * 24 * 60 * 60 * 1000)
     if (requestedDate > maxDate) {
+      this.logger.log(`[CheckAvailabilityTool] Requested date ${input.date} exceeds maxFutureDays (${maxFutureDays} days)`)
       return JSON.stringify({
         date: input.date,
         slots: [],
@@ -135,37 +146,67 @@ export class CheckAvailabilityTool extends StructuredTool {
 
     const dayOfWeek = getDayOfWeek(input.date)
     const daySchedule = weeklySchedule.find((d) => d.day === dayOfWeek)
+    this.logger.debug(`[CheckAvailabilityTool] Day schedule for ${dayOfWeek}:`, {
+      dayOfWeek,
+      isOpen: daySchedule?.isOpen,
+      timeSlots: daySchedule?.timeSlots,
+    })
 
     if (!daySchedule?.isOpen || !daySchedule.timeSlots.length) {
+      this.logger.log(`[CheckAvailabilityTool] Clinic is closed on ${dayOfWeek} (${input.date})`)
       return JSON.stringify({ date: input.date, slots: [] })
     }
 
     const duration = scheduling.defaultAppointmentDuration ?? 30
     const candidates = generateSlots(daySchedule.timeSlots, duration)
+    this.logger.debug(`[CheckAvailabilityTool] Generated ${candidates.length} candidate slots with duration ${duration}min:`, {
+      candidates: candidates.slice(0, 5), // Show first 5 for brevity
+      totalCount: candidates.length,
+    })
 
     // Filtrar slots passados e aplicar minimumAdvanceHours
     const nowMs = Date.now()
     const minAdvanceMs = (scheduling.minimumAdvanceHours ?? 0) * 60 * 60 * 1000
+    const now = new Date(nowMs)
+    this.logger.debug(`[CheckAvailabilityTool] Filtering slots with minimumAdvanceHours:`, {
+      minimumAdvanceHours: scheduling.minimumAdvanceHours,
+      minAdvanceMs,
+      nowUtc: now.toISOString(),
+    })
 
     const futureSlots = candidates.filter((slotTime) => {
       const slotUtcMs = toUtcMs(input.date, slotTime, CLINIC_TIMEZONE)
-      return slotUtcMs >= nowMs + minAdvanceMs
+      const isFuture = slotUtcMs >= nowMs + minAdvanceMs
+      return isFuture
+    })
+    this.logger.debug(`[CheckAvailabilityTool] Future slots after advance hours filter: ${futureSlots.length}`, {
+      futureSlots: futureSlots.slice(0, 5),
+      totalCount: futureSlots.length,
     })
 
     // Buscar busy slots do Google Calendar
     let busySlots: Array<{ start: string; end: string }> = []
+    const isGcalConnected = await this.googleCalendarService.isConnected(this.clinicId)
+    this.logger.log(`[CheckAvailabilityTool] Google Calendar connection status for clinic ${this.clinicId}: ${isGcalConnected}`)
+
     try {
-      if (await this.googleCalendarService.isConnected(this.clinicId)) {
+      if (isGcalConnected) {
+        this.logger.debug(`[CheckAvailabilityTool] Fetching busy slots from Google Calendar for ${input.date}`)
         busySlots = await this.googleCalendarService.getFreeBusy(
           this.clinicId,
           new Date(input.date),
           CLINIC_TIMEZONE,
         )
+        this.logger.log(`[CheckAvailabilityTool] Retrieved ${busySlots.length} busy slots from Google Calendar`, {
+          busySlotsCount: busySlots.length,
+          busySlots: busySlots,
+        })
       }
     } catch (err) {
-      this.logger.warn(
-        `getFreeBusy failed for clinic ${this.clinicId}, ignoring Google Calendar: ${err}`,
-      )
+      this.logger.error(`[CheckAvailabilityTool] getFreeBusy failed for clinic ${this.clinicId}, ignoring Google Calendar:`, {
+        error: String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      })
     }
 
     // Buscar specificBlocks para este dia
@@ -175,37 +216,51 @@ export class CheckAvailabilityTool extends StructuredTool {
       to: string
     }>
     const dayBlocks = specificBlocks.filter((b) => b.date === input.date)
+    this.logger.debug(`[CheckAvailabilityTool] Specific blocks for ${input.date}:`, {
+      count: dayBlocks.length,
+      blocks: dayBlocks,
+    })
 
     // Filtrar slots: não ocupados + não bloqueados
     const available = futureSlots.filter((slot) => {
       // Verificar colisão com Google Calendar
-      if (collidesWithBusy(slot, input.date, busySlots, duration, CLINIC_TIMEZONE)) {
+      const collidesGcal = collidesWithBusy(slot, input.date, busySlots, duration, CLINIC_TIMEZONE)
+      if (collidesGcal) {
+        this.logger.debug(`[CheckAvailabilityTool] Slot ${slot} filtered out: collides with Google Calendar busy time`)
         return false
       }
 
       // Verificar colisão com bloqueios específicos
-      if (
-        dayBlocks.some((block) => {
-          const [blockFromH, blockFromM] = block.from.split(':').map(Number)
-          const [blockToH, blockToM] = block.to.split(':').map(Number)
-          const [slotH, slotM] = slot.split(':').map(Number)
+      const collidesSpecificBlock = dayBlocks.some((block) => {
+        const [blockFromH, blockFromM] = block.from.split(':').map(Number)
+        const [blockToH, blockToM] = block.to.split(':').map(Number)
+        const [slotH, slotM] = slot.split(':').map(Number)
 
-          const slotMin = slotH * 60 + slotM
-          const blockFromMin = blockFromH * 60 + blockFromM
-          const blockToMin = blockToH * 60 + blockToM
+        const slotMin = slotH * 60 + slotM
+        const blockFromMin = blockFromH * 60 + blockFromM
+        const blockToMin = blockToH * 60 + blockToM
 
-          return slotMin >= blockFromMin && slotMin < blockToMin
-        })
-      ) {
+        return slotMin >= blockFromMin && slotMin < blockToMin
+      })
+
+      if (collidesSpecificBlock) {
+        this.logger.debug(`[CheckAvailabilityTool] Slot ${slot} filtered out: collides with specific block`)
         return false
       }
 
       return true
     })
 
-    return JSON.stringify({
+    const result = JSON.stringify({
       date: input.date,
       slots: available.map((time) => ({ time, available: true })),
     })
+
+    this.logger.log(`[CheckAvailabilityTool] Final result: ${available.length} available slots for ${input.date}`, {
+      availableSlots: available.slice(0, 10),
+      totalAvailable: available.length,
+    })
+
+    return result
   }
 }

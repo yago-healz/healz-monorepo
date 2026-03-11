@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { randomUUID } from 'crypto'
 import { ChatOpenAI } from '@langchain/openai'
 import { SystemMessage, HumanMessage, AIMessage, ToolMessage, BaseMessage } from '@langchain/core/messages'
@@ -19,6 +19,7 @@ export class CarolChatService {
   // Session history map (sessionId -> messages)
   // In-memory only — clears on server restart (OK for Playground MVP)
   private sessions = new Map<string, BaseMessage[]>()
+  private readonly logger = new Logger(CarolChatService.name)
 
   constructor(
     private readonly carolConfigService: CarolConfigService,
@@ -29,15 +30,33 @@ export class CarolChatService {
   async processMessage(clinicId: string, dto: ChatRequestDto): Promise<ChatResponseDto> {
     const sessionId = dto.sessionId || randomUUID()
 
+    this.logger.log(`[CarolChat] New message from clinic ${clinicId}`, {
+      sessionId,
+      message: dto.message,
+      version: dto.version,
+    })
+
     const config = await this.carolConfigService.getConfigByVersion(clinicId, dto.version)
     if (!config) {
+      this.logger.warn(`[CarolChat] Carol not configured for clinic ${clinicId}`)
       return {
         reply: 'Carol ainda não foi configurada para esta clínica.',
         sessionId,
       }
     }
 
+    this.logger.debug(`[CarolChat] Carol config loaded for clinic ${clinicId}:`, {
+      name: config.name,
+      voiceTone: config.voiceTone,
+      selectedTraits: config.selectedTraits,
+      schedulingRules: config.schedulingRules,
+    })
+
     const tools = this.createTools(clinicId)
+    this.logger.debug(`[CarolChat] Created ${tools.length} tools:`, {
+      tools: tools.map((t) => t.name),
+    })
+
     const toolMap = new Map(tools.map((t) => [t.name, t]))
 
     const model = new ChatOpenAI({
@@ -49,6 +68,10 @@ export class CarolChatService {
     const modelWithTools = model.bindTools(tools)
 
     const history = this.sessions.get(sessionId) || []
+    this.logger.debug(`[CarolChat] Session history retrieved:`, {
+      sessionId,
+      historyLength: history.length,
+    })
 
     const messages: BaseMessage[] = [
       new SystemMessage(this.buildSystemPrompt(config)),
@@ -56,38 +79,106 @@ export class CarolChatService {
       new HumanMessage(dto.message),
     ]
 
+    this.logger.debug(`[CarolChat] Message chain ready:`, {
+      totalMessages: messages.length,
+      systemMessageLength: messages[0].content.toString().length,
+      historyCount: history.length,
+      userMessageLength: dto.message.length,
+    })
+
     const toolsUsed: string[] = []
 
     // Tool-calling loop
+    this.logger.log(`[CarolChat] Starting tool-calling loop for sessionId ${sessionId}`)
     let response = await modelWithTools.invoke(messages)
+    let toolCallIteration = 0
 
     while (response.tool_calls && response.tool_calls.length > 0) {
+      toolCallIteration++
+      this.logger.log(`[CarolChat] Tool-calling iteration ${toolCallIteration}:`, {
+        sessionId,
+        toolCallsCount: response.tool_calls.length,
+        toolNames: response.tool_calls.map((tc) => tc.name),
+      })
+
       const toolMessages: ToolMessage[] = await Promise.all(
         response.tool_calls.map(async (toolCall) => {
+          this.logger.log(`[CarolChat] Invoking tool: ${toolCall.name}`, {
+            sessionId,
+            toolName: toolCall.name,
+            toolId: toolCall.id,
+            args: toolCall.args,
+          })
+
           toolsUsed.push(toolCall.name)
           const toolInstance = toolMap.get(toolCall.name)
-          const result = toolInstance
-            ? await toolInstance.invoke(toolCall.args as Record<string, unknown>)
-            : JSON.stringify({ error: `Tool '${toolCall.name}' not found` })
+
+          let toolResult: string
+          try {
+            toolResult = toolInstance
+              ? await toolInstance.invoke(toolCall.args as Record<string, unknown>)
+              : JSON.stringify({ error: `Tool '${toolCall.name}' not found` })
+
+            this.logger.log(`[CarolChat] Tool ${toolCall.name} completed successfully`, {
+              sessionId,
+              toolName: toolCall.name,
+              resultLength: toolResult.length,
+              result: toolResult.substring(0, 500), // Log first 500 chars for brevity
+            })
+          } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : String(err)
+            this.logger.error(`[CarolChat] Tool ${toolCall.name} failed:`, {
+              sessionId,
+              toolName: toolCall.name,
+              error: errorMsg,
+              stack: err instanceof Error ? err.stack : undefined,
+            })
+            toolResult = JSON.stringify({
+              error: `Tool '${toolCall.name}' failed: ${errorMsg}`,
+            })
+          }
+
           return new ToolMessage({
             tool_call_id: toolCall.id ?? randomUUID(),
-            content: String(result),
+            content: toolResult,
           })
         }),
       )
 
       messages.push(response, ...toolMessages)
+      this.logger.debug(`[CarolChat] Message chain updated with tool results`, {
+        sessionId,
+        totalMessages: messages.length,
+      })
+
       response = await modelWithTools.invoke(messages)
+      this.logger.debug(`[CarolChat] Model invoked again after tool results`, {
+        sessionId,
+        hasMoreToolCalls: !!(response.tool_calls && response.tool_calls.length > 0),
+      })
     }
 
     const reply = typeof response.content === 'string'
       ? response.content
       : JSON.stringify(response.content)
 
+    this.logger.log(`[CarolChat] Final response generated`, {
+      sessionId,
+      toolsUsedCount: toolsUsed.length,
+      toolsUsed,
+      replyLength: reply.length,
+      reply: reply.substring(0, 200), // Log first 200 chars
+    })
+
     // Update session history (without system message)
     history.push(new HumanMessage(dto.message))
     history.push(new AIMessage(reply))
     this.sessions.set(sessionId, history)
+
+    this.logger.debug(`[CarolChat] Session history updated`, {
+      sessionId,
+      newHistoryLength: history.length,
+    })
 
     return {
       reply,

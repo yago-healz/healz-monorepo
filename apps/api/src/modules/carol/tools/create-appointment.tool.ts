@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common'
 import { StructuredTool } from '@langchain/core/tools'
 import { z } from 'zod'
 
@@ -11,20 +12,34 @@ export class CreateAppointmentTool extends StructuredTool {
     service: z.string().optional().describe('Serviço desejado'),
   })
 
+  private readonly logger = new Logger(CreateAppointmentTool.name)
+
   constructor(private readonly clinicId: string) {
     super()
   }
 
   async _call(input: { date: string; time: string; patientName: string; service?: string }): Promise<string> {
+    this.logger.log(`[CreateAppointmentTool] Creating appointment for clinic ${this.clinicId}`, {
+      date: input.date,
+      time: input.time,
+      patientName: input.patientName,
+      service: input.service,
+    })
+
     // MOCKADO para MVP — não cria no banco
-    return JSON.stringify({
+    const mockAppointmentId = `mock-${Date.now()}`
+    const response = {
       success: true,
-      appointmentId: `mock-${Date.now()}`,
+      appointmentId: mockAppointmentId,
       date: input.date,
       time: input.time,
       patientName: input.patientName,
       service: input.service || 'Consulta geral',
       note: '[Playground] Agendamento simulado — não foi criado no sistema',
-    })
+    }
+
+    this.logger.debug(`[CreateAppointmentTool] Mock appointment response:`, response)
+
+    return JSON.stringify(response)
   }
 }
