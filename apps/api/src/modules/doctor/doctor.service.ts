@@ -4,17 +4,20 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { db } from '../../infrastructure/database'
 import {
   users,
   userClinicRoles,
   doctorProfiles,
   doctorClinics,
+  clinics,
 } from '../../infrastructure/database/schema'
 import { CreateDoctorProfileDto } from './dto/create-doctor-profile.dto'
 import { UpdateDoctorProfileDto } from './dto/update-doctor-profile.dto'
+import { UpdateDoctorClinicDto } from './dto/update-doctor-clinic.dto'
 import { DoctorProfileResponseDto } from './dto/doctor-profile-response.dto'
+import { ClinicForDoctorResponseDto } from './dto/doctor-clinic-list-response.dto'
 
 @Injectable()
 export class DoctorService {
@@ -232,5 +235,83 @@ export class DoctorService {
       )
 
     return { success: true }
+  }
+
+  async updateLink(
+    clinicId: string,
+    doctorId: string,
+    dto: UpdateDoctorClinicDto,
+  ): Promise<DoctorProfileResponseDto> {
+    // Verifica que o médico pertence à clínica
+    const doctor = await this.findOne(clinicId, doctorId)
+
+    await db
+      .update(doctorClinics)
+      .set({
+        ...(dto.defaultDuration !== undefined && { defaultDuration: dto.defaultDuration }),
+        ...(dto.notes !== undefined && { notes: dto.notes }),
+        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(doctorClinics.doctorId, doctor.userId),
+          eq(doctorClinics.clinicId, clinicId),
+        ),
+      )
+
+    return this.findOne(clinicId, doctorId)
+  }
+
+  async findDoctorClinics(
+    doctorId: string,
+    allowedClinicIds: string[],
+  ): Promise<ClinicForDoctorResponseDto[]> {
+    // Busca o profile pelo ID fornecido
+    const profile = await db
+      .select({ userId: doctorProfiles.userId })
+      .from(doctorProfiles)
+      .where(eq(doctorProfiles.id, doctorId))
+      .limit(1)
+
+    if (profile.length === 0) {
+      throw new NotFoundException('Médico não encontrado')
+    }
+
+    const userId = profile[0].userId
+
+    const conditions = [eq(doctorClinics.doctorId, userId)]
+    if (allowedClinicIds.length > 0) {
+      conditions.push(inArray(doctorClinics.clinicId, allowedClinicIds))
+    } else {
+      // Sem clínicas acessíveis no JWT — retorna vazio
+      return []
+    }
+
+    const rows = await db
+      .select({
+        clinicId: clinics.id,
+        clinicName: clinics.name,
+        clinicStatus: clinics.status,
+        linkId: doctorClinics.id,
+        defaultDuration: doctorClinics.defaultDuration,
+        notes: doctorClinics.notes,
+        linkIsActive: doctorClinics.isActive,
+      })
+      .from(doctorClinics)
+      .innerJoin(clinics, eq(doctorClinics.clinicId, clinics.id))
+      .where(and(...conditions))
+
+    return rows.map((row) => ({
+      id: row.clinicId,
+      name: row.clinicName,
+      status: row.clinicStatus,
+      link: {
+        id: row.linkId,
+        defaultDuration: row.defaultDuration,
+        notes: row.notes,
+        isActive: row.linkIsActive,
+      },
+    }))
   }
 }

@@ -14,6 +14,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { DoctorService } from './doctor.service'
 import { CreateDoctorProfileDto } from './dto/create-doctor-profile.dto'
 import { UpdateDoctorProfileDto } from './dto/update-doctor-profile.dto'
+import { UpdateDoctorClinicDto } from './dto/update-doctor-clinic.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { IsClinicAdminGuard } from '../clinics/guards/is-clinic-admin.guard'
 
@@ -60,5 +61,16 @@ export class DoctorController {
   @ApiOperation({ summary: 'Desativar médico da clínica (soft delete)' })
   deactivate(@Param('clinicId') clinicId: string, @Param('doctorId') doctorId: string) {
     return this.doctorService.deactivate(clinicId, doctorId)
+  }
+
+  @Patch(':doctorId/link')
+  @UseGuards(IsClinicAdminGuard)
+  @ApiOperation({ summary: 'Atualizar vínculo médico↔clínica (defaultDuration, notes, isActive)' })
+  updateLink(
+    @Param('clinicId') clinicId: string,
+    @Param('doctorId') doctorId: string,
+    @Body() dto: UpdateDoctorClinicDto,
+  ) {
+    return this.doctorService.updateLink(clinicId, doctorId, dto)
   }
 }
