@@ -1,0 +1,102 @@
+export const ORGANIZATIONS_DATA = [
+  {
+    key: 'bellavita',
+    name: 'Clínica Estética Bella Vita',
+    slug: 'bella-vita',
+    status: 'active',
+  },
+  {
+    key: 'smileplus',
+    name: 'Instituto Odontológico SmilePlus',
+    slug: 'smile-plus',
+    status: 'active',
+  },
+  {
+    key: 'vidaplena',
+    name: 'Centro Médico Vida Plena',
+    slug: 'vida-plena',
+    status: 'active',
+  },
+]
+
+export const CLINICS_DATA = [
+  {
+    key: 'bellavita_sp',
+    orgKey: 'bellavita',
+    addressKey: 'bellavita_sp',
+    name: 'Bella Vita São Paulo',
+    description: 'Clínica estética de alto padrão em São Paulo',
+    status: 'active',
+  },
+  {
+    key: 'bellavita_rj',
+    orgKey: 'bellavita',
+    addressKey: 'bellavita_rj',
+    name: 'Bella Vita Rio de Janeiro',
+    description: 'Clínica estética de alto padrão no Rio de Janeiro',
+    status: 'active',
+  },
+  {
+    key: 'smileplus',
+    orgKey: 'smileplus',
+    addressKey: 'smileplus',
+    name: 'SmilePlus Belo Horizonte',
+    description: 'Instituto odontológico especializado',
+    status: 'active',
+  },
+  {
+    key: 'vidaplena',
+    orgKey: 'vidaplena',
+    addressKey: 'vidaplena',
+    name: 'Vida Plena Curitiba',
+    description: 'Centro médico multidisciplinar',
+    status: 'inactive',
+  },
+]
+
+export const ADDRESSES_DATA = [
+  {
+    key: 'bellavita_sp',
+    street: 'Rua Oscar Freire',
+    number: '1245',
+    complement: 'Cj 42',
+    neighborhood: 'Jardins',
+    city: 'São Paulo',
+    state: 'SP',
+    zipCode: '01426-001',
+    country: 'BR',
+  },
+  {
+    key: 'bellavita_rj',
+    street: 'Rua Garcia D\'Ávila',
+    number: '78',
+    complement: 'Sala 201',
+    neighborhood: 'Ipanema',
+    city: 'Rio de Janeiro',
+    state: 'RJ',
+    zipCode: '22421-010',
+    country: 'BR',
+  },
+  {
+    key: 'smileplus',
+    street: 'Rua dos Inconfidentes',
+    number: '1500',
+    complement: '3º andar',
+    neighborhood: 'Savassi',
+    city: 'Belo Horizonte',
+    state: 'MG',
+    zipCode: '30140-128',
+    country: 'BR',
+  },
+  {
+    key: 'vidaplena',
+    street: 'Rua XV de Novembro',
+    number: '722',
+    complement: null,
+    neighborhood: 'Centro',
+    city: 'Curitiba',
+    state: 'PR',
+    zipCode: '80020-310',
+    country: 'BR',
+  },
+]
