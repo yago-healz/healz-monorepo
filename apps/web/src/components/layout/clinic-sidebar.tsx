@@ -5,6 +5,7 @@ import {
   Calendar,
   Settings,
   Bot,
+  Stethoscope,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -31,16 +32,25 @@ const navigation = [
         title: 'Dashboard',
         icon: LayoutDashboard,
         href: '/clinic',
+        exact: true,
       },
       {
         title: 'Membros',
         icon: Users,
         href: '/clinic/members',
+        exact: false,
+      },
+      {
+        title: 'Médicos',
+        icon: Stethoscope,
+        href: '/clinic/doctors',
+        exact: false,
       },
       {
         title: 'Agenda',
         icon: Calendar,
         href: '/clinic/schedule',
+        exact: false,
       },
     ],
   },
@@ -51,6 +61,7 @@ const navigation = [
         title: 'Carol',
         icon: Bot,
         href: '/clinic/carol/settings',
+        exact: false,
       },
     ],
   },
@@ -61,6 +72,7 @@ const navigation = [
         title: 'Clínica',
         icon: Settings,
         href: '/clinic/settings',
+        exact: false,
       },
     ],
   },
@@ -84,7 +96,11 @@ export function ClinicSidebar() {
                 {section.items.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton asChild>
-                      <Link to={item.href}>
+                      <Link
+                        to={item.href}
+                        activeOptions={{ exact: item.exact }}
+                        activeProps={{ 'data-active': 'true' }}
+                      >
                         <item.icon className="size-4" />
                         <span>{item.title}</span>
                       </Link>
