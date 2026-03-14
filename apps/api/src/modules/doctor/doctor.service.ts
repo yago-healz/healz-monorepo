@@ -11,13 +11,19 @@ import {
   userClinicRoles,
   doctorProfiles,
   doctorClinics,
+  doctorClinicProcedures,
+  doctorClinicSchedules,
+  procedures,
   clinics,
 } from '../../infrastructure/database/schema'
 import { CreateDoctorProfileDto } from './dto/create-doctor-profile.dto'
 import { UpdateDoctorProfileDto } from './dto/update-doctor-profile.dto'
 import { UpdateDoctorClinicDto } from './dto/update-doctor-clinic.dto'
+import { LinkProcedureDto } from './dto/link-procedure.dto'
+import { UpdateDoctorProcedureDto } from './dto/update-doctor-procedure.dto'
 import { DoctorProfileResponseDto } from './dto/doctor-profile-response.dto'
 import { ClinicForDoctorResponseDto } from './dto/doctor-clinic-list-response.dto'
+import { DoctorScheduleDto, GetDoctorScheduleResponseDto } from './dto/doctor-schedule.dto'
 
 @Injectable()
 export class DoctorService {
@@ -261,6 +267,281 @@ export class DoctorService {
       )
 
     return this.findOne(clinicId, doctorId)
+  }
+
+  // ── Doctor Clinic Procedures ──────────────────────────────────────────────
+
+  private async getDoctorClinicId(clinicId: string, doctorProfileId: string): Promise<string> {
+    const rows = await db
+      .select({ doctorClinicId: doctorClinics.id })
+      .from(doctorClinics)
+      .innerJoin(doctorProfiles, eq(doctorClinics.doctorId, doctorProfiles.userId))
+      .where(
+        and(
+          eq(doctorProfiles.id, doctorProfileId),
+          eq(doctorClinics.clinicId, clinicId),
+        ),
+      )
+      .limit(1)
+
+    if (rows.length === 0) {
+      throw new NotFoundException('Vínculo médico↔clínica não encontrado')
+    }
+
+    return rows[0].doctorClinicId
+  }
+
+  async linkProcedure(clinicId: string, doctorId: string, dto: LinkProcedureDto) {
+    const doctorClinicId = await this.getDoctorClinicId(clinicId, doctorId)
+
+    // Valida que o procedimento pertence à mesma clínica
+    const [procedure] = await db
+      .select({ id: procedures.id, defaultDuration: procedures.defaultDuration })
+      .from(procedures)
+      .where(and(eq(procedures.id, dto.procedureId), eq(procedures.clinicId, clinicId)))
+      .limit(1)
+
+    if (!procedure) {
+      throw new BadRequestException('Procedimento não encontrado nesta clínica')
+    }
+
+    // Verifica duplicidade
+    const existing = await db
+      .select({ id: doctorClinicProcedures.id })
+      .from(doctorClinicProcedures)
+      .where(
+        and(
+          eq(doctorClinicProcedures.doctorClinicId, doctorClinicId),
+          eq(doctorClinicProcedures.procedureId, dto.procedureId),
+        ),
+      )
+      .limit(1)
+
+    if (existing.length > 0) {
+      throw new ConflictException('Procedimento já vinculado a este médico nesta clínica')
+    }
+
+    const [created] = await db
+      .insert(doctorClinicProcedures)
+      .values({
+        doctorClinicId,
+        procedureId: dto.procedureId,
+        price: dto.price !== undefined ? String(dto.price) : null,
+        durationOverride: dto.durationOverride ?? null,
+      })
+      .returning()
+
+    return this.buildProcedureResponse(created, procedure.defaultDuration)
+  }
+
+  async listProcedures(clinicId: string, doctorId: string) {
+    const doctorClinicId = await this.getDoctorClinicId(clinicId, doctorId)
+
+    const rows = await db
+      .select({
+        id: doctorClinicProcedures.id,
+        procedureId: doctorClinicProcedures.procedureId,
+        procedureName: procedures.name,
+        procedureCategory: procedures.category,
+        procedureDefaultDuration: procedures.defaultDuration,
+        price: doctorClinicProcedures.price,
+        durationOverride: doctorClinicProcedures.durationOverride,
+        isActive: doctorClinicProcedures.isActive,
+      })
+      .from(doctorClinicProcedures)
+      .innerJoin(procedures, eq(doctorClinicProcedures.procedureId, procedures.id))
+      .where(eq(doctorClinicProcedures.doctorClinicId, doctorClinicId))
+
+    return rows.map((row) => ({
+      id: row.id,
+      procedureId: row.procedureId,
+      procedureName: row.procedureName,
+      procedureCategory: row.procedureCategory ?? null,
+      procedureDefaultDuration: row.procedureDefaultDuration,
+      price: row.price !== null ? Number(row.price) : null,
+      durationOverride: row.durationOverride ?? null,
+      effectiveDuration: row.durationOverride ?? row.procedureDefaultDuration,
+      isActive: row.isActive,
+    }))
+  }
+
+  async updateProcedure(
+    clinicId: string,
+    doctorId: string,
+    procedureId: string,
+    dto: UpdateDoctorProcedureDto,
+  ) {
+    const doctorClinicId = await this.getDoctorClinicId(clinicId, doctorId)
+
+    const [existing] = await db
+      .select({ id: doctorClinicProcedures.id })
+      .from(doctorClinicProcedures)
+      .where(
+        and(
+          eq(doctorClinicProcedures.id, procedureId),
+          eq(doctorClinicProcedures.doctorClinicId, doctorClinicId),
+        ),
+      )
+      .limit(1)
+
+    if (!existing) {
+      throw new NotFoundException('Vínculo procedimento↔médico não encontrado')
+    }
+
+    await db
+      .update(doctorClinicProcedures)
+      .set({
+        ...(dto.price !== undefined && { price: String(dto.price) }),
+        ...(dto.durationOverride !== undefined && { durationOverride: dto.durationOverride }),
+        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+        updatedAt: new Date(),
+      })
+      .where(eq(doctorClinicProcedures.id, procedureId))
+
+    const [updated] = await db
+      .select({
+        id: doctorClinicProcedures.id,
+        procedureId: doctorClinicProcedures.procedureId,
+        procedureName: procedures.name,
+        procedureCategory: procedures.category,
+        procedureDefaultDuration: procedures.defaultDuration,
+        price: doctorClinicProcedures.price,
+        durationOverride: doctorClinicProcedures.durationOverride,
+        isActive: doctorClinicProcedures.isActive,
+      })
+      .from(doctorClinicProcedures)
+      .innerJoin(procedures, eq(doctorClinicProcedures.procedureId, procedures.id))
+      .where(eq(doctorClinicProcedures.id, procedureId))
+      .limit(1)
+
+    return {
+      id: updated.id,
+      procedureId: updated.procedureId,
+      procedureName: updated.procedureName,
+      procedureCategory: updated.procedureCategory ?? null,
+      procedureDefaultDuration: updated.procedureDefaultDuration,
+      price: updated.price !== null ? Number(updated.price) : null,
+      durationOverride: updated.durationOverride ?? null,
+      effectiveDuration: updated.durationOverride ?? updated.procedureDefaultDuration,
+      isActive: updated.isActive,
+    }
+  }
+
+  async unlinkProcedure(clinicId: string, doctorId: string, procedureId: string) {
+    const doctorClinicId = await this.getDoctorClinicId(clinicId, doctorId)
+
+    const [existing] = await db
+      .select({ id: doctorClinicProcedures.id })
+      .from(doctorClinicProcedures)
+      .where(
+        and(
+          eq(doctorClinicProcedures.id, procedureId),
+          eq(doctorClinicProcedures.doctorClinicId, doctorClinicId),
+        ),
+      )
+      .limit(1)
+
+    if (!existing) {
+      throw new NotFoundException('Vínculo procedimento↔médico não encontrado')
+    }
+
+    await db
+      .update(doctorClinicProcedures)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(doctorClinicProcedures.id, procedureId))
+
+    return { success: true }
+  }
+
+  private buildProcedureResponse(
+    dcp: { id: string; procedureId: string; price: string | null; durationOverride: number | null; isActive: boolean },
+    procedureDefaultDuration: number,
+  ) {
+    return {
+      id: dcp.id,
+      procedureId: dcp.procedureId,
+      price: dcp.price !== null ? Number(dcp.price) : null,
+      durationOverride: dcp.durationOverride ?? null,
+      effectiveDuration: dcp.durationOverride ?? procedureDefaultDuration,
+      isActive: dcp.isActive,
+    }
+  }
+
+  // ── Doctor Clinic Schedules ───────────────────────────────────────────────
+
+  async getSchedule(clinicId: string, doctorId: string): Promise<GetDoctorScheduleResponseDto> {
+    const doctorClinicId = await this.getDoctorClinicId(clinicId, doctorId)
+
+    const [schedule] = await db
+      .select()
+      .from(doctorClinicSchedules)
+      .where(eq(doctorClinicSchedules.doctorClinicId, doctorClinicId))
+      .limit(1)
+
+    if (!schedule) {
+      return {
+        id: null,
+        doctorClinicId,
+        weeklySchedule: [],
+        specificBlocks: [],
+        defaultAppointmentDuration: 30,
+        minimumAdvanceHours: 0,
+        maxFutureDays: 365,
+        createdAt: null,
+        updatedAt: null,
+      }
+    }
+
+    return {
+      id: schedule.id,
+      doctorClinicId: schedule.doctorClinicId,
+      weeklySchedule: (schedule.weeklySchedule as any) ?? [],
+      specificBlocks: (schedule.specificBlocks as any) ?? [],
+      defaultAppointmentDuration: schedule.defaultAppointmentDuration,
+      minimumAdvanceHours: schedule.minimumAdvanceHours,
+      maxFutureDays: schedule.maxFutureDays,
+      createdAt: schedule.createdAt,
+      updatedAt: schedule.updatedAt,
+    }
+  }
+
+  async saveSchedule(
+    clinicId: string,
+    doctorId: string,
+    dto: DoctorScheduleDto,
+  ): Promise<GetDoctorScheduleResponseDto> {
+    const doctorClinicId = await this.getDoctorClinicId(clinicId, doctorId)
+
+    const existing = await db
+      .select({ id: doctorClinicSchedules.id })
+      .from(doctorClinicSchedules)
+      .where(eq(doctorClinicSchedules.doctorClinicId, doctorClinicId))
+      .limit(1)
+
+    if (existing.length > 0) {
+      await db
+        .update(doctorClinicSchedules)
+        .set({
+          weeklySchedule: dto.weeklySchedule,
+          specificBlocks: dto.specificBlocks,
+          defaultAppointmentDuration: dto.defaultAppointmentDuration,
+          minimumAdvanceHours: dto.minimumAdvanceHours,
+          maxFutureDays: dto.maxFutureDays,
+          updatedAt: new Date(),
+        })
+        .where(eq(doctorClinicSchedules.doctorClinicId, doctorClinicId))
+    } else {
+      await db.insert(doctorClinicSchedules).values({
+        doctorClinicId,
+        weeklySchedule: dto.weeklySchedule,
+        specificBlocks: dto.specificBlocks,
+        defaultAppointmentDuration: dto.defaultAppointmentDuration,
+        minimumAdvanceHours: dto.minimumAdvanceHours,
+        maxFutureDays: dto.maxFutureDays,
+      })
+    }
+
+    return this.getSchedule(clinicId, doctorId)
   }
 
   async findDoctorClinics(

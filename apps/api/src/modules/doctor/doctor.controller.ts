@@ -15,6 +15,7 @@ import { DoctorService } from './doctor.service'
 import { CreateDoctorProfileDto } from './dto/create-doctor-profile.dto'
 import { UpdateDoctorProfileDto } from './dto/update-doctor-profile.dto'
 import { UpdateDoctorClinicDto } from './dto/update-doctor-clinic.dto'
+import { DoctorScheduleDto } from './dto/doctor-schedule.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { IsClinicAdminGuard } from '../clinics/guards/is-clinic-admin.guard'
 
@@ -72,5 +73,22 @@ export class DoctorController {
     @Body() dto: UpdateDoctorClinicDto,
   ) {
     return this.doctorService.updateLink(clinicId, doctorId, dto)
+  }
+
+  @Get(':doctorId/schedule')
+  @ApiOperation({ summary: 'Obter agenda do médico na clínica' })
+  getSchedule(@Param('clinicId') clinicId: string, @Param('doctorId') doctorId: string) {
+    return this.doctorService.getSchedule(clinicId, doctorId)
+  }
+
+  @Patch(':doctorId/schedule')
+  @UseGuards(IsClinicAdminGuard)
+  @ApiOperation({ summary: 'Salvar/atualizar agenda do médico na clínica' })
+  saveSchedule(
+    @Param('clinicId') clinicId: string,
+    @Param('doctorId') doctorId: string,
+    @Body() dto: DoctorScheduleDto,
+  ) {
+    return this.doctorService.saveSchedule(clinicId, doctorId, dto)
   }
 }
