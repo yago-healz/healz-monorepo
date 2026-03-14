@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { useDoctor } from '@/features/clinic/api/doctors.api'
+import { DoctorProceduresTab } from '@/features/clinic/components/doctors/doctor-procedures-tab'
 import { DoctorProfileCard } from '@/features/clinic/components/doctors/doctor-profile-card'
 import { DoctorScheduleTab } from '@/features/clinic/components/doctors/doctor-schedule-tab'
 
@@ -86,11 +87,7 @@ function DoctorDetailPage() {
         <div className="flex-1 min-w-0">
           {activeTab === 'perfil' && <DoctorProfileCard doctorId={doctorId} />}
           {activeTab === 'agenda' && <DoctorScheduleTab doctorId={doctorId} />}
-          {activeTab === 'procedimentos' && (
-            <div className="text-muted-foreground text-sm py-8 text-center">
-              Em breve: gestão de procedimentos do médico.
-            </div>
-          )}
+          {activeTab === 'procedimentos' && <DoctorProceduresTab doctorId={doctorId} />}
         </div>
       </div>
     </div>
