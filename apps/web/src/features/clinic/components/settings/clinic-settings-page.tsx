@@ -7,6 +7,7 @@ import { ServicesTab } from './tabs/services-tab'
 import { SchedulingTab } from './tabs/scheduling-tab'
 import { NotificationsTab } from './tabs/notifications-tab'
 import { ConnectorsTab } from './tabs/connectors-tab'
+import { PaymentMethodsTab } from './tabs/payment-methods-tab'
 import { Route } from '@/routes/_authenticated/clinic/settings'
 
 const tabs = [
@@ -16,6 +17,7 @@ const tabs = [
   { id: 'agendamentos', label: 'Agendamentos' },
   { id: 'notificacoes', label: 'Notificações' },
   { id: 'conectores', label: 'Conectores' },
+  { id: 'pagamentos', label: 'Pagamentos' },
 ] as const
 
 type TabId = typeof tabs[number]['id']
@@ -62,6 +64,7 @@ export function ClinicSettingsPage() {
           {activeTab === 'agendamentos' && <SchedulingTab />}
           {activeTab === 'notificacoes' && <NotificationsTab />}
           {activeTab === 'conectores' && <ConnectorsTab />}
+          {activeTab === 'pagamentos' && <PaymentMethodsTab />}
         </div>
       </div>
     </div>

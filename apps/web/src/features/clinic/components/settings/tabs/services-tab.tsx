@@ -1,8 +1,37 @@
-import { useState, useEffect } from 'react'
-import { Plus, Briefcase, X, Loader2, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Plus, Briefcase, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { SettingsLoading } from './settings-loading'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import {
   Select,
   SelectContent,
@@ -10,73 +39,248 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useClinicServices, useSaveClinicServices } from '@/features/clinic/api/clinic-settings.api'
+import { Badge } from '@/components/ui/badge'
+import {
+  useProcedures,
+  useCreateProcedure,
+  useUpdateProcedure,
+  useDeactivateProcedure,
+} from '@/features/clinic/api/procedures.api'
 import { tokenService } from '@/services/token.service'
-import type { Service } from '@/types/onboarding'
+import type { Procedure } from '@/types/procedure.types'
+
+const CATEGORY_SUGGESTIONS = ['Consulta', 'Estético', 'Exame', 'Cirúrgico']
+
+const procedureSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório').max(255),
+  description: z.string().max(1000).optional(),
+  category: z.string().max(100).optional(),
+  defaultDuration: z.coerce
+    .number({ invalid_type_error: 'Informe a duração' })
+    .min(5, 'Mínimo 5 minutos')
+    .max(480, 'Máximo 480 minutos'),
+})
+
+type ProcedureFormValues = z.infer<typeof procedureSchema>
+
+interface ProcedureFormDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  procedure?: Procedure
+  clinicId: string
+}
+
+function ProcedureFormDialog({ open, onOpenChange, procedure, clinicId }: ProcedureFormDialogProps) {
+  const isEditing = !!procedure
+  const createProcedure = useCreateProcedure(clinicId)
+  const updateProcedure = useUpdateProcedure(clinicId)
+
+  const form = useForm<ProcedureFormValues>({
+    resolver: zodResolver(procedureSchema),
+    defaultValues: {
+      name: procedure?.name ?? '',
+      description: procedure?.description ?? '',
+      category: procedure?.category ?? '',
+      defaultDuration: procedure?.defaultDuration ?? 30,
+    },
+  })
+
+  function onSubmit(values: ProcedureFormValues) {
+    const payload = {
+      name: values.name,
+      description: values.description || undefined,
+      category: values.category || undefined,
+      defaultDuration: values.defaultDuration,
+    }
+
+    if (isEditing) {
+      updateProcedure.mutate(
+        { id: procedure.id, data: payload },
+        { onSuccess: () => { onOpenChange(false); form.reset() } },
+      )
+    } else {
+      createProcedure.mutate(payload, {
+        onSuccess: () => { onOpenChange(false); form.reset() },
+      })
+    }
+  }
+
+  const isPending = createProcedure.isPending || updateProcedure.isPending
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!isPending) { onOpenChange(v); form.reset() } }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{isEditing ? 'Editar procedimento' : 'Novo procedimento'}</DialogTitle>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Consulta inicial" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoria <span className="text-muted-foreground">(opcional)</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Consulta, Estético..." list="category-suggestions" {...field} />
+                  </FormControl>
+                  <datalist id="category-suggestions">
+                    {CATEGORY_SUGGESTIONS.map((s) => (
+                      <option key={s} value={s} />
+                    ))}
+                  </datalist>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="defaultDuration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Duração padrão</FormLabel>
+                  <Select
+                    value={String(field.value)}
+                    onValueChange={(v) => field.onChange(Number(v))}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a duração" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="15">15 min</SelectItem>
+                      <SelectItem value="20">20 min</SelectItem>
+                      <SelectItem value="30">30 min</SelectItem>
+                      <SelectItem value="45">45 min</SelectItem>
+                      <SelectItem value="60">60 min</SelectItem>
+                      <SelectItem value="90">90 min</SelectItem>
+                      <SelectItem value="120">120 min</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição <span className="text-muted-foreground">(opcional)</span></FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Breve descrição do procedimento"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => { onOpenChange(false); form.reset() }}
+                disabled={isPending}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {isEditing ? 'Salvar' : 'Criar'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+interface DeactivateDialogProps {
+  procedure: Procedure | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  clinicId: string
+}
+
+function DeactivateDialog({ procedure, open, onOpenChange, clinicId }: DeactivateDialogProps) {
+  const deactivate = useDeactivateProcedure(clinicId)
+
+  function handleConfirm() {
+    if (!procedure) return
+    deactivate.mutate(procedure.id, { onSuccess: () => onOpenChange(false) })
+  }
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remover procedimento</AlertDialogTitle>
+          <AlertDialogDescription>
+            Tem certeza que deseja remover <strong>{procedure?.name}</strong>?
+            O procedimento será desativado e não aparecerá mais na lista.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirm}
+            disabled={deactivate.isPending}
+            className="bg-destructive hover:bg-destructive/90"
+          >
+            {deactivate.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            Remover
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
 
 export function ServicesTab() {
   const clinicId = tokenService.getUser()?.activeClinic?.id ?? ''
+  const { data, isLoading } = useProcedures(clinicId, { status: 'active', limit: 100 })
 
-  const [services, setServices] = useState<Service[]>([])
-  const [expandedNotes, setExpandedNotes] = useState<string[]>([])
+  const [formOpen, setFormOpen] = useState(false)
+  const [editingProcedure, setEditingProcedure] = useState<Procedure | undefined>(undefined)
+  const [deactivatingProcedure, setDeactivatingProcedure] = useState<Procedure | null>(null)
 
-  const { data: savedData, isLoading: isLoadingData } = useClinicServices(clinicId)
-  const { mutate: saveServices, isPending: isSaving } = useSaveClinicServices(clinicId)
+  const procedures = data?.data ?? []
 
-  // Load saved data
-  useEffect(() => {
-    if (savedData?.services !== undefined) {
-      setServices(savedData.services)
-      setExpandedNotes(savedData.services.filter(s => s.note).map(s => s.id))
-    }
-  }, [savedData])
-
-  const updateService = (id: string, field: keyof Service, value: string) => {
-    setServices(services.map(service =>
-      service.id === id ? { ...service, [field]: value } : service
-    ))
+  function openCreate() {
+    setEditingProcedure(undefined)
+    setFormOpen(true)
   }
 
-  const addService = () => {
-    const newService: Service = {
-      id: crypto.randomUUID(),
-      title: '',
-      description: '',
-      duration: '30',
-      value: '0.00',
-    }
-    setServices(prev => [...prev, newService])
+  function openEdit(p: Procedure) {
+    setEditingProcedure(p)
+    setFormOpen(true)
   }
 
-  const removeService = (id: string) => {
-    setServices(prev => prev.filter(s => s.id !== id))
-    setExpandedNotes(prev => prev.filter(noteId => noteId !== id))
-  }
-
-  const toggleNotes = (id: string) => {
-    if (!expandedNotes.includes(id)) {
-      setServices(prev =>
-        prev.map(s => s.id === id && s.note === undefined ? { ...s, note: '' } : s)
-      )
-    }
-    setExpandedNotes(prev =>
-      prev.includes(id)
-        ? prev.filter(noteId => noteId !== id)
-        : [...prev, id]
-    )
-  }
-
-  const removeNote = (id: string) => {
-    setExpandedNotes(prev => prev.filter(noteId => noteId !== id))
-    updateService(id, 'note', '')
-  }
-
-  const handleSave = async () => {
-    saveServices({ services })
-  }
-
-  if (isLoadingData) {
-    return <SettingsLoading message="Carregando serviços..." />
+  if (isLoading) {
+    return <SettingsLoading message="Carregando procedimentos..." />
   }
 
   return (
@@ -89,144 +293,89 @@ export function ServicesTab() {
               Serviços e Procedimentos
             </h2>
           </div>
-          <Button variant="outline" size="sm" onClick={addService}>
+          <Button variant="outline" size="sm" onClick={openCreate}>
             <Plus className="w-4 h-4 mr-2" />
-            Novo serviço
+            Novo procedimento
           </Button>
         </div>
 
-        {services.length === 0 ? (
+        {procedures.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-border rounded-xl">
             <Briefcase className="w-10 h-10 text-muted-foreground mb-3" />
-            <p className="text-sm font-medium text-foreground">Nenhum serviço cadastrado</p>
+            <p className="text-sm font-medium text-foreground">Nenhum procedimento cadastrado</p>
             <p className="text-sm text-muted-foreground mt-1">
               Cadastre o primeiro serviço ou procedimento da clínica.
             </p>
-            <Button variant="outline" size="sm" className="mt-4" onClick={addService}>
+            <Button variant="outline" size="sm" className="mt-4" onClick={openCreate}>
               <Plus className="w-4 h-4 mr-2" />
-              Adicionar serviço
+              Adicionar procedimento
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {services.map((service) => (
+          <div className="space-y-3">
+            {procedures.map((procedure) => (
               <div
-                key={service.id}
-                className="bg-white rounded-xl border border-border p-6"
+                key={procedure.id}
+                className="bg-white rounded-xl border border-border p-4 flex items-center justify-between gap-4"
               >
-                <div className="flex flex-col gap-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <Input
-                        value={service.title}
-                        onChange={(e) => updateService(service.id, 'title', e.target.value)}
-                        placeholder="Nome do serviço ou procedimento"
-                        className="font-semibold mb-2"
-                      />
-                      <Input
-                        value={service.description}
-                        onChange={(e) => updateService(service.id, 'description', e.target.value)}
-                        placeholder="Descrição breve"
-                        className="text-sm text-muted-foreground"
-                      />
-                    </div>
-                    <button
-                      onClick={() => removeService(service.id)}
-                      className="text-muted-foreground hover:text-destructive transition-colors"
-                      aria-label="Remover serviço"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-foreground truncate">{procedure.name}</span>
+                    {procedure.category && (
+                      <Badge variant="secondary" className="text-xs shrink-0">
+                        {procedure.category}
+                      </Badge>
+                    )}
                   </div>
-
-                  <div className="flex gap-4">
-                    <div>
-                      <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                        Duração (min)
-                      </label>
-                      <Select
-                        value={service.duration}
-                        onValueChange={(value) => updateService(service.id, 'duration', value)}
-                      >
-                        <SelectTrigger className="w-32 mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="15">15 min</SelectItem>
-                          <SelectItem value="20">20 min</SelectItem>
-                          <SelectItem value="30">30 min</SelectItem>
-                          <SelectItem value="45">45 min</SelectItem>
-                          <SelectItem value="60">60 min</SelectItem>
-                          <SelectItem value="90">90 min</SelectItem>
-                          <SelectItem value="120">120 min</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                        Valor (R$)
-                      </label>
-                      <Input
-                        type="text"
-                        value={service.value}
-                        onChange={(e) => updateService(service.id, 'value', e.target.value)}
-                        className="w-32 mt-1"
-                      />
-                    </div>
-                  </div>
+                  {procedure.description && (
+                    <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                      {procedure.description}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {procedure.defaultDuration} min
+                  </p>
                 </div>
 
-                {expandedNotes.includes(service.id) ? (
-                  <div className="mt-4 p-4 bg-pink-50 rounded-lg">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs text-pink-500 uppercase tracking-wide">
-                        Nota para Carol:
-                      </p>
-                      <button
-                        onClick={() => removeNote(service.id)}
-                        className="text-pink-400 hover:text-pink-600 transition-colors"
-                        aria-label="Excluir nota"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <textarea
-                      value={service.note ?? ''}
-                      onChange={(e) => updateService(service.id, 'note', e.target.value)}
-                      className="w-full text-sm text-foreground bg-transparent focus:outline-none resize-none"
-                      rows={2}
-                      placeholder="Adicione instruções ou observações para Carol..."
-                    />
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => toggleNotes(service.id)}
-                    className="mt-4 flex items-center gap-1 text-pink-500 text-sm hover:text-pink-600 transition-colors"
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    onClick={() => openEdit(procedure)}
+                    aria-label="Editar"
                   >
-                    <Plus className="w-4 h-4" />
-                    Adicionar notas internas para Carol
-                  </button>
-                )}
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => setDeactivatingProcedure(procedure)}
+                    aria-label="Remover"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </section>
 
-      <Button
-        onClick={handleSave}
-        disabled={isSaving}
-        className="bg-linear-to-r from-pink-500 to-pink-400 hover:from-pink-600 hover:to-pink-500 text-white px-8"
-      >
-        {isSaving ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Salvando...
-          </>
-        ) : (
-          'Salvar'
-        )}
-      </Button>
+      <ProcedureFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        procedure={editingProcedure}
+        clinicId={clinicId}
+      />
+
+      <DeactivateDialog
+        procedure={deactivatingProcedure}
+        open={!!deactivatingProcedure}
+        onOpenChange={(v) => { if (!v) setDeactivatingProcedure(null) }}
+        clinicId={clinicId}
+      />
     </div>
   )
 }
