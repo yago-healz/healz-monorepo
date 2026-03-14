@@ -81,4 +81,40 @@ export const ENDPOINTS = {
       REVOKE: (id: string) => `/platform-admin/admins/${id}`,
     },
   },
+
+  // Doctors
+  DOCTORS: {
+    LIST: (clinicId: string) => `/clinics/${clinicId}/doctors`,
+    CREATE: (clinicId: string) => `/clinics/${clinicId}/doctors`,
+    GET: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}`,
+    UPDATE: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}`,
+    DEACTIVATE: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}`,
+    UPDATE_LINK: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/link`,
+    GET_SCHEDULE: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/schedule`,
+    SAVE_SCHEDULE: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/schedule`,
+    CLINICS: (doctorId: string) => `/doctors/${doctorId}/clinics`,
+    PROCEDURES: {
+      LIST: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/procedures`,
+      LINK: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/procedures`,
+      UPDATE: (clinicId: string, doctorId: string, procedureId: string) => `/clinics/${clinicId}/doctors/${doctorId}/procedures/${procedureId}`,
+      UNLINK: (clinicId: string, doctorId: string, procedureId: string) => `/clinics/${clinicId}/doctors/${doctorId}/procedures/${procedureId}`,
+    },
+  },
+
+  // Procedures
+  PROCEDURES: {
+    LIST: (clinicId: string) => `/clinics/${clinicId}/procedures`,
+    CREATE: (clinicId: string) => `/clinics/${clinicId}/procedures`,
+    GET: (clinicId: string, id: string) => `/clinics/${clinicId}/procedures/${id}`,
+    UPDATE: (clinicId: string, id: string) => `/clinics/${clinicId}/procedures/${id}`,
+    DEACTIVATE: (clinicId: string, id: string) => `/clinics/${clinicId}/procedures/${id}`,
+  },
+
+  // Payment Methods
+  PAYMENT_METHODS: {
+    LIST: (clinicId: string) => `/clinics/${clinicId}/payment-methods`,
+    CREATE: (clinicId: string) => `/clinics/${clinicId}/payment-methods`,
+    UPDATE: (clinicId: string, id: string) => `/clinics/${clinicId}/payment-methods/${id}`,
+    DEACTIVATE: (clinicId: string, id: string) => `/clinics/${clinicId}/payment-methods/${id}`,
+  },
 } as const
