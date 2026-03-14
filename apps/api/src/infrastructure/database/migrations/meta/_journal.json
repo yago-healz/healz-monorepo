@@ -134,6 +134,13 @@
       "when": 1772447978011,
       "tag": "0018_chubby_colossus",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1773499036178,
+      "tag": "0019_blushing_clea",
+      "breakpoints": true
     }
   ]
 }
