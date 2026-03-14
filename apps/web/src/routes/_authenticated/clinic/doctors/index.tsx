@@ -1,11 +1,19 @@
 import { useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DoctorsTable } from '@/features/clinic/components/doctors/doctors-table'
 import { DoctorFormDialog } from '@/features/clinic/components/doctors/doctor-form-dialog'
+import { tokenService } from '@/services/token.service'
 
 export const Route = createFileRoute('/_authenticated/clinic/doctors/')({
+  beforeLoad: () => {
+    const user = tokenService.getUser()
+    const role = user?.activeClinic?.role
+    if (role !== 'admin' && role !== 'manager') {
+      throw redirect({ to: '/clinic' })
+    }
+  },
   component: DoctorsPage,
 })
 

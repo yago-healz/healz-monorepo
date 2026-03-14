@@ -1,10 +1,11 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { z } from 'zod'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { tokenService } from '@/services/token.service'
 import { useDoctor } from '@/features/clinic/api/doctors.api'
 import { DoctorProceduresTab } from '@/features/clinic/components/doctors/doctor-procedures-tab'
 import { DoctorProfileCard } from '@/features/clinic/components/doctors/doctor-profile-card'
@@ -15,6 +16,13 @@ const searchSchema = z.object({
 })
 
 export const Route = createFileRoute('/_authenticated/clinic/doctors/$doctorId')({
+  beforeLoad: () => {
+    const user = tokenService.getUser()
+    const role = user?.activeClinic?.role
+    if (role !== 'admin' && role !== 'manager') {
+      throw redirect({ to: '/clinic' })
+    }
+  },
   validateSearch: searchSchema,
   component: DoctorDetailPage,
 })

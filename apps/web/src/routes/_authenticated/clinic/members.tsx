@@ -1,11 +1,19 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { MembersTable } from '@/features/clinic/components/members/members-table'
 import { InviteMemberDialog } from '@/features/clinic/components/members/invite-member-dialog'
+import { tokenService } from '@/services/token.service'
 
 export const Route = createFileRoute('/_authenticated/clinic/members')({
+  beforeLoad: () => {
+    const user = tokenService.getUser()
+    const role = user?.activeClinic?.role
+    if (role !== 'admin' && role !== 'manager') {
+      throw redirect({ to: '/clinic' })
+    }
+  },
   component: MembersPage,
 })
 

@@ -1,6 +1,6 @@
 // === Common Types ===
 export type Status = "active" | "inactive";
-export type Role = "admin" | "doctor" | "receptionist";
+export type Role = "admin" | "manager" | "doctor" | "receptionist" | "viewer";
 export type SortOrder = "asc" | "desc";
 
 export interface PaginationParams {
