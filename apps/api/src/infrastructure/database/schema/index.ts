@@ -8,3 +8,4 @@ export * from "./conversation-view.schema";
 export * from "./appointment-view.schema";
 export * from "./patient-journey-view.schema";
 export * from "./clinic-settings.schema";
+export * from "./doctor-domain.schema";
