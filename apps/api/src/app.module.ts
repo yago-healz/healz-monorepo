@@ -8,6 +8,9 @@ import { AuditModule } from "./infrastructure/audit/audit.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CarolModule } from "./modules/carol/carol.module";
 import { ClinicSettingsModule } from "./modules/clinic-settings/clinic-settings.module";
+import { DoctorModule } from "./modules/doctor/doctor.module";
+import { PaymentMethodsModule } from "./modules/payment-methods/payment-methods.module";
+import { ProceduresModule } from "./modules/procedures/procedures.module";
 import { GoogleCalendarModule } from "./modules/google-calendar/google-calendar.module";
 import { ClinicsModule } from "./modules/clinics/clinics.module";
 import { ConversationModule } from "./modules/conversation/conversation.module";
@@ -58,6 +61,9 @@ import { SignupModule } from "./modules/signup/signup.module";
     OrganizationsModule,
     ClinicsModule,
     ClinicSettingsModule,
+    DoctorModule,
+    ProceduresModule,
+    PaymentMethodsModule,
     GoogleCalendarModule,
     PlatformAdminModule,
   ],
