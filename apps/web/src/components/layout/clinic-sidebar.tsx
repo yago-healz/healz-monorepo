@@ -1,12 +1,3 @@
-import { Link } from '@tanstack/react-router'
-import {
-  LayoutDashboard,
-  Users,
-  Calendar,
-  Settings,
-  Bot,
-  Stethoscope,
-} from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +12,13 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { useCurrentUser } from '@/features/auth/api/queries'
+import { Link } from '@tanstack/react-router'
+import {
+  Bot,
+  Settings,
+  Stethoscope,
+  Users
+} from 'lucide-react'
 import { ClinicSwitcher } from './clinic-switcher'
 import { UserNav } from './user-nav'
 
@@ -28,12 +26,6 @@ const navigation = [
   {
     title: 'Principal',
     items: [
-      {
-        title: 'Dashboard',
-        icon: LayoutDashboard,
-        href: '/clinic',
-        exact: true,
-      },
       {
         title: 'Membros',
         icon: Users,
@@ -45,13 +37,7 @@ const navigation = [
         icon: Stethoscope,
         href: '/clinic/doctors',
         exact: false,
-      },
-      {
-        title: 'Agenda',
-        icon: Calendar,
-        href: '/clinic/schedule',
-        exact: false,
-      },
+      }
     ],
   },
   {

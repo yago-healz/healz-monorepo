@@ -1,12 +1,3 @@
-import { Link } from '@tanstack/react-router'
-import {
-  Building2,
-  Hospital,
-  Users,
-  LayoutDashboard,
-  Settings,
-  ShieldCheck,
-} from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -21,17 +12,19 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { useCurrentUser } from '@/features/auth/api/queries'
+import { Link } from '@tanstack/react-router'
+import {
+  Building2,
+  Hospital,
+  ShieldCheck,
+  Users
+} from 'lucide-react'
 import { UserNav } from './user-nav'
 
 const navigation = [
   {
     title: 'Platform Admin',
     items: [
-      {
-        title: 'Dashboard',
-        icon: LayoutDashboard,
-        href: '/admin',
-      },
       {
         title: 'Organizações',
         icon: Building2,
@@ -53,17 +46,7 @@ const navigation = [
         href: '/admin/admins',
       },
     ],
-  },
-  {
-    title: 'Configurações',
-    items: [
-      {
-        title: 'Perfil',
-        icon: Settings,
-        href: '/settings/profile',
-      },
-    ],
-  },
+  }
 ]
 
 export function AppSidebar() {
