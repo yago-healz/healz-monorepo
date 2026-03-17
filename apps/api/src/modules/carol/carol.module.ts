@@ -6,6 +6,8 @@ import { CarolConfigController } from './carol-config.controller'
 import { CarolChatService } from './chat/carol-chat.service'
 import { CarolChatController } from './chat/carol-chat.controller'
 import { MockIntentDetector } from './infrastructure/mock-intent-detector.service'
+import { EscalationTriggerService } from './escalation-trigger.service'
+import { EscalationTriggerController } from './escalation-trigger.controller'
 
 @Module({
   imports: [ClinicSettingsModule, GoogleCalendarModule],
@@ -13,12 +15,13 @@ import { MockIntentDetector } from './infrastructure/mock-intent-detector.servic
     CarolConfigService,
     CarolChatService,
     MockIntentDetector,
+    EscalationTriggerService,
     {
       provide: 'IIntentDetector',
       useClass: MockIntentDetector,
     },
   ],
-  controllers: [CarolConfigController, CarolChatController],
+  controllers: [CarolConfigController, CarolChatController, EscalationTriggerController],
   exports: [CarolConfigService, 'IIntentDetector'],
 })
 export class CarolModule {}

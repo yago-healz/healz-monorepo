@@ -176,7 +176,33 @@ export const clinicGoogleCalendarCredentials = pgTable('clinic_google_calendar_c
   updatedAt: timestamp('updated_at'),
 })
 
-// Table 7: Clinic Appointment Google Calendar Events
+// Table 7: Clinic Escalation Triggers
+// Regras que pausam a Carol e transferem o caso para um humano
+export const clinicEscalationTriggers = pgTable('clinic_escalation_triggers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  clinicId: uuid('clinic_id')
+    .references(() => clinics.id, { onDelete: 'cascade' })
+    .notNull(),
+
+  name: varchar('name', { length: 150 }).notNull(),
+  description: text('description'),
+
+  // 'out_of_scope' | 'keyword_detected' | 'max_attempts_exceeded' | 'explicit_request' | 'custom'
+  conditionType: varchar('condition_type', { length: 50 }).notNull(),
+
+  // keyword_detected: { keywords: string[] }
+  // max_attempts_exceeded: { maxAttempts: number }
+  // custom: { prompt: string }
+  // out_of_scope, explicit_request: null
+  conditionParams: jsonb('condition_params'),
+
+  isActive: boolean('is_active').notNull().default(true),
+
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at'),
+})
+
+// Table 8: Clinic Appointment Google Calendar Events
 // Mapeamento appointmentId <-> gcalEventId para sync e atualizações
 export const clinicAppointmentGcalEvents = pgTable('clinic_appointment_gcal_events', {
   id: uuid('id').primaryKey().defaultRandom(),

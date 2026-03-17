@@ -141,6 +141,13 @@
       "when": 1773499036178,
       "tag": "0019_blushing_clea",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1773747581886,
+      "tag": "0020_hard_king_cobra",
+      "breakpoints": true
     }
   ]
 }
