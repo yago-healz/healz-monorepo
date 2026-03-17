@@ -42,6 +42,8 @@ export const ENDPOINTS = {
     ESCALATION_TRIGGERS: (clinicId: string) => `/clinics/${clinicId}/carol/escalation-triggers`,
     ESCALATION_TRIGGER: (clinicId: string, triggerId: string) =>
       `/clinics/${clinicId}/carol/escalation-triggers/${triggerId}`,
+    FAQS: (clinicId: string) => `/clinics/${clinicId}/carol/faqs`,
+    FAQ: (clinicId: string, faqId: string) => `/clinics/${clinicId}/carol/faqs/${faqId}`,
   },
 
   // Platform Admin

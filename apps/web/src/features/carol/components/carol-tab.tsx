@@ -11,6 +11,7 @@ import { useCarolDraftConfig, useCarolPublishedConfig, usePublishCarolConfig } f
 import { BehaviorSubtab } from './subtabs/behavior-subtab'
 import { ClinicContextSubtab } from './subtabs/clinic-context-subtab'
 import { EscalationTriggersSubtab } from './subtabs/escalation-triggers-subtab'
+import { FaqSubtab } from './subtabs/faq-subtab'
 import { IdentitySubtab } from './subtabs/identity-subtab'
 
 const SUB_TABS: { id: CarolSubTab; label: string }[] = [
@@ -18,6 +19,7 @@ const SUB_TABS: { id: CarolSubTab; label: string }[] = [
   { id: 'comportamento', label: 'Comportamento' },
   { id: 'contexto', label: 'Contexto da Clínica' },
   { id: 'encaminhamento', label: 'Regras de Encaminhamento' },
+  { id: 'faq', label: 'FAQ' },
 ]
 
 interface CarolTabProps {
@@ -84,6 +86,7 @@ export function CarolTab({ onSaved }: CarolTabProps) {
           {activeSubTab === 'comportamento' && <BehaviorSubtab onSaved={onSaved} />}
           {activeSubTab === 'contexto' && <ClinicContextSubtab />}
           {activeSubTab === 'encaminhamento' && <EscalationTriggersSubtab />}
+          {activeSubTab === 'faq' && <FaqSubtab />}
         </div>
       </div>
     </div>
