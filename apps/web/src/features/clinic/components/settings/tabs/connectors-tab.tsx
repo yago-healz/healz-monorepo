@@ -29,10 +29,10 @@ export function ConnectorsTab() {
   useEffect(() => {
     if (search.gcal === 'pending-calendar-selection') {
       setCalendarPickerOpen(true)
-      navigate({ search: (prev) => ({ tab: prev.tab }), replace: true })
+      navigate({ search: (prev) => ({ mainTab: prev.mainTab, subTab: prev.subTab }), replace: true })
     } else if (search.gcal === 'error') {
       toast.error(search.reason ?? 'Erro ao conectar Google Calendar.')
-      navigate({ search: (prev) => ({ tab: prev.tab }), replace: true })
+      navigate({ search: (prev) => ({ mainTab: prev.mainTab, subTab: prev.subTab }), replace: true })
     }
   }, [search.gcal, search.reason, navigate])
 
