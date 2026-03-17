@@ -39,6 +39,9 @@ export const ENDPOINTS = {
     CONFIG_PUBLISHED: (clinicId: string) => `/clinics/${clinicId}/carol/config/published`,
     PUBLISH: (clinicId: string) => `/clinics/${clinicId}/carol/config/publish`,
     CHAT: (clinicId: string) => `/clinics/${clinicId}/carol/chat`,
+    ESCALATION_TRIGGERS: (clinicId: string) => `/clinics/${clinicId}/carol/escalation-triggers`,
+    ESCALATION_TRIGGER: (clinicId: string, triggerId: string) =>
+      `/clinics/${clinicId}/carol/escalation-triggers/${triggerId}`,
   },
 
   // Platform Admin

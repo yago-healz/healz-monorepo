@@ -10,12 +10,14 @@ import { Loader2 } from 'lucide-react'
 import { useCarolDraftConfig, useCarolPublishedConfig, usePublishCarolConfig } from '../api/carol.api'
 import { BehaviorSubtab } from './subtabs/behavior-subtab'
 import { ClinicContextSubtab } from './subtabs/clinic-context-subtab'
+import { EscalationTriggersSubtab } from './subtabs/escalation-triggers-subtab'
 import { IdentitySubtab } from './subtabs/identity-subtab'
 
 const SUB_TABS: { id: CarolSubTab; label: string }[] = [
   { id: 'identidade', label: 'Identidade' },
   { id: 'comportamento', label: 'Comportamento' },
   { id: 'contexto', label: 'Contexto da Clínica' },
+  { id: 'encaminhamento', label: 'Regras de Encaminhamento' },
 ]
 
 interface CarolTabProps {
@@ -81,6 +83,7 @@ export function CarolTab({ onSaved }: CarolTabProps) {
           {activeSubTab === 'identidade' && <IdentitySubtab onSaved={onSaved} />}
           {activeSubTab === 'comportamento' && <BehaviorSubtab onSaved={onSaved} />}
           {activeSubTab === 'contexto' && <ClinicContextSubtab />}
+          {activeSubTab === 'encaminhamento' && <EscalationTriggersSubtab />}
         </div>
       </div>
     </div>

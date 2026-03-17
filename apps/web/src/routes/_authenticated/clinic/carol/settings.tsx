@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { UnifiedSettingsPage } from '@/features/clinic/components/settings/unified-settings-page'
 import { tokenService } from '@/services/token.service'
 
-const CAROL_SUBTABS = ['identidade', 'comportamento', 'contexto'] as const
+const CAROL_SUBTABS = ['identidade', 'comportamento', 'contexto', 'encaminhamento'] as const
 const CLINICA_SUBTABS = ['geral', 'servicos', 'agenda', 'pagamento', 'conectores', 'notificacoes'] as const
 
 const settingsSearchSchema = z.object({

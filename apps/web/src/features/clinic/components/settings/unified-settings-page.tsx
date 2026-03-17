@@ -1,12 +1,12 @@
-import { cn } from '@/lib/utils'
-import { useNavigate } from '@tanstack/react-router'
-import { Route } from '@/routes/_authenticated/clinic/carol/settings'
-import { CarolTab } from '@/features/carol/components/carol-tab'
-import { CarolChatPanel } from '@/features/carol/components/carol-chat-panel'
-import { ClinicaTab } from './clinica-tab'
-import { PanelRightClose, PanelRightOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CarolChatPanel } from '@/features/carol/components/carol-chat-panel'
+import { CarolTab } from '@/features/carol/components/carol-tab'
+import { cn } from '@/lib/utils'
+import { Route } from '@/routes/_authenticated/clinic/carol/settings'
+import { useNavigate } from '@tanstack/react-router'
+import { PanelRightClose, PanelRightOpen } from 'lucide-react'
 import { useState } from 'react'
+import { ClinicaTab } from './clinica-tab'
 
 const MAIN_TABS = [
   { id: 'carol', label: 'Carol' },
