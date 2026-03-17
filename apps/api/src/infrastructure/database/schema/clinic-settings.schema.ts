@@ -202,7 +202,22 @@ export const clinicEscalationTriggers = pgTable('clinic_escalation_triggers', {
   updatedAt: timestamp('updated_at'),
 })
 
-// Table 8: Clinic Appointment Google Calendar Events
+// Table 8: Clinic Carol FAQs
+// Base de conhecimento para a Carol responder os pacientes
+export const clinicCarolFaqs = pgTable('clinic_carol_faqs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  clinicId: uuid('clinic_id')
+    .references(() => clinics.id, { onDelete: 'cascade' })
+    .notNull(),
+
+  question: text('question').notNull(),
+  answer: text('answer').notNull(),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at'),
+})
+
+// Table 9: Clinic Appointment Google Calendar Events
 // Mapeamento appointmentId <-> gcalEventId para sync e atualizações
 export const clinicAppointmentGcalEvents = pgTable('clinic_appointment_gcal_events', {
   id: uuid('id').primaryKey().defaultRandom(),

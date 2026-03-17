@@ -148,6 +148,13 @@
       "when": 1773747581886,
       "tag": "0020_hard_king_cobra",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1773748422072,
+      "tag": "0021_slippery_meltdown",
+      "breakpoints": true
     }
   ]
 }
