@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import { Edit2, Link2Off, Loader2, Plus, Stethoscope } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -36,6 +34,8 @@ import {
 import { useProcedures } from '@/features/clinic/api/procedures.api'
 import { tokenService } from '@/services/token.service'
 import type { DoctorProcedure } from '@/types/doctor.types'
+import { Edit2, Link2Off, Loader2, Plus, Stethoscope } from 'lucide-react'
+import { useState } from 'react'
 
 interface DoctorProceduresTabProps {
   doctorId: string
@@ -60,7 +60,7 @@ function LinkProcedureDialog({ clinicId, doctorId, linkedProcedureIds, open, onC
   const [price, setPrice] = useState('')
   const [durationOverride, setDurationOverride] = useState('')
 
-  const { data: proceduresData } = useProcedures(clinicId, { status: 'active', limit: 200 })
+  const { data: proceduresData } = useProcedures(clinicId, { status: 'active', limit: 50 })
   const { mutate: link, isPending } = useLinkDoctorProcedure(clinicId, doctorId)
 
   const available = (proceduresData?.data ?? []).filter((p) => !linkedProcedureIds.has(p.id))
