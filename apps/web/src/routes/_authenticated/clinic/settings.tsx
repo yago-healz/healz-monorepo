@@ -1,15 +1,22 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
-import { ClinicSettingsPage } from '@/features/clinic/components/settings/clinic-settings-page'
+import { UnifiedSettingsPage } from '@/features/clinic/components/settings/unified-settings-page'
 import { tokenService } from '@/services/token.service'
 
-const TAB_IDS = ['geral', 'objetivos', 'servicos', 'agendamentos', 'notificacoes', 'conectores', 'pagamentos'] as const
+const CAROL_SUBTABS = ['identidade', 'comportamento', 'contexto'] as const
+const CLINICA_SUBTABS = ['geral', 'servicos', 'agenda', 'pagamento', 'conectores', 'notificacoes'] as const
 
 const settingsSearchSchema = z.object({
-  tab: z.enum(TAB_IDS).optional().catch('geral'),
+  mainTab: z.enum(['carol', 'clinica']).optional().catch('carol'),
+  subTab: z.string().optional(),
   gcal: z.enum(['pending-calendar-selection', 'error']).optional(),
   reason: z.string().optional(),
 })
+
+export type SettingsSearch = z.infer<typeof settingsSearchSchema>
+export type CarolSubTab = typeof CAROL_SUBTABS[number]
+export type ClinicaSubTab = typeof CLINICA_SUBTABS[number]
+export { CAROL_SUBTABS, CLINICA_SUBTABS }
 
 export const Route = createFileRoute('/_authenticated/clinic/settings')({
   beforeLoad: () => {
@@ -20,5 +27,5 @@ export const Route = createFileRoute('/_authenticated/clinic/settings')({
     }
   },
   validateSearch: settingsSearchSchema,
-  component: ClinicSettingsPage,
+  component: UnifiedSettingsPage,
 })
