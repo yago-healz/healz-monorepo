@@ -5,7 +5,7 @@ import {
 } from '@/features/clinic/api/clinic-settings.api'
 import api from '@/lib/api/axios'
 import { CLINIC_SETTINGS_ENDPOINTS } from '@/lib/api/clinic-settings-endpoints'
-import { Route } from '@/routes/_authenticated/clinic/settings'
+import { Route } from '@/routes/_authenticated/clinic/carol/settings'
 import { tokenService } from '@/services/token.service'
 import { useNavigate } from '@tanstack/react-router'
 import { CalendarDays, Loader2, MessageCircle } from 'lucide-react'

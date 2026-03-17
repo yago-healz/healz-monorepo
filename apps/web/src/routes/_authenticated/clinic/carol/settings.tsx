@@ -18,7 +18,7 @@ export type CarolSubTab = typeof CAROL_SUBTABS[number]
 export type ClinicaSubTab = typeof CLINICA_SUBTABS[number]
 export { CAROL_SUBTABS, CLINICA_SUBTABS }
 
-export const Route = createFileRoute('/_authenticated/clinic/settings')({
+export const Route = createFileRoute('/_authenticated/clinic/carol/settings')({
   beforeLoad: () => {
     const user = tokenService.getUser()
     const role = user?.activeClinic?.role

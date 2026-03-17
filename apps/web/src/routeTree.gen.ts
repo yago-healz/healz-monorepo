@@ -21,7 +21,6 @@ import { Route as AuthenticatedClinicRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedClinicIndexRouteImport } from './routes/_authenticated/clinic/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
-import { Route as AuthenticatedClinicSettingsRouteImport } from './routes/_authenticated/clinic/settings'
 import { Route as AuthenticatedClinicScheduleRouteImport } from './routes/_authenticated/clinic/schedule'
 import { Route as AuthenticatedClinicPatientsRouteImport } from './routes/_authenticated/clinic/patients'
 import { Route as AuthenticatedClinicMembersRouteImport } from './routes/_authenticated/clinic/members'
@@ -31,7 +30,7 @@ import { Route as AuthenticatedAdminOrganizationsIndexRouteImport } from './rout
 import { Route as AuthenticatedAdminClinicsIndexRouteImport } from './routes/_authenticated/admin/clinics/index'
 import { Route as AuthenticatedAdminAdminsIndexRouteImport } from './routes/_authenticated/admin/admins/index'
 import { Route as AuthenticatedClinicDoctorsDoctorIdRouteImport } from './routes/_authenticated/clinic/doctors/$doctorId'
-import { Route as AuthenticatedClinicCarolPlaygroundRouteImport } from './routes/_authenticated/clinic/carol/playground'
+import { Route as AuthenticatedClinicCarolSettingsRouteImport } from './routes/_authenticated/clinic/carol/settings'
 import { Route as AuthenticatedAdminUsersNewRouteImport } from './routes/_authenticated/admin/users/new'
 import { Route as AuthenticatedAdminUsersIdRouteImport } from './routes/_authenticated/admin/users/$id'
 import { Route as AuthenticatedAdminOrganizationsNewRouteImport } from './routes/_authenticated/admin/organizations/new'
@@ -98,12 +97,6 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
-const AuthenticatedClinicSettingsRoute =
-  AuthenticatedClinicSettingsRouteImport.update({
-    id: '/settings',
-    path: '/settings',
-    getParentRoute: () => AuthenticatedClinicRoute,
-  } as any)
 const AuthenticatedClinicScheduleRoute =
   AuthenticatedClinicScheduleRouteImport.update({
     id: '/schedule',
@@ -158,10 +151,10 @@ const AuthenticatedClinicDoctorsDoctorIdRoute =
     path: '/doctors/$doctorId',
     getParentRoute: () => AuthenticatedClinicRoute,
   } as any)
-const AuthenticatedClinicCarolPlaygroundRoute =
-  AuthenticatedClinicCarolPlaygroundRouteImport.update({
-    id: '/carol/playground',
-    path: '/carol/playground',
+const AuthenticatedClinicCarolSettingsRoute =
+  AuthenticatedClinicCarolSettingsRouteImport.update({
+    id: '/carol/settings',
+    path: '/carol/settings',
     getParentRoute: () => AuthenticatedClinicRoute,
   } as any)
 const AuthenticatedAdminUsersNewRoute =
@@ -213,7 +206,6 @@ export interface FileRoutesByFullPath {
   '/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/clinic/patients': typeof AuthenticatedClinicPatientsRoute
   '/clinic/schedule': typeof AuthenticatedClinicScheduleRoute
-  '/clinic/settings': typeof AuthenticatedClinicSettingsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/clinic/': typeof AuthenticatedClinicIndexRoute
   '/admin/clinics/$id': typeof AuthenticatedAdminClinicsIdRoute
@@ -222,7 +214,7 @@ export interface FileRoutesByFullPath {
   '/admin/organizations/new': typeof AuthenticatedAdminOrganizationsNewRoute
   '/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
   '/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
-  '/clinic/carol/playground': typeof AuthenticatedClinicCarolPlaygroundRoute
+  '/clinic/carol/settings': typeof AuthenticatedClinicCarolSettingsRoute
   '/clinic/doctors/$doctorId': typeof AuthenticatedClinicDoctorsDoctorIdRoute
   '/admin/admins/': typeof AuthenticatedAdminAdminsIndexRoute
   '/admin/clinics/': typeof AuthenticatedAdminClinicsIndexRoute
@@ -240,7 +232,6 @@ export interface FileRoutesByTo {
   '/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/clinic/patients': typeof AuthenticatedClinicPatientsRoute
   '/clinic/schedule': typeof AuthenticatedClinicScheduleRoute
-  '/clinic/settings': typeof AuthenticatedClinicSettingsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/clinic': typeof AuthenticatedClinicIndexRoute
   '/admin/clinics/$id': typeof AuthenticatedAdminClinicsIdRoute
@@ -249,7 +240,7 @@ export interface FileRoutesByTo {
   '/admin/organizations/new': typeof AuthenticatedAdminOrganizationsNewRoute
   '/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
   '/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
-  '/clinic/carol/playground': typeof AuthenticatedClinicCarolPlaygroundRoute
+  '/clinic/carol/settings': typeof AuthenticatedClinicCarolSettingsRoute
   '/clinic/doctors/$doctorId': typeof AuthenticatedClinicDoctorsDoctorIdRoute
   '/admin/admins': typeof AuthenticatedAdminAdminsIndexRoute
   '/admin/clinics': typeof AuthenticatedAdminClinicsIndexRoute
@@ -272,7 +263,6 @@ export interface FileRoutesById {
   '/_authenticated/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/_authenticated/clinic/patients': typeof AuthenticatedClinicPatientsRoute
   '/_authenticated/clinic/schedule': typeof AuthenticatedClinicScheduleRoute
-  '/_authenticated/clinic/settings': typeof AuthenticatedClinicSettingsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/clinic/': typeof AuthenticatedClinicIndexRoute
   '/_authenticated/admin/clinics/$id': typeof AuthenticatedAdminClinicsIdRoute
@@ -281,7 +271,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/organizations/new': typeof AuthenticatedAdminOrganizationsNewRoute
   '/_authenticated/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
   '/_authenticated/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
-  '/_authenticated/clinic/carol/playground': typeof AuthenticatedClinicCarolPlaygroundRoute
+  '/_authenticated/clinic/carol/settings': typeof AuthenticatedClinicCarolSettingsRoute
   '/_authenticated/clinic/doctors/$doctorId': typeof AuthenticatedClinicDoctorsDoctorIdRoute
   '/_authenticated/admin/admins/': typeof AuthenticatedAdminAdminsIndexRoute
   '/_authenticated/admin/clinics/': typeof AuthenticatedAdminClinicsIndexRoute
@@ -303,7 +293,6 @@ export interface FileRouteTypes {
     | '/clinic/members'
     | '/clinic/patients'
     | '/clinic/schedule'
-    | '/clinic/settings'
     | '/admin/'
     | '/clinic/'
     | '/admin/clinics/$id'
@@ -312,7 +301,7 @@ export interface FileRouteTypes {
     | '/admin/organizations/new'
     | '/admin/users/$id'
     | '/admin/users/new'
-    | '/clinic/carol/playground'
+    | '/clinic/carol/settings'
     | '/clinic/doctors/$doctorId'
     | '/admin/admins/'
     | '/admin/clinics/'
@@ -330,7 +319,6 @@ export interface FileRouteTypes {
     | '/clinic/members'
     | '/clinic/patients'
     | '/clinic/schedule'
-    | '/clinic/settings'
     | '/admin'
     | '/clinic'
     | '/admin/clinics/$id'
@@ -339,7 +327,7 @@ export interface FileRouteTypes {
     | '/admin/organizations/new'
     | '/admin/users/$id'
     | '/admin/users/new'
-    | '/clinic/carol/playground'
+    | '/clinic/carol/settings'
     | '/clinic/doctors/$doctorId'
     | '/admin/admins'
     | '/admin/clinics'
@@ -361,7 +349,6 @@ export interface FileRouteTypes {
     | '/_authenticated/clinic/members'
     | '/_authenticated/clinic/patients'
     | '/_authenticated/clinic/schedule'
-    | '/_authenticated/clinic/settings'
     | '/_authenticated/admin/'
     | '/_authenticated/clinic/'
     | '/_authenticated/admin/clinics/$id'
@@ -370,7 +357,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/organizations/new'
     | '/_authenticated/admin/users/$id'
     | '/_authenticated/admin/users/new'
-    | '/_authenticated/clinic/carol/playground'
+    | '/_authenticated/clinic/carol/settings'
     | '/_authenticated/clinic/doctors/$doctorId'
     | '/_authenticated/admin/admins/'
     | '/_authenticated/admin/clinics/'
@@ -471,13 +458,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/_authenticated/clinic/settings': {
-      id: '/_authenticated/clinic/settings'
-      path: '/settings'
-      fullPath: '/clinic/settings'
-      preLoaderRoute: typeof AuthenticatedClinicSettingsRouteImport
-      parentRoute: typeof AuthenticatedClinicRoute
-    }
     '/_authenticated/clinic/schedule': {
       id: '/_authenticated/clinic/schedule'
       path: '/schedule'
@@ -541,11 +521,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClinicDoctorsDoctorIdRouteImport
       parentRoute: typeof AuthenticatedClinicRoute
     }
-    '/_authenticated/clinic/carol/playground': {
-      id: '/_authenticated/clinic/carol/playground'
-      path: '/carol/playground'
-      fullPath: '/clinic/carol/playground'
-      preLoaderRoute: typeof AuthenticatedClinicCarolPlaygroundRouteImport
+    '/_authenticated/clinic/carol/settings': {
+      id: '/_authenticated/clinic/carol/settings'
+      path: '/carol/settings'
+      fullPath: '/clinic/carol/settings'
+      preLoaderRoute: typeof AuthenticatedClinicCarolSettingsRouteImport
       parentRoute: typeof AuthenticatedClinicRoute
     }
     '/_authenticated/admin/users/new': {
@@ -631,9 +611,8 @@ interface AuthenticatedClinicRouteChildren {
   AuthenticatedClinicMembersRoute: typeof AuthenticatedClinicMembersRoute
   AuthenticatedClinicPatientsRoute: typeof AuthenticatedClinicPatientsRoute
   AuthenticatedClinicScheduleRoute: typeof AuthenticatedClinicScheduleRoute
-  AuthenticatedClinicSettingsRoute: typeof AuthenticatedClinicSettingsRoute
   AuthenticatedClinicIndexRoute: typeof AuthenticatedClinicIndexRoute
-  AuthenticatedClinicCarolPlaygroundRoute: typeof AuthenticatedClinicCarolPlaygroundRoute
+  AuthenticatedClinicCarolSettingsRoute: typeof AuthenticatedClinicCarolSettingsRoute
   AuthenticatedClinicDoctorsDoctorIdRoute: typeof AuthenticatedClinicDoctorsDoctorIdRoute
   AuthenticatedClinicDoctorsIndexRoute: typeof AuthenticatedClinicDoctorsIndexRoute
 }
@@ -642,10 +621,8 @@ const AuthenticatedClinicRouteChildren: AuthenticatedClinicRouteChildren = {
   AuthenticatedClinicMembersRoute: AuthenticatedClinicMembersRoute,
   AuthenticatedClinicPatientsRoute: AuthenticatedClinicPatientsRoute,
   AuthenticatedClinicScheduleRoute: AuthenticatedClinicScheduleRoute,
-  AuthenticatedClinicSettingsRoute: AuthenticatedClinicSettingsRoute,
   AuthenticatedClinicIndexRoute: AuthenticatedClinicIndexRoute,
-  AuthenticatedClinicCarolPlaygroundRoute:
-    AuthenticatedClinicCarolPlaygroundRoute,
+  AuthenticatedClinicCarolSettingsRoute: AuthenticatedClinicCarolSettingsRoute,
   AuthenticatedClinicDoctorsDoctorIdRoute:
     AuthenticatedClinicDoctorsDoctorIdRoute,
   AuthenticatedClinicDoctorsIndexRoute: AuthenticatedClinicDoctorsIndexRoute,

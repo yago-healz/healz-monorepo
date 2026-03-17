@@ -6,8 +6,8 @@ import { SchedulingTab } from './tabs/scheduling-tab'
 import { PaymentMethodsTab } from './tabs/payment-methods-tab'
 import { ConnectorsTab } from './tabs/connectors-tab'
 import { NotificationsTab } from './tabs/notifications-tab'
-import { Route } from '@/routes/_authenticated/clinic/settings'
-import type { ClinicaSubTab } from '@/routes/_authenticated/clinic/settings'
+import { Route } from '@/routes/_authenticated/clinic/carol/settings'
+import type { ClinicaSubTab } from '@/routes/_authenticated/clinic/carol/settings'
 
 const SUB_TABS: { id: ClinicaSubTab; label: string }[] = [
   { id: 'geral', label: 'Geral' },

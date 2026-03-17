@@ -17,7 +17,6 @@ import { Link } from '@tanstack/react-router'
 import {
   Bot,
   CalendarDays,
-  Settings,
   Stethoscope,
   Users,
 } from 'lucide-react'
@@ -53,12 +52,6 @@ export function ClinicSidebar() {
             title: 'Carol',
             items: [
               { title: 'Carol', icon: Bot, href: '/clinic/carol/settings', exact: false },
-            ],
-          },
-          {
-            title: 'Configurações',
-            items: [
-              { title: 'Clínica', icon: Settings, href: '/clinic/settings', exact: false },
             ],
           },
         ]

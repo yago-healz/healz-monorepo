@@ -1,8 +1,12 @@
 import { cn } from '@/lib/utils'
 import { useNavigate } from '@tanstack/react-router'
-import { Route } from '@/routes/_authenticated/clinic/settings'
+import { Route } from '@/routes/_authenticated/clinic/carol/settings'
 import { CarolTab } from '@/features/carol/components/carol-tab'
+import { CarolChatPanel } from '@/features/carol/components/carol-chat-panel'
 import { ClinicaTab } from './clinica-tab'
+import { PanelRightClose, PanelRightOpen } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useState } from 'react'
 
 const MAIN_TABS = [
   { id: 'carol', label: 'Carol' },
@@ -13,6 +17,23 @@ export function UnifiedSettingsPage() {
   const { mainTab = 'carol' } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
 
+  const [chatOpen, setChatOpen] = useState<boolean>(
+    () => localStorage.getItem('carol_chat_panel_open') !== 'false'
+  )
+  const [chatResetKey, setChatResetKey] = useState(0)
+
+  function toggleChat() {
+    setChatOpen((prev) => {
+      const next = !prev
+      localStorage.setItem('carol_chat_panel_open', String(next))
+      return next
+    })
+  }
+
+  function handleSaved() {
+    setChatResetKey((k) => k + 1)
+  }
+
   function handleMainTabChange(tab: 'carol' | 'clinica') {
     navigate({
       search: (prev) => ({ ...prev, mainTab: tab, subTab: undefined }),
@@ -22,9 +43,9 @@ export function UnifiedSettingsPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* Abas horizontais principais */}
-      <div className="border-b flex-none">
-        <nav className="flex gap-1 px-1">
+      {/* Abas horizontais principais + botão Playground */}
+      <div className="border-b flex-none flex items-center justify-between px-1">
+        <nav className="flex gap-1">
           {MAIN_TABS.map((tab) => (
             <button
               key={tab.id}
@@ -40,12 +61,26 @@ export function UnifiedSettingsPage() {
             </button>
           ))}
         </nav>
+        <Button variant="outline" size="sm" onClick={toggleChat} className="mr-1">
+          {chatOpen
+            ? <PanelRightClose className="w-4 h-4 mr-2" />
+            : <PanelRightOpen className="w-4 h-4 mr-2" />
+          }
+          Playground
+        </Button>
       </div>
 
-      {/* Conteúdo da aba */}
-      <div className="flex-1 overflow-hidden pt-4">
-        {mainTab === 'carol' && <CarolTab />}
-        {mainTab === 'clinica' && <ClinicaTab />}
+      {/* Split layout */}
+      <div className="flex flex-1 overflow-hidden gap-6 pt-4">
+        <div className={cn('overflow-y-auto', chatOpen ? 'flex-[3]' : 'flex-1')}>
+          {mainTab === 'carol' && <CarolTab onSaved={handleSaved} />}
+          {mainTab === 'clinica' && <ClinicaTab />}
+        </div>
+        {chatOpen && (
+          <div className="flex-[2] border rounded-lg overflow-hidden flex flex-col">
+            <CarolChatPanel resetKey={chatResetKey} />
+          </div>
+        )}
       </div>
     </div>
   )
