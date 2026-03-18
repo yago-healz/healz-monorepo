@@ -6,7 +6,6 @@ import type {
   PainPoint,
   Priority,
   SchedulingRules,
-  Service,
   TimeBlock,
 } from "@/types/onboarding";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -100,54 +99,6 @@ export const useSaveClinicObjectives = (clinicId: string) => {
     },
     onError: () => {
       toast.error("Erro ao salvar objetivos");
-    },
-  });
-};
-
-// ============================================
-// SERVICES
-// ============================================
-
-export interface ClinicServicesResponse {
-  id: string;
-  clinicId: string;
-  services: Service[];
-  createdAt: string;
-  updatedAt?: string;
-}
-
-export const useClinicServices = (clinicId: string) => {
-  return useQuery({
-    queryKey: ["clinic", clinicId, "settings", "services"],
-    queryFn: async (): Promise<ClinicServicesResponse | null> => {
-      const response = await api.get(
-        CLINIC_SETTINGS_ENDPOINTS.SERVICES(clinicId),
-      );
-      return response.data;
-    },
-    enabled: !!clinicId,
-  });
-};
-
-export const useSaveClinicServices = (clinicId: string) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: { services: Service[] }) => {
-      const response = await api.patch(
-        CLINIC_SETTINGS_ENDPOINTS.SERVICES(clinicId),
-        data,
-      );
-      return response.data as ClinicServicesResponse;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["clinic", clinicId, "settings", "services"],
-      });
-      toast.success("Serviços salvos com sucesso!");
-    },
-    onError: () => {
-      toast.error("Erro ao salvar serviços");
     },
   });
 };
