@@ -33,23 +33,7 @@ export const clinicObjectives = pgTable('clinic_objectives', {
   updatedAt: timestamp('updated_at'),
 })
 
-// Table 2: Clinic Services
-// Armazena serviços/procedimentos ofertados
-export const clinicServices = pgTable('clinic_services', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  clinicId: uuid('clinic_id')
-    .references(() => clinics.id, { onDelete: 'cascade' })
-    .notNull(),
-
-  // Services - stored as JSON array
-  // [{ id, title, description, duration, value, note }, ...]
-  services: jsonb('services').notNull().default([]),
-
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at'),
-})
-
-// Table 3: Clinic Scheduling Rules
+// Table 2: Clinic Scheduling Rules
 // Armazena disponibilidade semanal, regras e bloqueios específicos
 export const clinicScheduling = pgTable('clinic_scheduling', {
   id: uuid('id').primaryKey().defaultRandom(),

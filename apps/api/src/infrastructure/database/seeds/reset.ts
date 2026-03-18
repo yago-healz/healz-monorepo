@@ -16,7 +16,6 @@ async function reset() {
       clinic_notifications,
       clinic_carol_settings,
       clinic_scheduling,
-      clinic_services,
       clinic_objectives,
       payment_methods,
       doctor_clinic_procedures,

@@ -7,7 +7,6 @@ import {
   clinicObjectives,
   clinics,
   clinicScheduling,
-  clinicServices,
 } from "../../infrastructure/database/schema";
 import {
   ClinicGeneralDto,
@@ -16,7 +15,6 @@ import {
 import { ClinicNotificationsDto } from "./dto/clinic-notifications.dto";
 import { ClinicObjectivesDto } from "./dto/clinic-objectives.dto";
 import { ClinicSchedulingDto } from "./dto/clinic-scheduling.dto";
-import { ClinicServicesDto } from "./dto/clinic-services.dto";
 import { GoogleCalendarService } from "../google-calendar/google-calendar.service";
 
 @Injectable()
@@ -64,48 +62,6 @@ export class ClinicSettingsService {
           priorities: dto.priorities,
           painPoints: dto.painPoints,
           additionalNotes: dto.additionalNotes,
-        })
-        .returning();
-
-      return created;
-    }
-  }
-
-  // SERVICES
-  async getServices(clinicId: string) {
-    const result = await db
-      .select()
-      .from(clinicServices)
-      .where(eq(clinicServices.clinicId, clinicId))
-      .limit(1);
-
-    return result[0] ?? null;
-  }
-
-  async saveServices(clinicId: string, dto: ClinicServicesDto) {
-    const existing = await db
-      .select()
-      .from(clinicServices)
-      .where(eq(clinicServices.clinicId, clinicId))
-      .limit(1);
-
-    if (existing.length > 0) {
-      const [updated] = await db
-        .update(clinicServices)
-        .set({
-          services: dto.services,
-          updatedAt: new Date(),
-        })
-        .where(eq(clinicServices.clinicId, clinicId))
-        .returning();
-
-      return updated;
-    } else {
-      const [created] = await db
-        .insert(clinicServices)
-        .values({
-          clinicId,
-          services: dto.services,
         })
         .returning();
 

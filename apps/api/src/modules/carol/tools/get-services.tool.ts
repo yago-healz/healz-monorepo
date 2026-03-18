@@ -1,49 +1,99 @@
 import { StructuredTool } from "@langchain/core/tools";
 import { Logger } from "@nestjs/common";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { ClinicSettingsService } from "../../clinic-settings/clinic-settings.service";
+import { db } from "../../../infrastructure/database";
+import {
+  doctorClinicProcedures,
+  doctorClinics,
+  procedures,
+} from "../../../infrastructure/database/schema";
 
 export class GetServicesTool extends StructuredTool {
   name = "get_services";
   description =
-    "Lista os serviços oferecidos pela clínica com valores e duração";
+    "Lista os procedimentos oferecidos pela clínica com duração e valores por profissional";
   schema = z.object({});
 
   private readonly logger = new Logger(GetServicesTool.name);
 
-  constructor(
-    private readonly clinicId: string,
-    private readonly settingsService: ClinicSettingsService,
-  ) {
+  constructor(private readonly clinicId: string) {
     super();
   }
 
   async _call(): Promise<string> {
-    this.logger.debug(
-      `[GetServicesTool] Fetching services for clinic ${this.clinicId}`,
-    );
+    this.logger.debug(`Fetching procedures for clinic ${this.clinicId}`);
 
-    const data = await this.settingsService.getServices(this.clinicId);
-
-    if (!data?.services) {
-      this.logger.debug(
-        `[GetServicesTool] No services found for clinic ${this.clinicId}`,
+    const rows = await db
+      .select()
+      .from(procedures)
+      .where(
+        and(
+          eq(procedures.clinicId, this.clinicId),
+          eq(procedures.isActive, true),
+        ),
       );
+
+    if (!rows.length) {
       return JSON.stringify({ services: [] });
     }
 
-    const servicesList = Array.isArray(data.services) ? data.services : [];
-    this.logger.debug(
-      `[GetServicesTool] Services retrieved for clinic ${this.clinicId}`,
-      {
-        servicesCount: servicesList.length,
-        services: servicesList.map((s: any) => ({
-          name: s.name,
-          duration: s.duration,
-        })),
-      },
-    );
+    const prices = await db
+      .select({
+        procedureId: doctorClinicProcedures.procedureId,
+        price: doctorClinicProcedures.price,
+        durationOverride: doctorClinicProcedures.durationOverride,
+      })
+      .from(doctorClinicProcedures)
+      .innerJoin(
+        doctorClinics,
+        eq(doctorClinicProcedures.doctorClinicId, doctorClinics.id),
+      )
+      .where(
+        and(
+          eq(doctorClinics.clinicId, this.clinicId),
+          eq(doctorClinicProcedures.isActive, true),
+        ),
+      );
 
-    return JSON.stringify({ services: data.services });
+    const priceMap = new Map<
+      string,
+      { minPrice: number | null; maxPrice: number | null }
+    >();
+    for (const p of prices) {
+      const current = priceMap.get(p.procedureId) ?? {
+        minPrice: null,
+        maxPrice: null,
+      };
+      const val = p.price ? Number(p.price) : null;
+      if (val !== null) {
+        current.minPrice =
+          current.minPrice === null ? val : Math.min(current.minPrice, val);
+        current.maxPrice =
+          current.maxPrice === null ? val : Math.max(current.maxPrice, val);
+      }
+      priceMap.set(p.procedureId, current);
+    }
+
+    const services = rows.map((proc) => {
+      const pricing = priceMap.get(proc.id);
+      return {
+        name: proc.name,
+        description: proc.description,
+        category: proc.category,
+        duration: `${proc.defaultDuration} minutos`,
+        ...(pricing?.minPrice != null && {
+          price:
+            pricing.minPrice === pricing.maxPrice
+              ? `R$ ${pricing.minPrice.toFixed(2)}`
+              : `R$ ${pricing.minPrice.toFixed(2)} - R$ ${pricing.maxPrice!.toFixed(2)}`,
+        }),
+      };
+    });
+
+    this.logger.debug(
+      `Found ${services.length} procedures for clinic ${this.clinicId}`,
+    );
+    return JSON.stringify({ services });
   }
 }

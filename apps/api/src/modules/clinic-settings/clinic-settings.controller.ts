@@ -15,7 +15,6 @@ import { ClinicSettingsService } from './clinic-settings.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { IsClinicAdminGuard } from '../clinics/guards/is-clinic-admin.guard'
 import { ClinicObjectivesDto } from './dto/clinic-objectives.dto'
-import { ClinicServicesDto } from './dto/clinic-services.dto'
 import { ClinicSchedulingDto } from './dto/clinic-scheduling.dto'
 import { ClinicNotificationsDto } from './dto/clinic-notifications.dto'
 import { ClinicGeneralDto, GetClinicGeneralResponseDto } from './dto/clinic-general.dto'
@@ -45,26 +44,6 @@ export class ClinicSettingsController {
     @Body() dto: ClinicObjectivesDto
   ) {
     return this.service.saveObjectives(clinicId, dto)
-  }
-
-  // SERVICES
-  @Get(':clinicId/settings/services')
-  @ApiOperation({
-    summary: 'Obter configurações de serviços da clínica',
-  })
-  async getServices(@Param('clinicId') clinicId: string) {
-    return this.service.getServices(clinicId)
-  }
-
-  @Patch(':clinicId/settings/services')
-  @ApiOperation({
-    summary: 'Salvar configurações de serviços da clínica',
-  })
-  async saveServices(
-    @Param('clinicId') clinicId: string,
-    @Body() dto: ClinicServicesDto
-  ) {
-    return this.service.saveServices(clinicId, dto)
   }
 
   // SCHEDULING

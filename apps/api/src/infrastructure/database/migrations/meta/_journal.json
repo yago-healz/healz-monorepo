@@ -155,6 +155,13 @@
       "when": 1773748422072,
       "tag": "0021_slippery_meltdown",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1773832236428,
+      "tag": "0022_big_quasimodo",
+      "breakpoints": true
     }
   ]
 }

@@ -42,30 +42,6 @@ export const CLINIC_OBJECTIVES_DATA: Record<string, {
   },
 }
 
-export const CLINIC_SERVICES_DATA: Record<string, Array<{
-  id: string
-  title: string
-  description: string
-  duration: number
-  value: number
-  note: string | null
-}>> = {
-  bellavita_sp: [
-    { id: 's1', title: 'Botox', description: 'Toxina botulínica para rejuvenescimento', duration: 30, value: 800, note: 'Preço por região' },
-    { id: 's2', title: 'Preenchimento', description: 'Ácido hialurônico para volume e contorno', duration: 45, value: 1200, note: 'Por seringa' },
-    { id: 's3', title: 'Pacote Harmonização Completa', description: 'Botox + Preenchimento + Bioestimulador', duration: 120, value: 3500, note: 'Parcelamento disponível' },
-  ],
-  bellavita_rj: [
-    { id: 's1', title: 'Botox', description: 'Toxina botulínica para rejuvenescimento', duration: 30, value: 850, note: null },
-    { id: 's2', title: 'Harmonização Facial', description: 'Pacote completo de harmonização', duration: 120, value: 3800, note: 'Inclui avaliação' },
-  ],
-  smileplus: [
-    { id: 's1', title: 'Ortodontia Completa', description: 'Aparelho fixo por 18-24 meses', duration: 90, value: 4500, note: '18x sem juros' },
-    { id: 's2', title: 'Alinhadores Invisíveis', description: 'Invisalign ou similar por 12-18 meses', duration: 60, value: 6000, note: 'Parcelamento em até 24x' },
-    { id: 's3', title: 'Implante + Coroa', description: 'Implante osseointegrado com coroa de porcelana', duration: 120, value: 3500, note: 'Por unidade' },
-  ],
-}
-
 export const CAROL_SETTINGS_DATA: Record<string, {
   name: string
   selectedTraits: string[]

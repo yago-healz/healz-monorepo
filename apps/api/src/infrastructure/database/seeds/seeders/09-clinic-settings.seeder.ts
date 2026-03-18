@@ -1,13 +1,12 @@
 import { db } from '../../index'
 import {
   clinicObjectives,
-  clinicServices,
   clinicScheduling,
   clinicCarolSettings,
   clinicNotifications,
 } from '../../schema'
 import type { SeedContext } from '../seed'
-import { CLINIC_OBJECTIVES_DATA, CLINIC_SERVICES_DATA, CAROL_SETTINGS_DATA } from '../data/clinic-settings.data'
+import { CLINIC_OBJECTIVES_DATA, CAROL_SETTINGS_DATA } from '../data/clinic-settings.data'
 import { randomUUID } from 'crypto'
 
 function buildWeeklySchedule() {
@@ -49,15 +48,6 @@ export async function seedClinicSettings(ctx: SeedContext, verbose: boolean): Pr
         priorities: objData.priorities as any,
         painPoints: objData.painPoints as any,
         additionalNotes: objData.additionalNotes ?? undefined,
-      })
-    }
-
-    // Services
-    const svcData = CLINIC_SERVICES_DATA[clinicKey]
-    if (svcData) {
-      await db.insert(clinicServices).values({
-        clinicId,
-        services: svcData as any,
       })
     }
 

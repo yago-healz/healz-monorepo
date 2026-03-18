@@ -1,0 +1,1 @@
+DROP TABLE "clinic_services" CASCADE;

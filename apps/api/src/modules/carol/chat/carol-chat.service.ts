@@ -244,7 +244,7 @@ ${schedulingRules?.postSchedulingMessage ? `- Após agendar, diga: "${scheduling
   private createTools(clinicId: string): StructuredTool[] {
     return [
       new GetClinicInfoTool(clinicId, this.clinicSettingsService),
-      new GetServicesTool(clinicId, this.clinicSettingsService),
+      new GetServicesTool(clinicId),
       new GetOperatingHoursTool(clinicId, this.clinicSettingsService),
       new CheckAvailabilityTool(clinicId, this.clinicSettingsService, this.googleCalendarService),
       new CreateAppointmentTool(clinicId),
