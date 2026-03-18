@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -96,19 +96,30 @@ function ProcedureFormDialog({ open, onOpenChange, procedure, clinicId }: Proced
     if (isEditing) {
       updateProcedure.mutate(
         { id: procedure.id, data: payload },
-        { onSuccess: () => { onOpenChange(false); form.reset() } },
+        { onSuccess: () => onOpenChange(false) },
       )
     } else {
       createProcedure.mutate(payload, {
-        onSuccess: () => { onOpenChange(false); form.reset() },
+        onSuccess: () => onOpenChange(false),
       })
     }
   }
 
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: procedure?.name ?? '',
+        description: procedure?.description ?? '',
+        category: procedure?.category ?? '',
+        defaultDuration: procedure?.defaultDuration ?? 30,
+      })
+    }
+  }, [open, procedure])
+
   const isPending = createProcedure.isPending || updateProcedure.isPending
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!isPending) { onOpenChange(v); form.reset() } }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!isPending) onOpenChange(v) }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Editar procedimento' : 'Novo procedimento'}</DialogTitle>
@@ -201,7 +212,7 @@ function ProcedureFormDialog({ open, onOpenChange, procedure, clinicId }: Proced
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => { onOpenChange(false); form.reset() }}
+                onClick={() => onOpenChange(false)}
                 disabled={isPending}
               >
                 Cancelar
