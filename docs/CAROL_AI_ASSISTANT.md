@@ -66,7 +66,7 @@ src/modules/clinic-settings/ → Dados da clínica (serviços, horários, etc.)
 │                                                               │
 │  1. Carrega config (draft ou published)                       │
 │  2. Monta system prompt (personalidade + regras)              │
-│  3. Cria tools (5 disponíveis)                                │
+│  3. Cria tools (6 disponíveis)                                │
 │  4. Recupera histórico da sessão (in-memory)                  │
 │  5. Executa loop de tool-calling via LangChain:               │
 │     ┌──────────────────────────────────┐                      │
@@ -83,7 +83,7 @@ src/modules/clinic-settings/ → Dados da clínica (serviços, horários, etc.)
         ┌─────────────────────┼─────────────────────┐
         │                     │                     │
    ┌────▼──────┐      ┌──────▼──────┐      ┌──────▼──────┐
-   │  5 Tools   │      │  Config     │      │ Conversation │
+   │  6 Tools   │      │  Config     │      │ Conversation │
    │            │      │  Service    │      │ Event Store  │
    │ clinic_info│      │             │      │              │
    │ services   │      │ draft/      │      │ Append +     │
@@ -117,7 +117,7 @@ Usuário envia: "Quero agendar para amanhã"
    ├─ 2b. Cria instância ChatOpenAI:
    │       { model: 'gpt-4o-mini', temperature: 0.7 }
    │
-   ├─ 2c. Cria as 5 tools e faz model.bindTools(tools)
+   ├─ 2c. Cria as 6 tools e faz model.bindTools(tools)
    │
    ├─ 2d. Monta system prompt com personalidade + regras
    │
@@ -192,7 +192,7 @@ AGENDAMENTO:
 | Saudação | `clinic_carol_settings.greeting` | Primeira interação |
 | Restrição de tópicos | `clinic_carol_settings.restrict_sensitive_topics` | Limita respostas sobre temas sensíveis |
 | Regras de agendamento | `clinic_carol_settings.scheduling_rules` | Controla se Carol pode agendar/cancelar |
-| Tools disponíveis | Código (5 tools) | Dados que a Carol pode acessar |
+| Tools disponíveis | Código (6 tools) | Dados que a Carol pode acessar |
 | Histórico da sessão | In-memory Map | Contexto da conversa |
 
 ---
@@ -210,6 +210,7 @@ As tools são o mecanismo pelo qual a Carol acessa dados reais da clínica. Cada
 | `get_operating_hours` | `tools/get-operating-hours.tool.ts` | Nenhum | Horários de funcionamento por dia |
 | `check_availability` | `tools/check-availability.tool.ts` | `{ date: "YYYY-MM-DD" }` | Slots disponíveis na data (cruza agenda + Google Calendar + bloqueios) |
 | `create_appointment` | `tools/create-appointment.tool.ts` | `{ date, time, patientName, service? }` | Confirmação do agendamento (**MOCK no MVP**) |
+| `get_payment_methods` | `tools/get-payment-methods.tool.ts` | Nenhum | Formas de pagamento ativas (tipo, nome, instruções) |
 
 ### Como o model decide usar tools
 
@@ -319,6 +320,7 @@ interface SchedulingRules {
 | Serviços | `GetServicesTool` → `clinic_services.services` (jsonb) | Nome, duração, valor |
 | Horários de funcionamento | `GetOperatingHoursTool` → `clinic_scheduling.weekly_schedule` | Agenda semanal |
 | Disponibilidade | `CheckAvailabilityTool` → Agenda + Google Calendar + bloqueios | Slots livres por data |
+| Formas de pagamento | `GetPaymentMethodsTool` → `payment_methods` | Tipo, nome, instruções (apenas ativos) |
 
 ### Fontes cadastradas mas NÃO integradas
 
@@ -786,7 +788,7 @@ curl -X POST http://localhost:3001/api/v1/clinics/{clinicId}/carol/chat \
 ### Implementado
 
 - Chat com LangChain + OpenAI GPT-4o-mini
-- 5 tools funcionais (clinic info, services, schedule, availability, appointment mock)
+- 6 tools funcionais (clinic info, services, schedule, availability, appointment mock, payment methods)
 - Sessão in-memory com histórico de conversa
 - Configuração draft/published (personalidade, tom, regras)
 - CRUD de FAQs e escalation triggers
