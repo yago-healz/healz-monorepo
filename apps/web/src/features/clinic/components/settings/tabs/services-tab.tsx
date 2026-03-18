@@ -55,8 +55,8 @@ const procedureSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(255),
   description: z.string().max(1000).optional(),
   category: z.string().max(100).optional(),
-  defaultDuration: z.coerce
-    .number({ invalid_type_error: 'Informe a duração' })
+  defaultDuration: z
+    .number({ error: 'Informe a duração' })
     .min(5, 'Mínimo 5 minutos')
     .max(480, 'Máximo 480 minutos'),
 })

@@ -151,7 +151,6 @@ export const PERSONALITY_TRAITS: PersonalityTrait[] = [
 
 // Re-export clinic settings response types
 export type { ClinicObjectivesResponse } from '@/features/clinic/api/clinic-settings.api'
-export type { ClinicServicesResponse } from '@/features/clinic/api/clinic-settings.api'
 export type { ClinicSchedulingResponse } from '@/features/clinic/api/clinic-settings.api'
 export type { ClinicCarolSettingsResponse } from '@/features/clinic/api/clinic-settings.api'
 export type { ClinicNotificationsResponse } from '@/features/clinic/api/clinic-settings.api'

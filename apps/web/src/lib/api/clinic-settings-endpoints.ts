@@ -4,6 +4,7 @@ export const CLINIC_SETTINGS_ENDPOINTS = {
   SCHEDULING: (clinicId: string) => `/clinics/${clinicId}/settings/scheduling`,
   NOTIFICATIONS: (clinicId: string) =>
     `/clinics/${clinicId}/settings/notifications`,
+  CAROL: (clinicId: string) => `/clinics/${clinicId}/settings/carol`,
   CONNECTORS: (clinicId: string) => `/clinics/${clinicId}/settings/connectors`,
   GOOGLE_CALENDAR_AUTH_URL: (clinicId: string) => `/clinics/${clinicId}/connectors/google-calendar/auth-url`,
   GOOGLE_CALENDAR_CALENDARS: (clinicId: string) => `/clinics/${clinicId}/connectors/google-calendar/calendars`,
