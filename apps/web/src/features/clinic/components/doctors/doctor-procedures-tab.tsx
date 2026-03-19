@@ -39,6 +39,7 @@ import { useState } from 'react'
 
 interface DoctorProceduresTabProps {
   doctorId: string
+  isSelfView?: boolean
 }
 
 function formatPrice(price: number | null): string {
@@ -288,7 +289,7 @@ function UnlinkConfirmDialog({ clinicId, doctorId, procedure, open, onClose }: U
 }
 
 // ============ Main Component ============
-export function DoctorProceduresTab({ doctorId }: DoctorProceduresTabProps) {
+export function DoctorProceduresTab({ doctorId, isSelfView = false }: DoctorProceduresTabProps) {
   const clinicId = tokenService.getActiveClinicId() ?? ''
   const { data: procedures, isLoading } = useDoctorProcedures(clinicId, doctorId)
 

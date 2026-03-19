@@ -18,6 +18,7 @@ import {
   Bot,
   CalendarDays,
   Stethoscope,
+  UserCircle,
   Users,
 } from 'lucide-react'
 import { ClinicSwitcher } from './clinic-switcher'
@@ -25,7 +26,7 @@ import { UserNav } from './user-nav'
 
 export function ClinicSidebar() {
   const { data: user } = useCurrentUser()
-  const { canManageClinic } = useUserRole()
+  const { canManageClinic, isDoctor } = useUserRole()
 
   const navigation = [
     ...(canManageClinic
@@ -35,6 +36,16 @@ export function ClinicSidebar() {
             items: [
               { title: 'Membros', icon: Users, href: '/clinic/members', exact: false },
               { title: 'Médicos', icon: Stethoscope, href: '/clinic/doctors', exact: false },
+            ],
+          },
+        ]
+      : []),
+    ...(isDoctor
+      ? [
+          {
+            title: 'Meu Espaço',
+            items: [
+              { title: 'Meu Perfil', icon: UserCircle, href: '/clinic/profile', exact: false },
             ],
           },
         ]

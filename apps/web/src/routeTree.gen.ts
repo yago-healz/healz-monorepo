@@ -22,6 +22,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedClinicIndexRouteImport } from './routes/_authenticated/clinic/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedClinicScheduleRouteImport } from './routes/_authenticated/clinic/schedule'
+import { Route as AuthenticatedClinicProfileRouteImport } from './routes/_authenticated/clinic/profile'
 import { Route as AuthenticatedClinicPatientsRouteImport } from './routes/_authenticated/clinic/patients'
 import { Route as AuthenticatedClinicMembersRouteImport } from './routes/_authenticated/clinic/members'
 import { Route as AuthenticatedClinicDoctorsIndexRouteImport } from './routes/_authenticated/clinic/doctors/index'
@@ -101,6 +102,12 @@ const AuthenticatedClinicScheduleRoute =
   AuthenticatedClinicScheduleRouteImport.update({
     id: '/schedule',
     path: '/schedule',
+    getParentRoute: () => AuthenticatedClinicRoute,
+  } as any)
+const AuthenticatedClinicProfileRoute =
+  AuthenticatedClinicProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
     getParentRoute: () => AuthenticatedClinicRoute,
   } as any)
 const AuthenticatedClinicPatientsRoute =
@@ -205,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof PublicVerifyEmailRoute
   '/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/clinic/patients': typeof AuthenticatedClinicPatientsRoute
+  '/clinic/profile': typeof AuthenticatedClinicProfileRoute
   '/clinic/schedule': typeof AuthenticatedClinicScheduleRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/clinic/': typeof AuthenticatedClinicIndexRoute
@@ -231,6 +239,7 @@ export interface FileRoutesByTo {
   '/verify-email': typeof PublicVerifyEmailRoute
   '/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/clinic/patients': typeof AuthenticatedClinicPatientsRoute
+  '/clinic/profile': typeof AuthenticatedClinicProfileRoute
   '/clinic/schedule': typeof AuthenticatedClinicScheduleRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/clinic': typeof AuthenticatedClinicIndexRoute
@@ -262,6 +271,7 @@ export interface FileRoutesById {
   '/_public/verify-email': typeof PublicVerifyEmailRoute
   '/_authenticated/clinic/members': typeof AuthenticatedClinicMembersRoute
   '/_authenticated/clinic/patients': typeof AuthenticatedClinicPatientsRoute
+  '/_authenticated/clinic/profile': typeof AuthenticatedClinicProfileRoute
   '/_authenticated/clinic/schedule': typeof AuthenticatedClinicScheduleRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/clinic/': typeof AuthenticatedClinicIndexRoute
@@ -292,6 +302,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/clinic/members'
     | '/clinic/patients'
+    | '/clinic/profile'
     | '/clinic/schedule'
     | '/admin/'
     | '/clinic/'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/clinic/members'
     | '/clinic/patients'
+    | '/clinic/profile'
     | '/clinic/schedule'
     | '/admin'
     | '/clinic'
@@ -348,6 +360,7 @@ export interface FileRouteTypes {
     | '/_public/verify-email'
     | '/_authenticated/clinic/members'
     | '/_authenticated/clinic/patients'
+    | '/_authenticated/clinic/profile'
     | '/_authenticated/clinic/schedule'
     | '/_authenticated/admin/'
     | '/_authenticated/clinic/'
@@ -463,6 +476,13 @@ declare module '@tanstack/react-router' {
       path: '/schedule'
       fullPath: '/clinic/schedule'
       preLoaderRoute: typeof AuthenticatedClinicScheduleRouteImport
+      parentRoute: typeof AuthenticatedClinicRoute
+    }
+    '/_authenticated/clinic/profile': {
+      id: '/_authenticated/clinic/profile'
+      path: '/profile'
+      fullPath: '/clinic/profile'
+      preLoaderRoute: typeof AuthenticatedClinicProfileRouteImport
       parentRoute: typeof AuthenticatedClinicRoute
     }
     '/_authenticated/clinic/patients': {
@@ -610,6 +630,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedClinicRouteChildren {
   AuthenticatedClinicMembersRoute: typeof AuthenticatedClinicMembersRoute
   AuthenticatedClinicPatientsRoute: typeof AuthenticatedClinicPatientsRoute
+  AuthenticatedClinicProfileRoute: typeof AuthenticatedClinicProfileRoute
   AuthenticatedClinicScheduleRoute: typeof AuthenticatedClinicScheduleRoute
   AuthenticatedClinicIndexRoute: typeof AuthenticatedClinicIndexRoute
   AuthenticatedClinicCarolSettingsRoute: typeof AuthenticatedClinicCarolSettingsRoute
@@ -620,6 +641,7 @@ interface AuthenticatedClinicRouteChildren {
 const AuthenticatedClinicRouteChildren: AuthenticatedClinicRouteChildren = {
   AuthenticatedClinicMembersRoute: AuthenticatedClinicMembersRoute,
   AuthenticatedClinicPatientsRoute: AuthenticatedClinicPatientsRoute,
+  AuthenticatedClinicProfileRoute: AuthenticatedClinicProfileRoute,
   AuthenticatedClinicScheduleRoute: AuthenticatedClinicScheduleRoute,
   AuthenticatedClinicIndexRoute: AuthenticatedClinicIndexRoute,
   AuthenticatedClinicCarolSettingsRoute: AuthenticatedClinicCarolSettingsRoute,

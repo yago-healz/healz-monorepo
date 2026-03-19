@@ -21,9 +21,10 @@ function getInitials(name: string) {
 
 interface DoctorProfileCardProps {
   doctorId: string
+  isSelfView?: boolean
 }
 
-export function DoctorProfileCard({ doctorId }: DoctorProfileCardProps) {
+export function DoctorProfileCard({ doctorId, isSelfView = false }: DoctorProfileCardProps) {
   const { data: doctor, isLoading } = useDoctor(doctorId)
   const updateDoctor = useUpdateDoctor(doctorId)
   const updateLink = useUpdateDoctorLink(doctorId)
@@ -160,10 +161,12 @@ export function DoctorProfileCard({ doctorId }: DoctorProfileCardProps) {
                 }
               />
             </div>
-            <div className="flex items-center gap-3 pt-6">
-              <Switch checked={isActive} onCheckedChange={setIsActive} />
-              <Label>{isActive ? 'Vínculo ativo' : 'Vínculo inativo'}</Label>
-            </div>
+            {!isSelfView && (
+              <div className="flex items-center gap-3 pt-6">
+                <Switch checked={isActive} onCheckedChange={setIsActive} />
+                <Label>{isActive ? 'Vínculo ativo' : 'Vínculo inativo'}</Label>
+              </div>
+            )}
           </div>
 
           <div className="space-y-1">
