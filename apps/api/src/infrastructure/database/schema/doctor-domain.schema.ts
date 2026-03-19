@@ -116,7 +116,54 @@ export const doctorClinicSchedules = pgTable('doctor_clinic_schedules', {
 })
 
 // ──────────────────────────────────────────────
-// 6. payment_methods — Formas de pagamento da clínica
+// 6. doctor_google_calendar_credentials — OAuth tokens por médico+clínica
+// ──────────────────────────────────────────────
+export const doctorGoogleCalendarCredentials = pgTable('doctor_google_calendar_credentials', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  doctorId: uuid('doctor_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  clinicId: uuid('clinic_id')
+    .references(() => clinics.id, { onDelete: 'cascade' })
+    .notNull(),
+
+  // Tokens criptografados com AES-256 (chave via ENCRYPTION_KEY env var)
+  accessToken: text('access_token').notNull(),
+  refreshToken: text('refresh_token').notNull(),
+  tokenExpiresAt: timestamp('token_expires_at', { withTimezone: true }).notNull(),
+
+  // Calendário selecionado (null até médico completar a seleção)
+  selectedCalendarId: varchar('selected_calendar_id', { length: 255 }),
+  selectedCalendarName: varchar('selected_calendar_name', { length: 255 }),
+
+  // Conta Google vinculada
+  googleAccountEmail: varchar('google_account_email', { length: 255 }),
+
+  // false quando médico desconecta
+  isActive: boolean('is_active').notNull().default(true),
+
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at'),
+}, (table) => [
+  uniqueIndex('uq_doctor_clinic_gcal').on(table.doctorId, table.clinicId),
+  index('idx_dgcal_doctor').on(table.doctorId),
+  index('idx_dgcal_clinic').on(table.clinicId),
+])
+
+// ──────────────────────────────────────────────
+// 7. doctor_appointment_gcal_events — Mapeamento appointmentId ↔ gcalEventId (nível médico)
+// ──────────────────────────────────────────────
+export const doctorAppointmentGcalEvents = pgTable('doctor_appointment_gcal_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  doctorId: uuid('doctor_id').notNull(),
+  clinicId: uuid('clinic_id').notNull(),
+  appointmentId: uuid('appointment_id').notNull().unique(),
+  gcalEventId: varchar('gcal_event_id', { length: 255 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+// ──────────────────────────────────────────────
+// 8. payment_methods — Formas de pagamento da clínica
 // ──────────────────────────────────────────────
 export const paymentMethodTypeEnum = pgEnum('payment_method_type', [
   'pix',
