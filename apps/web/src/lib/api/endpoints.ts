@@ -97,6 +97,9 @@ export const ENDPOINTS = {
     UPDATE_LINK: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/link`,
     GET_SCHEDULE: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/schedule`,
     SAVE_SCHEDULE: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/schedule`,
+    ME: (clinicId: string) => `/clinics/${clinicId}/doctors/me`,
+    CREATE_AND_LINK_PROCEDURE: (clinicId: string, doctorId: string) =>
+      `/clinics/${clinicId}/doctors/${doctorId}/procedures/create`,
     CLINICS: (doctorId: string) => `/doctors/${doctorId}/clinics`,
     PROCEDURES: {
       LIST: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/procedures`,

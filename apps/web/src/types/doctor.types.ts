@@ -110,6 +110,15 @@ export interface UpdateDoctorProcedureDto {
   isActive?: boolean
 }
 
+export interface CreateAndLinkProcedureDto {
+  name: string
+  description?: string
+  category?: string
+  defaultDuration: number
+  price?: number
+  durationOverride?: number
+}
+
 // === Clinics for Doctor ===
 
 export interface ClinicForDoctor {

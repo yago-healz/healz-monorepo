@@ -12,6 +12,19 @@ import type {
   UpdateDoctorProfileDto,
 } from '@/types/doctor.types'
 
+export const useMyDoctorProfile = () => {
+  const clinicId = tokenService.getActiveClinicId()
+
+  return useQuery({
+    queryKey: ['doctors', clinicId, 'me'],
+    queryFn: async (): Promise<DoctorProfile> => {
+      const response = await api.get(ENDPOINTS.DOCTORS.ME(clinicId!))
+      return response.data
+    },
+    enabled: !!clinicId,
+  })
+}
+
 export const useDoctors = () => {
   const clinicId = tokenService.getActiveClinicId()
 
