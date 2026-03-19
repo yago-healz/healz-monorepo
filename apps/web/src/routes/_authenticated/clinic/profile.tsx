@@ -1,4 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { useCallback } from 'react'
 import { z } from 'zod'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -8,9 +9,12 @@ import { useMyDoctorProfile } from '@/features/clinic/api/doctors.api'
 import { DoctorProfileCard } from '@/features/clinic/components/doctors/doctor-profile-card'
 import { DoctorScheduleTab } from '@/features/clinic/components/doctors/doctor-schedule-tab'
 import { DoctorProceduresTab } from '@/features/clinic/components/doctors/doctor-procedures-tab'
+import { DoctorConnectorsTab } from '@/features/clinic/components/doctors/doctor-connectors-tab'
 
 const searchSchema = z.object({
-  tab: z.enum(['perfil', 'agenda', 'procedimentos']).optional().catch('perfil'),
+  tab: z.enum(['perfil', 'agenda', 'procedimentos', 'conectores']).optional().catch('perfil'),
+  gcal: z.string().optional(),
+  reason: z.string().optional(),
 })
 
 export const Route = createFileRoute('/_authenticated/clinic/profile')({
@@ -29,13 +33,18 @@ const tabs = [
   { id: 'perfil', label: 'Perfil' },
   { id: 'agenda', label: 'Agenda' },
   { id: 'procedimentos', label: 'Procedimentos' },
+  { id: 'conectores', label: 'Conectores' },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
 
 function DoctorProfilePage() {
-  const { tab: activeTab = 'perfil' } = Route.useSearch()
+  const { tab: activeTab = 'perfil', gcal, reason } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
+
+  const handleGcalHandled = useCallback(() => {
+    navigate({ search: (prev) => ({ ...prev, gcal: undefined, reason: undefined }), replace: true })
+  }, [navigate])
   const { data: doctor, isLoading } = useMyDoctorProfile()
 
   function handleTabChange(tabId: TabId) {
@@ -93,6 +102,14 @@ function DoctorProfilePage() {
           {activeTab === 'agenda' && <DoctorScheduleTab doctorId={doctor.id} />}
           {activeTab === 'procedimentos' && (
             <DoctorProceduresTab doctorId={doctor.id} isSelfView />
+          )}
+          {activeTab === 'conectores' && (
+            <DoctorConnectorsTab
+              doctorId={doctor.id}
+              gcal={gcal}
+              reason={reason}
+              onGcalHandled={handleGcalHandled}
+            />
           )}
         </div>
       </div>

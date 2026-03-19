@@ -107,6 +107,11 @@ export const ENDPOINTS = {
       UPDATE: (clinicId: string, doctorId: string, procedureId: string) => `/clinics/${clinicId}/doctors/${doctorId}/procedures/${procedureId}`,
       UNLINK: (clinicId: string, doctorId: string, procedureId: string) => `/clinics/${clinicId}/doctors/${doctorId}/procedures/${procedureId}`,
     },
+    CONNECTORS: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/connectors`,
+    GOOGLE_CALENDAR_AUTH_URL: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/connectors/google-calendar/auth-url`,
+    GOOGLE_CALENDAR_CALENDARS: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/connectors/google-calendar/calendars`,
+    GOOGLE_CALENDAR_SELECT: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/connectors/google-calendar/select-calendar`,
+    GOOGLE_CALENDAR_DISCONNECT: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/connectors/google-calendar`,
   },
 
   // Procedures

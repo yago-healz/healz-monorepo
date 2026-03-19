@@ -139,6 +139,91 @@ export const useUpdateDoctorLink = (doctorId: string) => {
   })
 }
 
+// ============================================
+// DOCTOR CONNECTORS
+// ============================================
+
+export interface DoctorConnectorStatus {
+  googleCalendar: boolean
+  whatsapp: boolean
+}
+
+export interface DoctorGoogleCalendar {
+  id: string
+  summary: string
+  description?: string
+  primary?: boolean
+}
+
+export const useDoctorConnectors = (doctorId: string) => {
+  const clinicId = tokenService.getActiveClinicId()
+
+  return useQuery({
+    queryKey: ['doctors', clinicId, doctorId, 'connectors'],
+    queryFn: async (): Promise<DoctorConnectorStatus> => {
+      const response = await api.get(ENDPOINTS.DOCTORS.CONNECTORS(clinicId!, doctorId))
+      return response.data
+    },
+    enabled: !!clinicId && !!doctorId,
+  })
+}
+
+export const useDoctorGoogleCalendarCalendars = (doctorId: string, enabled: boolean) => {
+  const clinicId = tokenService.getActiveClinicId()
+
+  return useQuery({
+    queryKey: ['doctors', clinicId, doctorId, 'google-calendar', 'calendars'],
+    queryFn: async (): Promise<DoctorGoogleCalendar[]> => {
+      const response = await api.get(ENDPOINTS.DOCTORS.GOOGLE_CALENDAR_CALENDARS(clinicId!, doctorId))
+      return response.data
+    },
+    enabled: !!clinicId && !!doctorId && enabled,
+  })
+}
+
+export const useSelectDoctorGoogleCalendar = (doctorId: string) => {
+  const clinicId = tokenService.getActiveClinicId()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ calendarId, calendarName }: { calendarId: string; calendarName: string }) => {
+      const response = await api.post(
+        ENDPOINTS.DOCTORS.GOOGLE_CALENDAR_SELECT(clinicId!, doctorId),
+        { calendarId, calendarName },
+      )
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctors', clinicId, doctorId, 'connectors'] })
+      toast.success('Calendário vinculado com sucesso!')
+    },
+    onError: () => {
+      toast.error('Erro ao vincular calendário. Tente novamente.')
+    },
+  })
+}
+
+export const useDisconnectDoctorGoogleCalendar = (doctorId: string) => {
+  const clinicId = tokenService.getActiveClinicId()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.delete(
+        ENDPOINTS.DOCTORS.GOOGLE_CALENDAR_DISCONNECT(clinicId!, doctorId),
+      )
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctors', clinicId, doctorId, 'connectors'] })
+      toast.success('Google Calendar desconectado com sucesso!')
+    },
+    onError: () => {
+      toast.error('Erro ao desconectar. Tente novamente.')
+    },
+  })
+}
+
 export const useSaveDoctorSchedule = (doctorId: string) => {
   const clinicId = tokenService.getActiveClinicId()
   const queryClient = useQueryClient()
