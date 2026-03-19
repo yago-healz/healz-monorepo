@@ -9,8 +9,10 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Req,
 } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
+import { Request } from 'express'
 import { DoctorService } from './doctor.service'
 import { CreateDoctorProfileDto } from './dto/create-doctor-profile.dto'
 import { UpdateDoctorProfileDto } from './dto/update-doctor-profile.dto'
@@ -18,6 +20,7 @@ import { UpdateDoctorClinicDto } from './dto/update-doctor-clinic.dto'
 import { DoctorScheduleDto } from './dto/doctor-schedule.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { IsClinicAdminGuard } from '../clinics/guards/is-clinic-admin.guard'
+import { JwtPayload } from '../../common/interfaces/jwt-payload.interface'
 
 @ApiTags('Doctors')
 @Controller('clinics/:clinicId/doctors')
@@ -37,6 +40,13 @@ export class DoctorController {
   @ApiOperation({ summary: 'Listar médicos da clínica' })
   findAll(@Param('clinicId') clinicId: string) {
     return this.doctorService.findAll(clinicId)
+  }
+
+  @Get('me')
+  @ApiOperation({ summary: 'Obter perfil do médico logado nesta clínica' })
+  getMe(@Param('clinicId') clinicId: string, @Req() req: Request) {
+    const user = req.user as JwtPayload
+    return this.doctorService.findByUserId(clinicId, user.userId)
   }
 
   @Get(':doctorId')

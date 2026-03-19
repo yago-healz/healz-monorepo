@@ -544,6 +544,58 @@ export class DoctorService {
     return this.getSchedule(clinicId, doctorId)
   }
 
+  async findByUserId(clinicId: string, userId: string): Promise<DoctorProfileResponseDto> {
+    const rows = await db
+      .select({
+        profileId: doctorProfiles.id,
+        userId: doctorProfiles.userId,
+        crm: doctorProfiles.crm,
+        specialty: doctorProfiles.specialty,
+        bio: doctorProfiles.bio,
+        photoUrl: doctorProfiles.photoUrl,
+        profileIsActive: doctorProfiles.isActive,
+        userName: users.name,
+        userEmail: users.email,
+        linkId: doctorClinics.id,
+        defaultDuration: doctorClinics.defaultDuration,
+        notes: doctorClinics.notes,
+        linkIsActive: doctorClinics.isActive,
+      })
+      .from(doctorClinics)
+      .innerJoin(doctorProfiles, eq(doctorClinics.doctorId, doctorProfiles.userId))
+      .innerJoin(users, eq(doctorProfiles.userId, users.id))
+      .where(
+        and(
+          eq(doctorClinics.clinicId, clinicId),
+          eq(doctorProfiles.userId, userId),
+        ),
+      )
+      .limit(1)
+
+    if (rows.length === 0) {
+      throw new NotFoundException('Perfil médico não encontrado para este usuário nesta clínica')
+    }
+
+    const row = rows[0]
+    return {
+      id: row.profileId,
+      userId: row.userId,
+      name: row.userName,
+      email: row.userEmail,
+      crm: row.crm,
+      specialty: row.specialty,
+      bio: row.bio,
+      photoUrl: row.photoUrl,
+      isActive: row.profileIsActive,
+      doctorClinic: {
+        id: row.linkId,
+        defaultDuration: row.defaultDuration,
+        notes: row.notes,
+        isActive: row.linkIsActive,
+      },
+    }
+  }
+
   async findDoctorClinics(
     doctorId: string,
     allowedClinicIds: string[],
