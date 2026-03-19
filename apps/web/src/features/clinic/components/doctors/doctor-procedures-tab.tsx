@@ -26,11 +26,13 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
+  useCreateAndLinkProcedure,
   useDoctorProcedures,
   useLinkDoctorProcedure,
   useUnlinkDoctorProcedure,
   useUpdateDoctorProcedure,
 } from '@/features/clinic/api/doctor-procedures.api'
+import { Textarea } from '@/components/ui/textarea'
 import { useProcedures } from '@/features/clinic/api/procedures.api'
 import { tokenService } from '@/services/token.service'
 import type { DoctorProcedure } from '@/types/doctor.types'
@@ -288,12 +290,138 @@ function UnlinkConfirmDialog({ clinicId, doctorId, procedure, open, onClose }: U
   )
 }
 
+// ============ Create Dialog ============
+interface CreateProcedureDialogProps {
+  clinicId: string
+  doctorId: string
+  open: boolean
+  onClose: () => void
+}
+
+function CreateProcedureDialog({ clinicId, doctorId, open, onClose }: CreateProcedureDialogProps) {
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [category, setCategory] = useState('')
+  const [defaultDuration, setDefaultDuration] = useState('30')
+  const [price, setPrice] = useState('')
+
+  const { mutate: createAndLink, isPending } = useCreateAndLinkProcedure(clinicId, doctorId)
+
+  function handleSubmit() {
+    if (!name.trim()) return
+    createAndLink(
+      {
+        name: name.trim(),
+        description: description.trim() || undefined,
+        category: category.trim() || undefined,
+        defaultDuration: parseInt(defaultDuration) || 30,
+        price: price ? Math.round(parseFloat(price) * 100) : undefined,
+      },
+      {
+        onSuccess: () => {
+          resetForm()
+          onClose()
+        },
+      },
+    )
+  }
+
+  function resetForm() {
+    setName('')
+    setDescription('')
+    setCategory('')
+    setDefaultDuration('30')
+    setPrice('')
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Criar Novo Procedimento</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          <div className="space-y-2">
+            <Label>Nome *</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ex: Consulta Inicial"
+              maxLength={255}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Descrição</Label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Descrição do procedimento..."
+              rows={2}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Categoria</Label>
+              <Input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="Ex: Consulta"
+                maxLength={100}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Duração padrão (min) *</Label>
+              <Input
+                type="number"
+                min="5"
+                max="480"
+                step="5"
+                value={defaultDuration}
+                onChange={(e) => setDefaultDuration(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Preço (R$)</Label>
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Deixe em branco para definir depois"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isPending}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!name.trim() || isPending}
+            className="bg-pink-500 hover:bg-pink-600 text-white"
+          >
+            {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Criar e Vincular'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // ============ Main Component ============
 export function DoctorProceduresTab({ doctorId, isSelfView = false }: DoctorProceduresTabProps) {
   const clinicId = tokenService.getActiveClinicId() ?? ''
   const { data: procedures, isLoading } = useDoctorProcedures(clinicId, doctorId)
 
   const [showLink, setShowLink] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
   const [editTarget, setEditTarget] = useState<DoctorProcedure | null>(null)
   const [unlinkTarget, setUnlinkTarget] = useState<DoctorProcedure | null>(null)
 
@@ -310,7 +438,13 @@ export function DoctorProceduresTab({ doctorId, isSelfView = false }: DoctorProc
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        {isSelfView && (
+          <Button onClick={() => setShowCreate(true)} variant="outline" size="sm">
+            <Plus className="w-4 h-4 mr-2" />
+            Criar Procedimento
+          </Button>
+        )}
         <Button
           onClick={() => setShowLink(true)}
           className="bg-pink-500 hover:bg-pink-600 text-white"
@@ -385,6 +519,15 @@ export function DoctorProceduresTab({ doctorId, isSelfView = false }: DoctorProc
             ))}
           </TableBody>
         </Table>
+      )}
+
+      {isSelfView && (
+        <CreateProcedureDialog
+          clinicId={clinicId}
+          doctorId={doctorId}
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+        />
       )}
 
       <LinkProcedureDialog
