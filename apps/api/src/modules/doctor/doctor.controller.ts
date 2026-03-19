@@ -20,6 +20,7 @@ import { UpdateDoctorClinicDto } from './dto/update-doctor-clinic.dto'
 import { DoctorScheduleDto } from './dto/doctor-schedule.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { IsClinicAdminGuard } from '../clinics/guards/is-clinic-admin.guard'
+import { IsClinicAdminOrSelfDoctorGuard } from '../../common/guards/is-clinic-admin-or-self-doctor.guard'
 import { JwtPayload } from '../../common/interfaces/jwt-payload.interface'
 
 @ApiTags('Doctors')
@@ -56,7 +57,7 @@ export class DoctorController {
   }
 
   @Patch(':doctorId')
-  @UseGuards(IsClinicAdminGuard)
+  @UseGuards(IsClinicAdminOrSelfDoctorGuard)
   @ApiOperation({ summary: 'Atualizar perfil do médico' })
   update(
     @Param('clinicId') clinicId: string,
@@ -75,14 +76,16 @@ export class DoctorController {
   }
 
   @Patch(':doctorId/link')
-  @UseGuards(IsClinicAdminGuard)
+  @UseGuards(IsClinicAdminOrSelfDoctorGuard)
   @ApiOperation({ summary: 'Atualizar vínculo médico↔clínica (defaultDuration, notes, isActive)' })
   updateLink(
     @Param('clinicId') clinicId: string,
     @Param('doctorId') doctorId: string,
     @Body() dto: UpdateDoctorClinicDto,
+    @Req() req: Request,
   ) {
-    return this.doctorService.updateLink(clinicId, doctorId, dto)
+    const user = req.user as JwtPayload
+    return this.doctorService.updateLink(clinicId, doctorId, dto, user.userId)
   }
 
   @Get(':doctorId/schedule')
@@ -92,7 +95,7 @@ export class DoctorController {
   }
 
   @Patch(':doctorId/schedule')
-  @UseGuards(IsClinicAdminGuard)
+  @UseGuards(IsClinicAdminOrSelfDoctorGuard)
   @ApiOperation({ summary: 'Salvar/atualizar agenda do médico na clínica' })
   saveSchedule(
     @Param('clinicId') clinicId: string,

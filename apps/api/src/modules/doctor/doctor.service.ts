@@ -21,12 +21,15 @@ import { UpdateDoctorProfileDto } from './dto/update-doctor-profile.dto'
 import { UpdateDoctorClinicDto } from './dto/update-doctor-clinic.dto'
 import { LinkProcedureDto } from './dto/link-procedure.dto'
 import { UpdateDoctorProcedureDto } from './dto/update-doctor-procedure.dto'
+import { CreateAndLinkProcedureDto } from './dto/create-and-link-procedure.dto'
 import { DoctorProfileResponseDto } from './dto/doctor-profile-response.dto'
 import { ClinicForDoctorResponseDto } from './dto/doctor-clinic-list-response.dto'
 import { DoctorScheduleDto, GetDoctorScheduleResponseDto } from './dto/doctor-schedule.dto'
+import { ProceduresService } from '../procedures/procedures.service'
 
 @Injectable()
 export class DoctorService {
+  constructor(private readonly proceduresService: ProceduresService) {}
   async create(clinicId: string, dto: CreateDoctorProfileDto): Promise<DoctorProfileResponseDto> {
     // Verifica se o user existe e tem role "doctor" nesta clínica
     const userRole = await db
@@ -247,16 +250,20 @@ export class DoctorService {
     clinicId: string,
     doctorId: string,
     dto: UpdateDoctorClinicDto,
+    requestingUserId?: string,
   ): Promise<DoctorProfileResponseDto> {
     // Verifica que o médico pertence à clínica
     const doctor = await this.findOne(clinicId, doctorId)
+
+    // Se quem edita é o próprio médico, ignorar isActive (não pode se desativar)
+    const isSelf = requestingUserId !== undefined && doctor.userId === requestingUserId
 
     await db
       .update(doctorClinics)
       .set({
         ...(dto.defaultDuration !== undefined && { defaultDuration: dto.defaultDuration }),
         ...(dto.notes !== undefined && { notes: dto.notes }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+        ...(!isSelf && dto.isActive !== undefined && { isActive: dto.isActive }),
         updatedAt: new Date(),
       })
       .where(
@@ -332,6 +339,21 @@ export class DoctorService {
       .returning()
 
     return this.buildProcedureResponse(created, procedure.defaultDuration)
+  }
+
+  async createAndLinkProcedure(clinicId: string, doctorId: string, dto: CreateAndLinkProcedureDto) {
+    const procedure = await this.proceduresService.create(clinicId, {
+      name: dto.name,
+      description: dto.description,
+      category: dto.category,
+      defaultDuration: dto.defaultDuration,
+    })
+
+    return this.linkProcedure(clinicId, doctorId, {
+      procedureId: procedure.id,
+      price: dto.price,
+      durationOverride: dto.durationOverride,
+    })
   }
 
   async listProcedures(clinicId: string, doctorId: string) {

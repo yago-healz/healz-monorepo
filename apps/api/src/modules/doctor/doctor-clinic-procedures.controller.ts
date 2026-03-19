@@ -14,8 +14,9 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { DoctorService } from './doctor.service'
 import { LinkProcedureDto } from './dto/link-procedure.dto'
 import { UpdateDoctorProcedureDto } from './dto/update-doctor-procedure.dto'
+import { CreateAndLinkProcedureDto } from './dto/create-and-link-procedure.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { IsClinicAdminGuard } from '../clinics/guards/is-clinic-admin.guard'
+import { IsClinicAdminOrSelfDoctorGuard } from '../../common/guards/is-clinic-admin-or-self-doctor.guard'
 
 @ApiTags('Doctors')
 @Controller('clinics/:clinicId/doctors/:doctorId/procedures')
@@ -25,7 +26,7 @@ export class DoctorClinicProceduresController {
   constructor(private readonly doctorService: DoctorService) {}
 
   @Post()
-  @UseGuards(IsClinicAdminGuard)
+  @UseGuards(IsClinicAdminOrSelfDoctorGuard)
   @ApiOperation({ summary: 'Vincular procedimento ao médico na clínica' })
   link(
     @Param('clinicId') clinicId: string,
@@ -35,6 +36,17 @@ export class DoctorClinicProceduresController {
     return this.doctorService.linkProcedure(clinicId, doctorId, dto)
   }
 
+  @Post('create')
+  @UseGuards(IsClinicAdminOrSelfDoctorGuard)
+  @ApiOperation({ summary: 'Criar procedimento e vincular ao médico' })
+  createAndLink(
+    @Param('clinicId') clinicId: string,
+    @Param('doctorId') doctorId: string,
+    @Body() dto: CreateAndLinkProcedureDto,
+  ) {
+    return this.doctorService.createAndLinkProcedure(clinicId, doctorId, dto)
+  }
+
   @Get()
   @ApiOperation({ summary: 'Listar procedimentos do médico na clínica' })
   list(@Param('clinicId') clinicId: string, @Param('doctorId') doctorId: string) {
@@ -42,7 +54,7 @@ export class DoctorClinicProceduresController {
   }
 
   @Patch(':procedureId')
-  @UseGuards(IsClinicAdminGuard)
+  @UseGuards(IsClinicAdminOrSelfDoctorGuard)
   @ApiOperation({ summary: 'Atualizar preço/duração do procedimento para este médico' })
   update(
     @Param('clinicId') clinicId: string,
@@ -54,7 +66,7 @@ export class DoctorClinicProceduresController {
   }
 
   @Delete(':procedureId')
-  @UseGuards(IsClinicAdminGuard)
+  @UseGuards(IsClinicAdminOrSelfDoctorGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Desvincular procedimento do médico (soft delete)' })
   unlink(
