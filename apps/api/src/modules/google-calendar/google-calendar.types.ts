@@ -24,3 +24,12 @@ export interface GoogleCredentials {
   tokenExpiresAt: Date
   selectedCalendarId: string
 }
+
+export interface CalendarEventDto {
+  id: string
+  title: string
+  start: string       // ISO 8601
+  end: string         // ISO 8601
+  allDay: boolean
+  status: 'confirmed' | 'tentative' | 'cancelled'
+}

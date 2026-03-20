@@ -119,6 +119,17 @@ export interface CreateAndLinkProcedureDto {
   durationOverride?: number
 }
 
+// === Calendar Events ===
+
+export interface CalendarEvent {
+  id: string
+  title: string
+  start: string
+  end: string
+  allDay: boolean
+  status: 'confirmed' | 'tentative' | 'cancelled'
+}
+
 // === Clinics for Doctor ===
 
 export interface ClinicForDoctor {

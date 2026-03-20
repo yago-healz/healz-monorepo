@@ -8,15 +8,15 @@ import {
   Query,
   Res,
   UseGuards,
-  Req,
   Logger,
 } from '@nestjs/common'
-import { Response, Request } from 'express'
+import { Response } from 'express'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { IsString, IsNotEmpty } from 'class-validator'
 import { DoctorGoogleCalendarService } from './doctor-google-calendar.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { IsClinicAdminOrSelfDoctorGuard } from '../../common/guards/is-clinic-admin-or-self-doctor.guard'
+import { IsClinicMemberGuard } from '../../common/guards/is-clinic-member.guard'
 import { JwtPayload } from '../../common/interfaces/jwt-payload.interface'
 
 class SelectCalendarDto {
@@ -27,6 +27,16 @@ class SelectCalendarDto {
   @IsString()
   @IsNotEmpty()
   calendarName: string
+}
+
+class ListCalendarEventsQueryDto {
+  @IsString()
+  @IsNotEmpty()
+  timeMin: string
+
+  @IsString()
+  @IsNotEmpty()
+  timeMax: string
 }
 
 @ApiTags('Doctor Google Calendar')
@@ -110,6 +120,19 @@ export class DoctorGoogleCalendarController {
     @Param('doctorId') doctorId: string,
   ): Promise<void> {
     return this.doctorGoogleCalendarService.disconnect(clinicId, doctorId)
+  }
+
+  // GET /clinics/:clinicId/doctors/:doctorId/calendar/events
+  @Get('clinics/:clinicId/doctors/:doctorId/calendar/events')
+  @UseGuards(JwtAuthGuard, IsClinicMemberGuard)
+  @ApiBearerAuth('bearer')
+  @ApiOperation({ summary: 'Lista eventos do Google Calendar do médico' })
+  async listCalendarEvents(
+    @Param('clinicId') clinicId: string,
+    @Param('doctorId') doctorId: string,
+    @Query() query: ListCalendarEventsQueryDto,
+  ) {
+    return this.doctorGoogleCalendarService.listEvents(clinicId, doctorId, query.timeMin, query.timeMax)
   }
 
   // GET /clinics/:clinicId/doctors/:doctorId/connectors

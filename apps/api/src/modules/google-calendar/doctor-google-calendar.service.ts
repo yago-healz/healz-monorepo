@@ -18,6 +18,7 @@ import {
 } from '../../infrastructure/database/schema'
 import {
   CalendarListEntry,
+  CalendarEventDto,
   CreateEventParams,
   FreeBusySlot,
   GoogleCredentials,
@@ -286,6 +287,60 @@ export class DoctorGoogleCalendarService {
       .limit(1)
 
     return !!(cred?.isActive && cred?.selectedCalendarId)
+  }
+
+  // ── Calendar Events ───────────────────────────────────────────────────────
+
+  async listEvents(
+    clinicId: string,
+    doctorId: string,
+    timeMin: string,
+    timeMax: string,
+  ): Promise<CalendarEventDto[]> {
+    const userId = await this.resolveUserId(doctorId)
+    const [cred] = await db
+      .select()
+      .from(doctorGoogleCalendarCredentials)
+      .where(
+        and(
+          eq(doctorGoogleCalendarCredentials.doctorId, userId),
+          eq(doctorGoogleCalendarCredentials.clinicId, clinicId),
+          eq(doctorGoogleCalendarCredentials.isActive, true),
+        ),
+      )
+      .limit(1)
+
+    if (!cred?.selectedCalendarId) {
+      throw new NotFoundException('Doctor does not have Google Calendar connected')
+    }
+
+    const client = await this.getAuthenticatedClient(clinicId, userId)
+    const cal = google.calendar({ version: 'v3', auth: client })
+
+    const { data } = await cal.events.list({
+      calendarId: cred.selectedCalendarId,
+      timeMin,
+      timeMax,
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: 250,
+      showDeleted: true,
+    })
+
+    return (data.items ?? []).map((item) => {
+      const allDay = !item.start?.dateTime
+      const start = item.start?.dateTime ?? item.start?.date ?? timeMin
+      const end = item.end?.dateTime ?? item.end?.date ?? timeMax
+      const status = (item.status ?? 'confirmed') as 'confirmed' | 'tentative' | 'cancelled'
+      return {
+        id: item.id ?? '',
+        title: item.summary ?? '(sem título)',
+        start,
+        end,
+        allDay,
+        status,
+      }
+    })
   }
 
   // ── Free/Busy ─────────────────────────────────────────────────────────────

@@ -112,6 +112,7 @@ export const ENDPOINTS = {
     GOOGLE_CALENDAR_CALENDARS: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/connectors/google-calendar/calendars`,
     GOOGLE_CALENDAR_SELECT: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/connectors/google-calendar/select-calendar`,
     GOOGLE_CALENDAR_DISCONNECT: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/connectors/google-calendar`,
+    CALENDAR_EVENTS: (clinicId: string, doctorId: string) => `/clinics/${clinicId}/doctors/${doctorId}/calendar/events`,
   },
 
   // Procedures
