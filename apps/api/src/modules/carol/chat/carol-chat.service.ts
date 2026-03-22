@@ -7,6 +7,7 @@ import { CarolConfigService } from '../carol-config.service'
 import { CarolConfigResponseDto } from '../dto/carol-config-response.dto'
 import { ClinicSettingsService } from '../../clinic-settings/clinic-settings.service'
 import { DoctorGoogleCalendarService } from '../../google-calendar/doctor-google-calendar.service'
+import { AppointmentService } from '../../appointment/application/appointment.service'
 import { ChatRequestDto, ChatResponseDto } from './dto/chat.dto'
 import { GetClinicInfoTool } from '../tools/get-clinic-info.tool'
 import { GetServicesTool } from '../tools/get-services.tool'
@@ -27,6 +28,7 @@ export class CarolChatService {
     private readonly carolConfigService: CarolConfigService,
     private readonly clinicSettingsService: ClinicSettingsService,
     private readonly doctorGoogleCalendarService: DoctorGoogleCalendarService,
+    private readonly appointmentService: AppointmentService,
   ) {}
 
   async processMessage(clinicId: string, dto: ChatRequestDto): Promise<ChatResponseDto> {
@@ -249,7 +251,7 @@ ${schedulingRules?.postSchedulingMessage ? `- Após agendar, diga: "${scheduling
       new ListDoctorsTool(clinicId),
       new GetDoctorAvailabilityTool(clinicId, this.doctorGoogleCalendarService),
       new GetServicesTool(clinicId),
-      new CreateAppointmentTool(clinicId),
+      new CreateAppointmentTool(clinicId, this.appointmentService),
       new GetPaymentMethodsTool(clinicId),
       new FindOrCreatePatientTool(clinicId),
     ]
