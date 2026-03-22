@@ -39,8 +39,12 @@ const VIEW_LABELS: Record<View, string> = {
   work_week: 'Semana útil',
 }
 
+const SCHEDULE_VIEW_KEY = 'healz_schedule_view'
+
 export function ScheduleCalendar({ events, isLoading, onRangeChange }: ScheduleCalendarProps) {
-  const [view, setView] = useState<View>('day')
+  const [view, setView] = useState<View>(
+    () => (localStorage.getItem(SCHEDULE_VIEW_KEY) as View) || 'day',
+  )
   const [date, setDate] = useState(new Date())
 
   const rbcEvents: RbcEvent[] = events.map((e) => ({
@@ -69,6 +73,7 @@ export function ScheduleCalendar({ events, isLoading, onRangeChange }: ScheduleC
 
   const handleViewChange = (newView: View) => {
     setView(newView)
+    localStorage.setItem(SCHEDULE_VIEW_KEY, newView)
   }
 
   const eventPropGetter = (event: RbcEvent) => {
