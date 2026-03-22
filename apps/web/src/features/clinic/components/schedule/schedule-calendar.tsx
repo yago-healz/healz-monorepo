@@ -1,7 +1,17 @@
-import { useCallback, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
 import type { View } from 'react-big-calendar'
-import { format, parse, startOfWeek, getDay } from 'date-fns'
+import {
+  format,
+  parse,
+  startOfWeek,
+  endOfWeek,
+  startOfDay,
+  endOfDay,
+  startOfMonth,
+  endOfMonth,
+  getDay,
+} from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -41,11 +51,37 @@ const VIEW_LABELS: Record<View, string> = {
 
 const SCHEDULE_VIEW_KEY = 'healz_schedule_view'
 
+function computeRange(date: Date, view: View): { start: Date; end: Date } {
+  if (view === 'day') {
+    return { start: startOfDay(date), end: endOfDay(date) }
+  }
+  if (view === 'week' || view === 'work_week') {
+    return {
+      start: startOfWeek(date, { locale: ptBR }),
+      end: endOfWeek(date, { locale: ptBR }),
+    }
+  }
+  if (view === 'month') {
+    return {
+      start: startOfWeek(startOfMonth(date), { locale: ptBR }),
+      end: endOfWeek(endOfMonth(date), { locale: ptBR }),
+    }
+  }
+  return { start: startOfDay(date), end: endOfDay(date) }
+}
+
 export function ScheduleCalendar({ events, isLoading, onRangeChange }: ScheduleCalendarProps) {
   const [view, setView] = useState<View>(
     () => (localStorage.getItem(SCHEDULE_VIEW_KEY) as View) || 'day',
   )
   const [date, setDate] = useState(new Date())
+
+  // Sync time range with the currently displayed date/view (fires on mount and on changes)
+  useEffect(() => {
+    const { start, end } = computeRange(date, view)
+    onRangeChange(start, end)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date, view])
 
   const rbcEvents: RbcEvent[] = events.map((e) => ({
     id: e.id,
@@ -55,17 +91,6 @@ export function ScheduleCalendar({ events, isLoading, onRangeChange }: ScheduleC
     allDay: e.allDay,
     status: e.status,
   }))
-
-  const handleRangeChange = useCallback(
-    (range: Date[] | { start: Date; end: Date }) => {
-      if (Array.isArray(range)) {
-        onRangeChange(range[0], range[range.length - 1])
-      } else {
-        onRangeChange(range.start, range.end)
-      }
-    },
-    [onRangeChange],
-  )
 
   const handleNavigate = (newDate: Date) => {
     setDate(newDate)
@@ -181,7 +206,6 @@ export function ScheduleCalendar({ events, isLoading, onRangeChange }: ScheduleC
           date={date}
           onNavigate={handleNavigate}
           onView={handleViewChange}
-          onRangeChange={handleRangeChange}
           eventPropGetter={eventPropGetter}
           toolbar={false}
           formats={formats}

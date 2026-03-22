@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useCallback } from 'react'
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import { AlertCircle, CalendarX } from 'lucide-react'
 import { useUserRole } from '@/hooks/use-user-role'
 import { useMyDoctorProfile, useDoctors } from '@/features/clinic/api/doctors.api'
@@ -15,10 +16,26 @@ export const Route = createFileRoute('/_authenticated/clinic/schedule')({
 function SchedulePage() {
   const { isDoctor, isLoading: roleLoading } = useUserRole()
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null)
-  const [timeRange, setTimeRange] = useState(() => ({
-    start: startOfDay(new Date()).toISOString(),
-    end: endOfDay(new Date()).toISOString(),
-  }))
+  const [timeRange, setTimeRange] = useState(() => {
+    const today = new Date()
+    const stored = localStorage.getItem('healz_schedule_view')
+    if (stored === 'week') {
+      return {
+        start: startOfWeek(today, { locale: ptBR }).toISOString(),
+        end: endOfWeek(today, { locale: ptBR }).toISOString(),
+      }
+    }
+    if (stored === 'month') {
+      return {
+        start: startOfWeek(startOfMonth(today), { locale: ptBR }).toISOString(),
+        end: endOfWeek(endOfMonth(today), { locale: ptBR }).toISOString(),
+      }
+    }
+    return {
+      start: startOfDay(today).toISOString(),
+      end: endOfDay(today).toISOString(),
+    }
+  })
 
   // For doctor role: load own profile and auto-select
   const { data: myProfile, isLoading: profileLoading } = useMyDoctorProfile()
@@ -36,8 +53,8 @@ function SchedulePage() {
 
   const handleRangeChange = useCallback((start: Date, end: Date) => {
     setTimeRange({
-      start: startOfDay(start).toISOString(),
-      end: endOfDay(end).toISOString(),
+      start: start.toISOString(),
+      end: end.toISOString(),
     })
   }, [])
 
