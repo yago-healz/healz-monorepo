@@ -16,6 +16,7 @@ import { GetPaymentMethodsTool } from '../tools/get-payment-methods.tool'
 import { FindOrCreatePatientTool } from '../tools/find-or-create-patient.tool'
 import { ListDoctorsTool } from '../tools/list-doctors.tool'
 import { GetDoctorAvailabilityTool } from '../tools/get-doctor-availability.tool'
+import { GetPatientAppointmentsTool } from '../tools/get-patient-appointments.tool'
 
 @Injectable()
 export class CarolChatService {
@@ -254,6 +255,7 @@ ${schedulingRules?.postSchedulingMessage ? `- Após agendar, diga: "${scheduling
       new CreateAppointmentTool(clinicId, this.appointmentService),
       new GetPaymentMethodsTool(clinicId),
       new FindOrCreatePatientTool(clinicId),
+      new GetPatientAppointmentsTool(clinicId),
     ]
   }
 }
