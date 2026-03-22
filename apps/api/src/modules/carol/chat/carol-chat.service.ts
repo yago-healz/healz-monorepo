@@ -6,16 +6,15 @@ import { StructuredTool } from '@langchain/core/tools'
 import { CarolConfigService } from '../carol-config.service'
 import { CarolConfigResponseDto } from '../dto/carol-config-response.dto'
 import { ClinicSettingsService } from '../../clinic-settings/clinic-settings.service'
-import { GoogleCalendarService } from '../../google-calendar/google-calendar.service'
+import { DoctorGoogleCalendarService } from '../../google-calendar/doctor-google-calendar.service'
 import { ChatRequestDto, ChatResponseDto } from './dto/chat.dto'
 import { GetClinicInfoTool } from '../tools/get-clinic-info.tool'
 import { GetServicesTool } from '../tools/get-services.tool'
-import { GetOperatingHoursTool } from '../tools/get-operating-hours.tool'
-import { CheckAvailabilityTool } from '../tools/check-availability.tool'
 import { CreateAppointmentTool } from '../tools/create-appointment.tool'
 import { GetPaymentMethodsTool } from '../tools/get-payment-methods.tool'
 import { FindOrCreatePatientTool } from '../tools/find-or-create-patient.tool'
 import { ListDoctorsTool } from '../tools/list-doctors.tool'
+import { GetDoctorAvailabilityTool } from '../tools/get-doctor-availability.tool'
 
 @Injectable()
 export class CarolChatService {
@@ -27,7 +26,7 @@ export class CarolChatService {
   constructor(
     private readonly carolConfigService: CarolConfigService,
     private readonly clinicSettingsService: ClinicSettingsService,
-    private readonly googleCalendarService: GoogleCalendarService,
+    private readonly doctorGoogleCalendarService: DoctorGoogleCalendarService,
   ) {}
 
   async processMessage(clinicId: string, dto: ChatRequestDto): Promise<ChatResponseDto> {
@@ -248,9 +247,8 @@ ${schedulingRules?.postSchedulingMessage ? `- Após agendar, diga: "${scheduling
     return [
       new GetClinicInfoTool(clinicId, this.clinicSettingsService),
       new ListDoctorsTool(clinicId),
+      new GetDoctorAvailabilityTool(clinicId, this.doctorGoogleCalendarService),
       new GetServicesTool(clinicId),
-      new GetOperatingHoursTool(clinicId, this.clinicSettingsService),
-      new CheckAvailabilityTool(clinicId, this.clinicSettingsService, this.googleCalendarService),
       new CreateAppointmentTool(clinicId),
       new GetPaymentMethodsTool(clinicId),
       new FindOrCreatePatientTool(clinicId),
