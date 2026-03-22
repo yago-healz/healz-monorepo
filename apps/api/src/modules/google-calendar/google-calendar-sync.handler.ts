@@ -2,6 +2,7 @@ import { Injectable, Inject, Logger, OnModuleInit } from '@nestjs/common'
 import { eq } from 'drizzle-orm'
 import { db } from '../../infrastructure/database'
 import { appointmentView } from '../../infrastructure/database/schema/appointment-view.schema'
+import { doctorProfiles } from '../../infrastructure/database/schema'
 import { IEventBus } from '../../infrastructure/event-sourcing/event-bus/event-bus.interface'
 import { DomainEvent } from '../../infrastructure/event-sourcing/domain/domain-event.interface'
 import { GoogleCalendarService } from './google-calendar.service'
@@ -28,11 +29,21 @@ export class GoogleCalendarSyncHandler implements OnModuleInit {
     this.eventBus.subscribe('AppointmentNoShow', { handle: (event) => this.onNoShow(event) })
   }
 
+  private async resolveDoctorProfileId(userId: string): Promise<string | undefined> {
+    const [profile] = await db
+      .select({ id: doctorProfiles.id })
+      .from(doctorProfiles)
+      .where(eq(doctorProfiles.userId, userId))
+      .limit(1)
+    return profile?.id
+  }
+
   private async onScheduled(event: DomainEvent): Promise<void> {
     const { clinic_id: clinicId, event_data: data } = event
     if (!clinicId) return
 
-    const doctorId = data.doctor_id as string | undefined
+    const doctorUserId = data.doctor_id as string | undefined
+    const doctorId = doctorUserId ? await this.resolveDoctorProfileId(doctorUserId) : undefined
     const startAt = new Date(data.scheduled_at)
     const endAt = new Date(startAt.getTime() + (data.duration as number) * 60 * 1000)
     const params = {
@@ -62,7 +73,8 @@ export class GoogleCalendarSyncHandler implements OnModuleInit {
     const { clinic_id: clinicId, event_data: data } = event
     if (!clinicId) return
 
-    const doctorId = data.doctor_id as string | undefined
+    const doctorUserId = data.doctor_id as string | undefined
+    const doctorId = doctorUserId ? await this.resolveDoctorProfileId(doctorUserId) : undefined
 
     // Duration is not carried in the rescheduled event — fetch from projection
     const [appointment] = await db
@@ -96,7 +108,8 @@ export class GoogleCalendarSyncHandler implements OnModuleInit {
     const { clinic_id: clinicId, event_data: data } = event
     if (!clinicId) return
 
-    const doctorId = data.doctor_id as string | undefined
+    const doctorUserId = data.doctor_id as string | undefined
+    const doctorId = doctorUserId ? await this.resolveDoctorProfileId(doctorUserId) : undefined
 
     try {
       if (doctorId && (await this.doctorGoogleCalendarService.isConnected(clinicId, doctorId))) {
@@ -118,7 +131,8 @@ export class GoogleCalendarSyncHandler implements OnModuleInit {
     const { clinic_id: clinicId, event_data: data } = event
     if (!clinicId) return
 
-    const doctorId = data.doctor_id as string | undefined
+    const doctorUserId = data.doctor_id as string | undefined
+    const doctorId = doctorUserId ? await this.resolveDoctorProfileId(doctorUserId) : undefined
     const params = { summary: '✓ Consulta' }
 
     try {
@@ -141,7 +155,8 @@ export class GoogleCalendarSyncHandler implements OnModuleInit {
     const { clinic_id: clinicId, event_data: data } = event
     if (!clinicId) return
 
-    const doctorId = data.doctor_id as string | undefined
+    const doctorUserId = data.doctor_id as string | undefined
+    const doctorId = doctorUserId ? await this.resolveDoctorProfileId(doctorUserId) : undefined
     const params = { summary: '✅ Consulta' }
 
     try {
@@ -164,7 +179,8 @@ export class GoogleCalendarSyncHandler implements OnModuleInit {
     const { clinic_id: clinicId, event_data: data } = event
     if (!clinicId) return
 
-    const doctorId = data.doctor_id as string | undefined
+    const doctorUserId = data.doctor_id as string | undefined
+    const doctorId = doctorUserId ? await this.resolveDoctorProfileId(doctorUserId) : undefined
     const params = { summary: '⚠️ Falta' }
 
     try {

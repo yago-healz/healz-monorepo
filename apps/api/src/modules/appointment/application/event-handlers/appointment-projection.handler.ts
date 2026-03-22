@@ -64,8 +64,8 @@ export class AppointmentProjectionHandler implements OnModuleInit {
         status: "scheduled",
         reason: data.reason,
         notes: data.notes,
-        createdAt: event.created_at,
-        updatedAt: event.created_at,
+        createdAt: new Date(event.created_at as unknown as string),
+        updatedAt: new Date(event.created_at as unknown as string),
       })
       .onConflictDoNothing();
   }
