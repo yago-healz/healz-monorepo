@@ -62,7 +62,7 @@ IMPORTANTE: Antes de usar esta tool, você DEVE:
 4. Ter confirmado todos os dados com o paciente`
 
   schema = z.object({
-    doctorId: z.string().describe('ID do médico (obtido via list_doctors)'),
+    doctorId: z.string().describe('UUID do médico retornado pelo list_doctors (ex: "550e8400-e29b-41d4-a716-446655440000"). Use o valor EXATO retornado, não modifique.'),
     contactId: z.string().describe('ID do contato do paciente (obtido via find_or_create_patient)'),
     date: z.string().describe('Data no formato YYYY-MM-DD'),
     time: z.string().describe('Horário no formato HH:MM'),
@@ -94,6 +94,14 @@ IMPORTANTE: Antes de usar esta tool, você DEVE:
       time: input.time,
       procedure: input.procedure,
     })
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(input.doctorId)) {
+      return JSON.stringify({
+        success: false,
+        error: `doctorId inválido: "${input.doctorId}" não é um UUID. Use o valor exato do campo doctorId retornado por list_doctors.`,
+      })
+    }
 
     try {
       // 1. RESOLVER MÉDICO

@@ -115,7 +115,7 @@ export class GetDoctorAvailabilityTool extends StructuredTool {
     'e agendamentos já existentes. Use após identificar o médico desejado com list_doctors.'
 
   schema = z.object({
-    doctorId: z.string().describe('ID do médico (obtido via list_doctors)'),
+    doctorId: z.string().describe('UUID do médico retornado pelo list_doctors (ex: "550e8400-e29b-41d4-a716-446655440000"). Use o valor EXATO retornado, não modifique.'),
     date: z.string().describe('Data no formato YYYY-MM-DD'),
   })
 
@@ -132,6 +132,13 @@ export class GetDoctorAvailabilityTool extends StructuredTool {
     this.logger.debug(
       `[GetDoctorAvailability] Checking availability for doctor ${input.doctorId} on ${input.date}`,
     )
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(input.doctorId)) {
+      return JSON.stringify({
+        error: `doctorId inválido: "${input.doctorId}" não é um UUID. Use o valor exato do campo doctorId retornado por list_doctors.`,
+      })
+    }
 
     // 1. VALIDAR MÉDICO
     const [profile] = await db

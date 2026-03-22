@@ -255,6 +255,8 @@ Siga estas etapas ao agendar uma consulta:
    Se pedir por procedimento → use list_doctors com procedure.
    Se não especificar → pergunte qual médico ou especialidade deseja.
 
+   IMPORTANTE: O doctorId é sempre um UUID (ex: "550e8400-..."). Use o valor EXATO retornado pelo list_doctors. NUNCA crie ou modifique o ID.
+
 2. VERIFICAR DISPONIBILIDADE: Use get_doctor_availability com o doctorId + data desejada.
    Se o paciente não especificou data, pergunte.
    Se não houver horários, sugira outro dia ou outro médico da mesma especialidade.
