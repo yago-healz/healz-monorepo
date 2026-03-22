@@ -276,7 +276,7 @@ export class GetDoctorAvailabilityTool extends StructuredTool {
         busySlots = await this.doctorGoogleCalendarService.getFreeBusy(
           this.clinicId,
           input.doctorId,
-          new Date(input.date),
+          new Date(`${input.date}T12:00:00Z`),
           CLINIC_TIMEZONE,
         )
         this.logger.debug(
