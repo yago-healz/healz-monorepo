@@ -8,7 +8,7 @@ import { CarolConfigResponseDto } from '../dto/carol-config-response.dto'
 import { ClinicSettingsService } from '../../clinic-settings/clinic-settings.service'
 import { DoctorGoogleCalendarService } from '../../google-calendar/doctor-google-calendar.service'
 import { AppointmentService } from '../../appointment/application/appointment.service'
-import { ChatRequestDto, ChatResponseDto } from './dto/chat.dto'
+import { ChannelContextDto, ChatRequestDto, ChatResponseDto } from './dto/chat.dto'
 import { GetClinicInfoTool } from '../tools/get-clinic-info.tool'
 import { GetServicesTool } from '../tools/get-services.tool'
 import { CreateAppointmentTool } from '../tools/create-appointment.tool'
@@ -79,7 +79,7 @@ export class CarolChatService {
     })
 
     const messages: BaseMessage[] = [
-      new SystemMessage(this.buildSystemPrompt(config)),
+      new SystemMessage(this.buildSystemPrompt(config, dto.channelContext)),
       ...history,
       new HumanMessage(dto.message),
     ]
@@ -192,7 +192,7 @@ export class CarolChatService {
     }
   }
 
-  private buildSystemPrompt(config: CarolConfigResponseDto): string {
+  private buildSystemPrompt(config: CarolConfigResponseDto, channelContext?: ChannelContextDto): string {
     const tonalidade: Record<string, string> = {
       formal: 'Seja formal e profissional. Use "senhor/senhora" e linguagem técnica quando apropriado.',
       informal: 'Seja descontraída e acessível. Use linguagem simples e amigável.',
@@ -205,22 +205,27 @@ export class CarolChatService {
 
     const schedulingRules = config.schedulingRules as Record<string, unknown>
 
-    // Injetar data e hora atual no timezone da clínica
     const now = new Date()
     const timezone = process.env.CLINIC_TIMEZONE ?? 'America/Sao_Paulo'
 
-    const tzFormatter = new Intl.DateTimeFormat('pt-BR', {
+    const currentDateTime = new Intl.DateTimeFormat('pt-BR', {
       timeZone: timezone,
       dateStyle: 'full',
       timeStyle: 'short',
-    })
-    const currentDateTime = tzFormatter.format(now)
+    }).format(now)
 
     const currentDate = new Intl.DateTimeFormat('sv-SE', {
       timeZone: timezone,
-    }).format(now) // Retorna "YYYY-MM-DD"
+    }).format(now)
 
-    return `Você é ${config.name}, assistente virtual de uma clínica de saúde.
+    const channelBlock = channelContext?.phone
+      ? `\nCONTEXTO DO CANAL:
+O paciente está entrando em contato pelo ${channelContext.channel || 'canal externo'}.
+Telefone do paciente: ${channelContext.phone}
+Use find_or_create_patient com este telefone no início da conversa para identificá-lo.`
+      : ''
+
+    return `Você é ${config.name}, secretária virtual inteligente de uma clínica de saúde.
 
 DATA E HORA ATUAL: ${currentDateTime} (use esta data para interpretar "hoje", "amanhã", etc.)
 DATA ATUAL (formato YYYY-MM-DD): ${currentDate}
@@ -232,18 +237,49 @@ ${traits}
 SAUDAÇÃO:
 Quando o paciente iniciar a conversa, use esta saudação: "${config.greeting || `Olá! Sou ${config.name}. Como posso ajudar?`}"
 
-DIRETRIZES:
-- Responda sempre em português brasileiro
-- Seja objetiva e clara, com respostas curtas (máximo 2-3 frases)
-- Não invente informações — use as tools disponíveis para buscar dados reais
-- Se não souber responder, ofereça transferir para atendimento humano
-${config.restrictSensitiveTopics ? '- NÃO discuta diagnósticos médicos, tratamentos específicos ou valores de faturamento detalhados' : ''}
+SUAS CAPACIDADES:
+Você tem acesso às seguintes ferramentas para atender o paciente:
+- list_doctors: Buscar médicos por nome, especialidade ou procedimento
+- get_doctor_availability: Verificar horários disponíveis de um médico em uma data
+- create_appointment: Criar agendamento real com um médico
+- find_or_create_patient: Identificar ou cadastrar o paciente
+- get_patient_appointments: Ver agendamentos existentes do paciente
+- get_services: Listar procedimentos/serviços (opcionalmente por médico)
+- get_clinic_info: Informações da clínica
+- get_payment_methods: Formas de pagamento aceitas
 
-AGENDAMENTO:
-${schedulingRules?.confirmBeforeScheduling !== false ? '- Sempre confirme os dados antes de criar um agendamento' : ''}
+FLUXO DE AGENDAMENTO:
+Siga estas etapas ao agendar uma consulta:
+1. IDENTIFICAR O MÉDICO: Se o paciente pedir por nome → use list_doctors com name.
+   Se pedir por especialidade → use list_doctors com specialty.
+   Se pedir por procedimento → use list_doctors com procedure.
+   Se não especificar → pergunte qual médico ou especialidade deseja.
+
+2. VERIFICAR DISPONIBILIDADE: Use get_doctor_availability com o doctorId + data desejada.
+   Se o paciente não especificou data, pergunte.
+   Se não houver horários, sugira outro dia ou outro médico da mesma especialidade.
+
+3. COLETAR DADOS DO PACIENTE: Peça nome completo e telefone (mínimo).
+   Use find_or_create_patient para identificar/cadastrar.
+
+4. CONFIRMAR ANTES DE AGENDAR: Sempre resuma todos os dados antes de criar:
+   - Médico, data, horário, procedimento, nome do paciente
+   Só prossiga após confirmação explícita do paciente.
+
+5. CRIAR AGENDAMENTO: Use create_appointment com todos os dados.${schedulingRules?.postSchedulingMessage ? `\n   Após confirmar: "${schedulingRules.postSchedulingMessage}"` : ''}
+
 ${schedulingRules?.allowCancellation !== false ? '- Você pode cancelar consultas a pedido do paciente' : '- NÃO cancele consultas — encaminhe para atendimento humano'}
 ${schedulingRules?.allowRescheduling !== false ? '- Você pode reagendar consultas' : '- NÃO reagende consultas — encaminhe para atendimento humano'}
-${schedulingRules?.postSchedulingMessage ? `- Após agendar, diga: "${schedulingRules.postSchedulingMessage}"` : ''}`
+
+DIRETRIZES:
+- Responda sempre em português brasileiro
+- Seja objetiva e clara, com respostas curtas (máximo 2-3 frases por mensagem)
+- Não invente informações — use SEMPRE as tools para buscar dados reais
+- Se não souber responder, ofereça transferir para atendimento humano
+- Quando o paciente perguntar "quais médicos atendem?", use list_doctors sem filtros
+- Quando perguntar sobre um médico específico por nome, use list_doctors com name
+- Nunca assuma dados — sempre confirme com o paciente
+${config.restrictSensitiveTopics ? '- NÃO discuta diagnósticos médicos, tratamentos específicos ou valores detalhados de faturamento' : ''}${channelBlock}`
   }
 
   private createTools(clinicId: string): StructuredTool[] {
