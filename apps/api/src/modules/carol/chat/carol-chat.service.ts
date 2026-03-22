@@ -15,6 +15,7 @@ import { CheckAvailabilityTool } from '../tools/check-availability.tool'
 import { CreateAppointmentTool } from '../tools/create-appointment.tool'
 import { GetPaymentMethodsTool } from '../tools/get-payment-methods.tool'
 import { FindOrCreatePatientTool } from '../tools/find-or-create-patient.tool'
+import { ListDoctorsTool } from '../tools/list-doctors.tool'
 
 @Injectable()
 export class CarolChatService {
@@ -246,6 +247,7 @@ ${schedulingRules?.postSchedulingMessage ? `- Após agendar, diga: "${scheduling
   private createTools(clinicId: string): StructuredTool[] {
     return [
       new GetClinicInfoTool(clinicId, this.clinicSettingsService),
+      new ListDoctorsTool(clinicId),
       new GetServicesTool(clinicId),
       new GetOperatingHoursTool(clinicId, this.clinicSettingsService),
       new CheckAvailabilityTool(clinicId, this.clinicSettingsService, this.googleCalendarService),
