@@ -9,3 +9,4 @@ export * from "./appointment-view.schema";
 export * from "./patient-journey-view.schema";
 export * from "./clinic-settings.schema";
 export * from "./doctor-domain.schema";
+export * from "./patient-contact.schema";
