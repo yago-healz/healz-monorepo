@@ -11,7 +11,7 @@ Sistema event-driven que captura toda a jornada do paciente através de eventos 
 - **Runtime**: Node.js com NestJS + TypeScript
 - **Banco de dados**: PostgreSQL
 - **ORM**: Drizzle
-- **Mensageria**: BullMQ + Redis
+- **Mensageria**: RabbitMQ
 - **IA**: LangChain (orquestração de agentes e decisões conversacionais)
 - **WhatsApp**: Evolution API (self-hosted, maior flexibilidade)
 
@@ -57,7 +57,7 @@ Sistema event-driven que captura toda a jornada do paciente através de eventos 
 
 - **Propósito**: Executar respostas do sistema (enviar mensagem, criar agendamento, etc)
 - **Padrão**: Command pattern com filas
-- **Tech**: BullMQ para jobs assíncronos
+- **Tech**: RabbitMQ para jobs assíncronos
 - **Tipos de ação**:
   - Envio de mensagens WhatsApp
   - Criação/atualização de agendamentos

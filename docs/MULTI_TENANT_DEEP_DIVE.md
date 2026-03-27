@@ -396,7 +396,7 @@ CREATE TABLE events_default PARTITION OF events DEFAULT;
 | **Conexões ao DB**     | Alto        | Connection pooling com PgBouncer         |
 | **Tamanho de índices** | Médio       | Índices parciais (apenas dados recentes) |
 | **Tabela `events`**    | Alto        | Particionamento após 50M eventos         |
-| **Read models**        | Médio       | Caching com Redis                        |
+| **Read models**        | Médio       | Caching na camada de aplicação           |
 | **RLS overhead**       | Baixo (~5%) | Aceitável para benefício de segurança    |
 
 ### Limites de Escalabilidade

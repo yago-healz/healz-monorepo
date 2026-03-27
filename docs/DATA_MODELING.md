@@ -29,7 +29,7 @@ O Healz utiliza uma abordagem híbrida que combina o melhor dos dois mundos:
                                     ↓
                             ┌───────────────┐
                             │   Event Bus   │
-                            │  (BullMQ)     │
+                            │  (RabbitMQ)   │
                             └───────┬───────┘
                                     │
                     ┌───────────────┼───────────────┐

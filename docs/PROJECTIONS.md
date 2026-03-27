@@ -843,7 +843,7 @@ WHERE pc.last_event_id IS NULL;
 **Opções:**
 - Replicação do PostgreSQL (streaming replication)
 - Rebuild local em cada região
-- Cache distribuído (Redis Cluster)
+- Cache distribuído
 
 ### 3. Analytics Views Refresh Rate
 

@@ -14,11 +14,6 @@ services:
         fromDatabase:
           name: healz-db
           property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: healz-redis
-          property: connectionString
     buildFilter:
       paths:
         - apps/api/**
@@ -58,13 +53,6 @@ services:
         - "**/*.md"
         - "**/*.test.ts"
         - docs/**
-
-  # Redis
-  - type: redis
-    name: healz-redis
-    plan: free
-    ipAllowList: []
-    maxmemoryPolicy: allkeys-lru
 
 # PostgreSQL
 databases:

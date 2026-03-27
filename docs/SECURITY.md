@@ -375,21 +375,6 @@ resource "google_compute_firewall" "allow_cloud_run_to_sql" {
   target_tags   = ["cloud-sql"]
 }
 
-# Permitir: Cloud Run → Memorystore (Redis)
-resource "google_compute_firewall" "allow_cloud_run_to_redis" {
-  name     = "allow-cloud-run-to-redis"
-  network  = google_compute_network.healz_vpc.name
-  priority = 1000
-
-  allow {
-    protocol = "tcp"
-    ports    = ["6379"]
-  }
-
-  source_ranges = ["10.8.0.0/28"]
-  target_tags   = ["redis"]
-}
-
 # Permitir: Health checks (Load Balancer)
 resource "google_compute_firewall" "allow_health_checks" {
   name     = "allow-health-checks"
@@ -428,7 +413,6 @@ resource "google_sql_database_instance" "healz_postgres" {
 
 - ✅ Cloud Load Balancer: TLS 1.3 (Google-managed certificate)
 - ✅ Cloud SQL: SSL/TLS required
-- ✅ Memorystore: TLS in transit (REDIS_TLS mode)
 - ✅ Evolution API: HTTPS webhooks
 
 ## IAM (Identity & Access Management)
@@ -539,10 +523,6 @@ metadata:
 # Database URL
 echo -n "postgresql://user:password@host/db" | \
   gcloud secrets create database-url --data-file=-
-
-# Redis URL
-echo -n "redis://host:6379" | \
-  gcloud secrets create redis-url --data-file=-
 
 # OpenAI API Key
 echo -n "sk-..." | \

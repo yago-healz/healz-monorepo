@@ -5,7 +5,7 @@
 - **Runtime**: Node.js com NestJS + TypeScript
 - **Banco de dados**: PostgreSQL
 - **ORM**: Drizzle
-- **Mensageria**: BullMQ + Redis
+- **Mensageria**: RabbitMQ
 - **IA**: LangChain (orquestração de IA)
 - **WhatsApp**: Evolution API
 

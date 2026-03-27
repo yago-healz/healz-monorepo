@@ -463,7 +463,7 @@ await this.doctorGoogleCalendarService.createEvent(clinicId, doctorProfileId, ap
 Os parametros de rota usam `doctorProfileId`. Internamente, o servico chama `resolveUserId()` para converter para `userId`. Nunca passe `userId` diretamente nos endpoints.
 
 ### 2. Token de estado OAuth e in-memory
-O `stateStore` e um `Map` em memoria (`Map<string, { clinicId, expiresAt }>`). Em ambiente multi-instancia (cluster), isso nao funciona. Para producao escalavel, e necessario mover o state store para Redis ou banco.
+O `stateStore` e um `Map` em memoria (`Map<string, { clinicId, expiresAt }>`). Em ambiente multi-instancia (cluster), isso nao funciona. Para producao escalavel, e necessario mover o state store para o banco de dados.
 
 ### 3. Scope insuficiente apos reconexao
 Se o usuario revogou permissoes e reconectou sem o escopo correto, a API lanca `ForbiddenException('GOOGLE_CALENDAR_REAUTH_REQUIRED')`. O frontend deve tratar esse erro mostrando a mensagem de reautorizacao no `CalendarPickerModal`.

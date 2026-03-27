@@ -27,7 +27,7 @@ healz-monorepo/
 # Instalar dependências
 pnpm install
 
-# Subir infraestrutura local (PostgreSQL + Redis)
+# Subir infraestrutura local (PostgreSQL + RabbitMQ)
 pnpm docker:up
 
 # Copiar variáveis de ambiente

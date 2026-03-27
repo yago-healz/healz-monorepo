@@ -24,7 +24,7 @@ Para documentacao conceitual detalhada, consulte: `docs/CORE_CONCEPTS.md`
 - **ORM:** Drizzle ORM 0.45 (schemas em `src/db/schema/`, migrations via drizzle-kit)
 - **Database:** PostgreSQL 16 (via `pg` pool)
 - **Testes:** Jest 29 + Supertest 7
-- **Infra:** Docker Compose (PostgreSQL + Redis)
+- **Infra:** Docker Compose (PostgreSQL + RabbitMQ)
 
 ### Event Bus: RabbitMQ
 
